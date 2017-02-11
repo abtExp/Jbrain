@@ -10,4 +10,4 @@ Work in progress.
 
 ----------------------------------------------------------------------------------------------------------------------------------------  
 --Any help or suggestion is appreciated.
-The Ndime.js file in helper directory is another of my projects, Here is the link to it : https://abt10.gothub.io/Vector_JS .
+The Ndime.js file in helper directory is another of my projects, Here is the link to it : https://abt10.github.io/Vector_JS .
