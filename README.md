@@ -8,4 +8,4 @@ Work in progress.
 * Other machine learning algorithms like SVM. 
 
 ----------------------------------------------------------------------------------------------------------------------------------------  
-Any help or suggestion is appreciated.
+--Any help or suggestion is appreciated.
