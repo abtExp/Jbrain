@@ -1,4 +1,4 @@
-# Jbrain
+# Jbrain                    [![Code Climate](https://codeclimate.com/github/AbT10/Jbrain/badges/gpa.svg)](https://codeclimate.com/github/AbT10/Jbrain)
 Neural network in javascript
 
 Work in progress.
