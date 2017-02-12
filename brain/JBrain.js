@@ -117,7 +117,7 @@ class Network{
 function lyr(neuron_count,ip_wts,fill_style=1){
 	var v;
 	if(!ip_wts){
-		if(fill_style = 1){
+		if(fill_style == 1){
 			v = new Vector([neuron_count]);
 			v.array = Vector.fill(neuron_count);
 		}
@@ -126,7 +126,7 @@ function lyr(neuron_count,ip_wts,fill_style=1){
 		}
 	}
 	else{
-		if(fill_style = 1){
+		if(fill_style == 1){
 			v = new Vector([neuron_count,ip_wts]);
 			v.arrange();
 		}
