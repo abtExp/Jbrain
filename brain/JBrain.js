@@ -38,6 +38,7 @@ class Network{
 		/* for each input we find the activations and store them in an array */
 		this.input.forEach((i)=>{this.activations.push(this.feed_forward(i));});
 		this.SGD(neta,epoch,m,cost);
+		this.evaluate();
 	}
 
 	/* feed_forward : method to calculate the activations for each neuron of each layer
@@ -75,14 +76,25 @@ class Network{
 				}
 				var delw = delW_B[0], delb = delW_B[1];
 
+				/* updation of weights and biases by Stochastic Gradient Descent */
 
+				for(var l=1; l<this.lyrs_count; l++){
+					this.weights[l].arrange(sum(this.weights[l],delw[l].prod((-(neta/m)))));
+					this.biases[l].arrange(sum(this.biases[l],delb[l].prod((-(neta/m)))));
+				}
+				j++;
 			}
+			epoch--;
 		}
-		
 	}
 
+	/* backprop : calculates the error or noise in weights and biases and optimises the 
+	   weights and biases to give more accurate results and thus modelling learning
+	*/
+
 	backprop(ip_num){
-		var nw = [],nb = []; 
+		var nw = [],nb = [];
+		var delW_B = []; 
         for(var i=1; i<this.lyrs_count; i++){
 			nw.push(Vector.zeroes(this.weights[i].shape));
 			nb.push(Vector.zeroes(this.biases[i].shape));
@@ -90,23 +102,28 @@ class Network{
 
 		/* calculating the error in the output layer */
 		var del = [];
-		var opdel = cost_grad(this.activations[ip_num][this.lyrs_count-1],this.labels[ip_num]).prod(sigma_dash(this.Z[ip_num][this.lyrs_count-1]));
+		var sig_ = [];
+		this.Z[ip_num][this.lyrs_count-1].forEach((i)=>{sig_.push(sigma_dash(i));});
+		var opdel = cost_grad(this.activations[ip_num][this.lyrs_count-1],this.labels[ip_num]).prod(sig_);
 		del.push(opdel);
 
 		/* backpropagating */
 		for(var i = this.lyrs_count.length-2; i>=1; i--){
-			var err = product(this.weights[i].prod(del[i+1]),sigma_dash(this.Z[ip_num][i]));
+			sig_ = [];
+			this.Z[ip_num][i].forEach((zi)=>{sig_.push(sigma_dash(zi));});
+			var err = product(this.weights[i+1].prod(del[i+1]),sig_);
 			del.unshift(err);
+			
+			/* equivalent to nw = 0 (initially), nb = 0 (initially),
+			   now we set nw = a.del, nb = del; (for ith layer) 
+			*/
+			
+			nw[i].arrange(product(this.activations[ip_num][i],del[i])); 
+			nb[i].arrange(del[i]);
 		}
-
-		/* getting the grad w wrt c i.e., del w/del c */
-		var ndelw = [],ndelb=[]; /* tis confusion */
-		for(var i=1; i<this.lyrs_count; i++){
-			/* -----------------------------------------------------------------------------------  */
-		}
-
-		
-
+		delW_B[0] = nw;
+		delW_b[1] = nb;
+		return delW_B;
 	}
 
 }
@@ -117,7 +134,7 @@ class Network{
 function lyr(neuron_count,ip_wts,fill_style=1){
 	var v;
 	if(!ip_wts){
-		if(fill_style == 1){
+		if(fill_style === 1){
 			v = new Vector([neuron_count]);
 			v.array = Vector.fill(neuron_count);
 		}
@@ -126,7 +143,7 @@ function lyr(neuron_count,ip_wts,fill_style=1){
 		}
 	}
 	else{
-		if(fill_style == 1){
+		if(fill_style === 1){
 			v = new Vector([neuron_count,ip_wts]);
 			v.arrange();
 		}
