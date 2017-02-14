@@ -65,12 +65,12 @@ class Network{
 	 * by the backpropagation method.
 	 */
 
-	SGD(neta,epoch,m,cost){   
+	SGD(neta,epoch,m,cost_fn){   
 		while(epoch > 0){
 			var i = Math.round(Math.random()*(this.input.length-1));
 			var j = 0 ;
 			while(j<m){
-				var delW_B = this.backprop(i++);
+				var delW_B = this.backprop(i++,cost_fn);
 				if(i>=this.input.length){
 					i =0;
 				}
@@ -92,7 +92,7 @@ class Network{
 	   weights and biases to give more accurate results and thus modelling learning
 	*/
 
-	backprop(ip_num){
+	backprop(ip_num,cost_fn){
 		var nw = [],nb = [];
 		var delW_B = []; 
         for(var i=1; i<this.lyrs_count; i++){
@@ -104,7 +104,8 @@ class Network{
 		var del = [];
 		var sig_ = [];
 		this.Z[ip_num][this.lyrs_count-1].forEach((i)=>{sig_.push(sigma_dash(i));});
-		var opdel = cost_grad(this.activations[ip_num][this.lyrs_count-1],this.labels[ip_num]).prod(sig_);
+		/* to be declared in the cost class for different cost functions (quadratic cost, cross-entropy,log-likelihood) */
+		var opdel = cost.cost_fn(this.activations[ip_num][this.lyrs_count-1],this.labels[ip_num]).prod(sig_);
 		del.push(opdel);
 
 		/* backpropagating */
