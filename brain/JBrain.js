@@ -24,21 +24,22 @@ class Network{
 		this.biases = [];
 		this.Z = [];
 		for(var i=1; i<this.lyrs_count; i++){
-			this.weights.push(new lyr(this.net_config[i],this.net_config[i-1]));
-			this.biases.push(new lyr(this.net_config[i]));
+			this.weights[i] = new lyr(this.net_config[i],this.net_config[i-1]);
+			this.biases[i] = new lyr(this.net_config[i]);
 		}
 	}
 	
 	/* fit : method to optimise weights and biases by passing in the training_Data */
 
-	fit(train_features, train_labels, neta=0.5, epoch=400, m=10, cost=cross_entropy){
+	fit(train_features, train_labels, neta=0.5, epoch=400, m=10/*, cost=cross_entropy*/){
 		this.input = train_features;
 		this.labels = train_labels;
 		this.activations = [];
+		/*this.cost = Cost.cost;*/
 		/* for each input we find the activations and store them in an array */
 		this.input.forEach((i)=>{this.activations.push(this.feed_forward(i));});
-		this.SGD(neta,epoch,m,cost);
-		this.evaluate();
+		this.SGD(neta,epoch,m);
+		/* this.evaluate(); */
 	}
 
 	/* feed_forward : method to calculate the activations for each neuron of each layer
@@ -49,11 +50,12 @@ class Network{
 	feed_forward(input){
 		var activation = [],z=[];
 		activation.push(input);
-		for(var i=this.net_config.length-1; i>=1; i--){
+		for(var i=1; i<this.lyrs_count; i++){
 			var part_act = [],z_min = [];
 			for(var j=0; j<this.net_config[i]; j++){
 				part_act.push(sigmoid_function(z_min[j] = weighted_input(this.weights[i],activation[i-1],this.biases[i],j)));
 			}
+			console.log(z_min);
 			activation.push(part_act);
 			z.push(z_min);
 		}
@@ -65,12 +67,14 @@ class Network{
 	 * by the backpropagation method.
 	 */
 
-	SGD(neta,epoch,m,cost_fn){   
+	SGD(neta,epoch,m){   
 		while(epoch > 0){
 			var i = Math.round(Math.random()*(this.input.length-1));
+			console.log(i);
+			console.log(this.input[i]);
 			var j = 0 ;
 			while(j<m){
-				var delW_B = this.backprop(i++,cost_fn);
+				var delW_B = this.backprop(i++);
 				if(i>=this.input.length){
 					i =0;
 				}
@@ -92,7 +96,7 @@ class Network{
 	   weights and biases to give more accurate results and thus modelling learning
 	*/
 
-	backprop(ip_num,cost_fn){
+	backprop(ip_num){
 		var nw = [],nb = [];
 		var delW_B = []; 
         for(var i=1; i<this.lyrs_count; i++){
@@ -104,8 +108,7 @@ class Network{
 		var del = [];
 		var sig_ = [];
 		this.Z[ip_num][this.lyrs_count-1].forEach((i)=>{sig_.push(sigma_dash(i));});
-		/* to be declared in the cost class for different cost functions (quadratic cost, cross-entropy,log-likelihood) */
-		var opdel = cost.cost_fn(this.activations[ip_num][this.lyrs_count-1],this.labels[ip_num]).prod(sig_);
+		var opdel = cost_grad(this.activations[ip_num][this.lyrs_count-1],this.labels[ip_num]).prod(sig_);
 		del.push(opdel);
 
 		/* backpropagating */
@@ -125,6 +128,11 @@ class Network{
 		delW_B[0] = nw;
 		delW_b[1] = nb;
 		return delW_B;
+	}
+
+	predict(test_features){
+		var res = this.feed_forward(test_features);
+		return res[this.lyrs_count-1];
 	}
 
 }
@@ -184,3 +192,4 @@ function cost_grad(a,y){
 function sigma_dash(z){
 	return (sigmoid_function(z)*(1-(sigmoid_function(z))));
 }
+
