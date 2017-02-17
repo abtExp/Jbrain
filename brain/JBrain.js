@@ -107,7 +107,9 @@ class Network{
 		/* calculating the error in the output layer */
 		var del = [];
 		var sig_ = [];
-		this.Z[ip_num][this.lyrs_count-1].forEach((i)=>{sig_.push(sigma_dash(i));});
+		this.Z[ip_num][this.lyrs_count-2].forEach((i)=>{sig_.push(sigma_dash(i));}); 
+		/* this.Z[ip_num][this.lyrs_count-1] was undefined because we're just storing lyrs_count - 1 lyrs in Z as the input lyr 
+		doesn't have weights and biases */
 		var opdel = cost_grad(this.activations[ip_num][this.lyrs_count-1],this.labels[ip_num]).prod(sig_);
 		del.push(opdel);
 
