@@ -185,7 +185,7 @@ function cost_grad(a,y){
 	for(var i=0; i<y.length; i++){
 		y[i] = -y[i];
 	}
-	gradC.array = sum(a.array,y);
+	gradC.array = sum(a,y);
 	return gradC;
 }
 
