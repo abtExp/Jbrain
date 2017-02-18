@@ -128,7 +128,7 @@ class Network{
 			nb[i].arrange(del[i]);
 		}
 		delW_B[0] = nw;
-		delW_b[1] = nb;
+		delW_B[1] = nb;
 		return delW_B;
 	}
 
