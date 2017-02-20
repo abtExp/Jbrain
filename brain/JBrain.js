@@ -24,8 +24,8 @@ class Network{
 		this.biases = [];
 		this.Z = [];
 		for(var i=1; i<this.lyrs_count; i++){
-			this.weights[i] = new lyr(this.net_config[i],this.net_config[i-1]);
-			this.biases[i] = new lyr(this.net_config[i]);
+			this.weights.push(new lyr(this.net_config[i],this.net_config[i-1]));
+			this.biases.push(new lyr(this.net_config[i]));
 		}
 	}
 	
@@ -53,9 +53,8 @@ class Network{
 		for(var i=1; i<this.lyrs_count; i++){
 			var part_act = [],z_min = [];
 			for(var j=0; j<this.net_config[i]; j++){
-				part_act.push(sigmoid_function(z_min[j] = weighted_input(this.weights[i],activation[i-1],this.biases[i],j)));
+				part_act.push(sigmoid_function(z_min[j] = weighted_input(this.weights[i-1],activation[i-1],this.biases[i-1],j)));
 			}
-			console.log(z_min);
 			activation.push(part_act);
 			z.push(z_min);
 		}
@@ -70,8 +69,6 @@ class Network{
 	SGD(neta,epoch,m){   
 		while(epoch > 0){
 			var i = Math.round(Math.random()*(this.input.length-1));
-			console.log(i);
-			console.log(this.input[i]);
 			var j = 0 ;
 			while(j<m){
 				var delW_B = this.backprop(i++);
@@ -83,8 +80,8 @@ class Network{
 				/* updation of weights and biases by Stochastic Gradient Descent */
 
 				for(var l=1; l<this.lyrs_count; l++){
-					this.weights[l].arrange(sum(this.weights[l],delw[l].prod((-(neta/m)))));
-					this.biases[l].arrange(sum(this.biases[l],delb[l].prod((-(neta/m)))));
+					this.weights[l-1].arrange(sum(this.weights[l-1],delw[l-1].prod((-(neta/m)))));
+					this.biases[l-1].arrange(sum(this.biases[l-1],delb[l-1].prod((-(neta/m)))));
 				}
 				j++;
 			}
@@ -99,9 +96,9 @@ class Network{
 	backprop(ip_num){
 		var nw = [],nb = [];
 		var delW_B = []; 
-        for(var i=1; i<this.lyrs_count; i++){
-			nw.push(Vector.zeroes(this.weights[i].shape));
-			nb.push(Vector.zeroes(this.biases[i].shape));
+    for(var i=1; i<this.lyrs_count; i++){
+			nw.push(Vector.zeroes(this.weights[i-1].shape));
+			nb.push(Vector.zeroes(this.biases[i-1].shape));
 		}	
 
 		/* calculating the error in the output layer */
@@ -117,7 +114,7 @@ class Network{
 		for(var i = this.lyrs_count.length-2; i>=1; i--){
 			sig_ = [];
 			this.Z[ip_num][i].forEach((zi)=>{sig_.push(sigma_dash(zi));});
-			var err = product(this.weights[i+1].prod(del[i+1]),sig_);
+			var err = product(this.weights[i].prod(del[i+1]),sig_);
 			del.unshift(err);
 			
 			/* equivalent to nw = 0 (initially), nb = 0 (initially),
