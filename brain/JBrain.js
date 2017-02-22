@@ -40,6 +40,7 @@ class Network{
 		this.input.forEach((i)=>{this.activations.push(this.feed_forward(i));});
 		this.SGD(neta,epoch,m);
 		/* this.evaluate(); */
+    var k=0;    
 	}
 
 	/* feed_forward : method to calculate the activations for each neuron of each layer
@@ -54,6 +55,7 @@ class Network{
 			var part_act = [],z_min = [];
 			for(var j=0; j<this.net_config[i]; j++){
 				part_act.push(sigmoid_function(z_min[j] = weighted_input(this.weights[i-1],activation[i-1],this.biases[i-1],j)));
+// 				console.log("neuron_no. " + j + " weights : " + this.weights[i-1].array[j]);
 			}
 			activation.push(part_act);
 			z.push(z_min);
@@ -94,27 +96,26 @@ class Network{
 	*/
 
 	backprop(ip_num){
-		var nw = [],nb = [];
-		var delW_B = []; 
-    for(var i=1; i<this.lyrs_count; i++){
+		let nw = [],nb = [];
+		let delW_B = []; 
+    for(let i=1; i<this.lyrs_count; i++){
 			nw.push(Vector.zeroes(this.weights[i-1].shape));
 			nb.push(Vector.zeroes(this.biases[i-1].shape));
 		}	
 
 		/* calculating the error in the output layer */
-		var del = [];
-		var sig_ = [];
+		let del = [];
+		let sig_ = [];
 		this.Z[ip_num][this.lyrs_count-2].forEach((i)=>{sig_.push(sigma_dash(i));}); 
 		/* this.Z[ip_num][this.lyrs_count-1] was undefined because we're just storing lyrs_count - 1 lyrs in Z as the input lyr 
 		doesn't have weights and biases */
-		var opdel = cost_grad.call(this,this.activations[ip_num][this.lyrs_count-1],this.labels[ip_num]).prod(sig_);
+		let opdel = cost_grad.call(this,this.activations[ip_num][this.lyrs_count-1],this.labels[ip_num]).prod(sig_);
 		del.push(opdel);
-
 		/* backpropagating */
-		for(var i = this.lyrs_count.length-2; i>=1; i--){
+		for(let i = this.lyrs_count.length-2; i>=1; i--){
 			sig_ = [];
 			this.Z[ip_num][i].forEach((zi)=>{sig_.push(sigma_dash(zi));});
-			var err = product(this.weights[i].prod(del[i+1]),sig_);
+			let err = product(this.weights[i].prod(del[i+1]),sig_);
 			del.unshift(err);
 			
 			/* equivalent to nw = 0 (initially), nb = 0 (initially),
@@ -172,7 +173,8 @@ function sigmoid_function(z){
 /* weighted_input : calculates sigma(w*x) + b */
 
 function weighted_input(w,x,b,j){
-	return (sum(product(w.array[j],x))+b.array[j]);
+	let z =  sum(product(w.array[j],x)) + b.array[j];
+	return z;
 }
 
 /* cost_grad : returns gradC wrt activ */
@@ -191,4 +193,3 @@ function cost_grad(a,y){
 function sigma_dash(z){
 	return (sigmoid_function(z)*(1-(sigmoid_function(z))));
 }
-
