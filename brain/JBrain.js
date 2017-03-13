@@ -81,8 +81,8 @@ class Network{
 				/* updation of weights and biases by Stochastic Gradient Descent */
 
 				for(var l=1; l<this.lyrs_count; l++){
-					this.weights[l-1].arrange(sum(this.weights[l-1],product(delw[l-1],(-(neta/m)))));
-					this.biases[l-1].arrange(sum(this.biases[l-1],product(delb[l-1],(-(neta/m)))));
+					this.weights[l-1].arrange(sum(this.weights[l-1].flat,product(delw[l-1],(-(neta/m)))));
+					this.biases[l-1].arrange(sum(this.biases[l-1].flat,product(delb[l-1],(-(neta/m)))));
 				}
 				j++;
 			}
