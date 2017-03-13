@@ -50,14 +50,12 @@ class Network{
 	 */
 
 	feed_forward(input,k){
-    console.log(`input number : ${k} for which provided input is : ${input} \n`);
 		var activation = [],z=[];
 		activation.push(input);
 		for(var i=1; i<this.lyrs_count; i++){
 			var part_act = [],z_min = [];
 			for(var j=0; j<this.net_config[i]; j++){
 				part_act.push(sigmoid_function(z_min[j] = weighted_input(this.weights[i-1],activation[i-1],this.biases[i-1],j)));
-        console.log(`z for layer ${i} neuron ${j} : ` + z_min[j]);
 			}
 			activation.push(part_act);
 			z.push(z_min);
@@ -80,9 +78,6 @@ class Network{
 					i =0;
 				}
 				var delw = delW_B[0], delb = delW_B[1];
-        delw.forEach((i)=>{i.array.forEach((j)=>{console.log(j);});});
-        delb.forEach((i)=>{console.log(i.array);});
-
 				/* updation of weights and biases by Stochastic Gradient Descent */
 
 				for(var l=1; l<this.lyrs_count; l++){
@@ -113,37 +108,26 @@ class Network{
 		this.Z[ip_num][this.lyrs_count-2].forEach((i)=>{sig_.push(sigma_dash(i));});
 		/* this.Z[ip_num][this.lyrs_count-1] was undefined because we're just storing lyrs_count - 1 lyrs in Z as the input lyr 
 		doesn't have weights and biases */
-		console.log("sigma_ = "+ sig_ + ", wts = " + this.weights[this.lyrs_count-2].array);
 		var gradC = cost_grad.call(this,this.activations[ip_num][this.lyrs_count-1],this.labels[ip_num]);
-		console.log("gradC = " + gradC + "type of gradC = " + typeof gradC);
 		let opdel = product(sig_,gradC);
-		console.log(opdel);
 		del[this.lyrs_count-1] = opdel;
 		/* backpropagating */
 		for(let i = this.lyrs_count-2; i>=1; i--){
-			console.log(`lyr no :: ${i}`);
-			console.log("z = " ,this.Z[ip_num][i-1]);
-			console.log(del[i+1] + "type of del = " + typeof del[i+1]);
 			var ele = del[i+1];
 			if(del[i+1].length == 1){
-				console.log("del for last layer = " + del[i+1][0]);
 				ele = del[i+1][0];
 			}
-			console.log(ele);
-			console.log("wts = "+ this.weights[i].array);
-			var partErr = product(this.weights[i].array,ele);
-			console.log("partErr = " + partErr + "z = " + this.Z[ip_num][i-1]);
+			var partErr = product(this.weights[i-1].array,ele);
 			let err = product(partErr,this.Z[ip_num][i-1]);  /* error : del contains only 1 element at the stage for 
 			calculating the error for the second last layer thus del[i+1] i.e., del[2] will be undefined */
 			del[i] = err;
-			console.log(`del for ${i} lyr : ` + del[i]);
 			/* equivalent to nw = 0 (initially), nb = 0 (initially),
 			   now we set nw = a.del, nb = del; (for ith layer) 
 			*/
     }
     
     for(var i=1; i<this.lyrs_count; i++){
-      nw[i-1].arrange(product(this.activations[ip_num][i-1],del[i])); 
+      nw[i-1].arrange(product(this.activations[ip_num][i-1],del[i-1])); 
 			nb[i-1].arrange(del[i]);
 		}
 		delW_B[0] = nw;
