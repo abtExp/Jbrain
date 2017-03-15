@@ -79,10 +79,15 @@ class Network{
 				}
 				var delw = delW_B[0], delb = delW_B[1];
 				/* updation of weights and biases by Stochastic Gradient Descent */
+				for(var nl =1; nl<this.lyrs_count; nl++){
+					delw[nl-1].arrange(product(delw[nl-1].flat,(-(neta/m))));
+					delb[nl-1].arrange(product(delb[nl-1].flat,(-(neta/m))));
+				}
 
+				/* updating the weights */
 				for(var l=1; l<this.lyrs_count; l++){
-					this.weights[l-1].arrange(sum(this.weights[l-1].flat,product(delw[l-1],(-(neta/m)))));
-					this.biases[l-1].arrange(sum(this.biases[l-1].flat,product(delb[l-1],(-(neta/m)))));
+					this.weights[l-1].arrange(Vector.Sum(this.weights[l-1],delw[l-1]));
+					this.biases[l-1].arrange(Vector.Sum(this.biases[l-1],delb[l-1]));
 				}
 				j++;
 			}
@@ -127,9 +132,11 @@ class Network{
     }
     
     for(var i=1; i<this.lyrs_count; i++){
-      nw[i-1].arrange(product(this.activations[ip_num][i-1],del[i-1])); 
-			nb[i-1].arrange(del[i]);
+		for(var j=0; j<this.net_config[i]; j++){
+			  nw[i-1].array[j] = (product(this.activations[ip_num][i-1],del[i-1][j])); 
+			  nb[i-1].array[j] = del[i-1][j];
 		}
+	}
 		delW_B[0] = nw;
 		delW_B[1] = nb;
 		return delW_B;
