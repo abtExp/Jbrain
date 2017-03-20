@@ -9,7 +9,7 @@
  *
  */
 
-import Vector from '../helper/Ndime';
+import Vector from 'Vector'
 
 /* define a network with net_config representing each layer with the number of 
  * neurons in them : net_config is an array, the length of the array determines the 
@@ -25,8 +25,8 @@ class Network{
 		this.biases = [];
 		this.Z = [];
 		for(var i=1; i<this.lyrs_count; i++){
-			this.weights.push(new lyr(this.net_config[i],this.net_config[i-1]));
-			this.biases.push(new lyr(this.net_config[i]));
+			this.weights.push(lyr(this.net_config[i],this.net_config[i-1]));
+			this.biases.push(lyr(this.net_config[i]));
 		}
 	}
 	
@@ -38,8 +38,7 @@ class Network{
 		this.activations = [];
 		/*this.cost = Cost.cost;*/
 		/* for each input we find the activations and store them in an array */
-    var no=0;
-		this.input.forEach((i)=>{this.activations.push(this.feed_forward(i,no++));});
+		this.input.forEach((i)=>{this.activations.push(this.feed_forward(i));});
 		this.SGD(neta,epoch,m);
 		/* this.evaluate(); */
 	}
@@ -49,10 +48,11 @@ class Network{
 	 * each neuron for a given input data.
 	 */
 
-	feed_forward(input,k){
+	feed_forward(input){
 		var activation = [],z=[];
 		activation.push(input);
 		for(var i=1; i<this.lyrs_count; i++){
+			console.log(`Layer No.: ${i}`);
 			var part_act = [],z_min = [];
 			for(var j=0; j<this.net_config[i]; j++){
 				part_act.push(sigmoid_function(z_min[j] = weighted_input(this.weights[i-1],activation[i-1],this.biases[i-1],j)));
@@ -69,7 +69,9 @@ class Network{
 	 */
 
 	SGD(neta,epoch,m){   
+		var n = epoch;
 		while(epoch > 0){
+			console.log(`Epoch ${n-epoch}`);
 			var i = Math.round(Math.random()*(this.input.length-1));
 			var j = 0 ;
 			while(j<m){
@@ -79,6 +81,7 @@ class Network{
 				}
 				var delw = delW_B[0], delb = delW_B[1];
 				/* updation of weights and biases by Stochastic Gradient Descent */
+
 				for(var nl =1; nl<this.lyrs_count; nl++){
 					delw[nl-1].arrange(product(delw[nl-1].flat,(-(neta/m))));
 					delb[nl-1].arrange(product(delb[nl-1].flat,(-(neta/m))));
@@ -86,8 +89,8 @@ class Network{
 
 				/* updating the weights */
 				for(var l=1; l<this.lyrs_count; l++){
-					this.weights[l-1].arrange(Vector.Sum(this.weights[l-1],delw[l-1]));
-					this.biases[l-1].arrange(Vector.Sum(this.biases[l-1],delb[l-1]));
+					this.weights[l-1].arrange(Vector.add(this.weights[l-1],delw[l-1]));
+					this.biases[l-1].arrange(Vector.add(this.biases[l-1],delb[l-1]));
 				}
 				j++;
 			}
@@ -102,7 +105,7 @@ class Network{
 	backprop(ip_num){
 		let nw = [],nb = [];
 		let delW_B = []; 
-    for(let i=1; i<this.lyrs_count; i++){
+   		for(let i=1; i<this.lyrs_count; i++){
 			nw.push(Vector.zeroes(this.weights[i-1].shape));
 			nb.push(Vector.zeroes(this.biases[i-1].shape));
 		}	
@@ -115,6 +118,7 @@ class Network{
 		doesn't have weights and biases */
 		var gradC = cost_grad.call(this,this.activations[ip_num][this.lyrs_count-1],this.labels[ip_num]);
 		let opdel = product(sig_,gradC);
+		console.log(`Output Error Terms = ${opdel}`);
 		del[this.lyrs_count-1] = opdel;
 		/* backpropagating */
 		for(let i = this.lyrs_count-2; i>=1; i--){
@@ -125,6 +129,7 @@ class Network{
 			var partErr = product(this.weights[i-1].array,ele);
 			let err = product(partErr,this.Z[ip_num][i-1]);  /* error : del contains only 1 element at the stage for 
 			calculating the error for the second last layer thus del[i+1] i.e., del[2] will be undefined */
+			console.log(`Error terms in layer ${i} = ${err}`);
 			del[i] = err;
 			/* equivalent to nw = 0 (initially), nb = 0 (initially),
 			   now we set nw = a.del, nb = del; (for ith layer) 
@@ -133,8 +138,8 @@ class Network{
     
     for(var i=1; i<this.lyrs_count; i++){
 		for(var j=0; j<this.net_config[i]; j++){
-			  nw[i-1].array[j] = (product(this.activations[ip_num][i-1],del[i-1][j])); 
-			  nb[i-1].array[j] = del[i-1][j];
+			  nw[i-1].array[j] = (product(this.activations[ip_num][i-1],del[i][j])); 
+			  nb[i-1].array[j] = del[i][j];
 		}
 	}
 		delW_B[0] = nw;
@@ -186,6 +191,7 @@ function sigmoid_function(z){
 
 function weighted_input(w,x,b,j){
 	let z =  sum(product(w.array[j],x)) + b.array[j];
+	console.log(`z for ${j}th neuron is ${z}`);
 	return z;
 }
 
