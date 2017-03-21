@@ -118,7 +118,6 @@ class Network{
 		doesn't have weights and biases */
 		var gradC = cost_grad.call(this,this.activations[ip_num][this.lyrs_count-1],this.labels[ip_num]);
 		let opdel = product(sig_,gradC);
-		console.log(`Output Error Terms = ${opdel}`);
 		del[this.lyrs_count-1] = opdel;
 		/* backpropagating */
 		for(let i = this.lyrs_count-2; i>=1; i--){
@@ -127,7 +126,12 @@ class Network{
 				ele = del[i+1][0];
 			}
 			var partErr = product(this.weights[i-1].array,ele);
-			let err = product(partErr,this.Z[ip_num][i-1]);  /* error : del contains only 1 element at the stage for 
+      console.log(`weights for layer ${i} = ${this.weights[i-1].array}`);
+      console.log(`delta for l+1 layer = ${ele}`);
+      console.log(`w(l+1).del(l+1) = ${partErr}`);
+			let err = product(partErr,this.Z[ip_num][i-1]);
+      console.log(`partErr.sigma'(z(l)) = ${err}`);
+      /* error : del contains only 1 element at the stage for 
 			calculating the error for the second last layer thus del[i+1] i.e., del[2] will be undefined */
 			console.log(`Error terms in layer ${i} = ${err}`);
 			del[i] = err;
