@@ -88,7 +88,8 @@ class Network{
 				}
 				var delw = delW_B[0], delb = delW_B[1];
 				/* updation of weights and biases by Stochastic Gradient Descent */
-
+				
+				/* Run the Vector.flatten method here before multiplying as the delw and delb have initialised flat arr as 0 arrs. */
 				for(var nl =1; nl<this.lyrs_count; nl++){
 					delw[nl-1].arrange(product(delw[nl-1].flat,(-(neta/m))));
 					delb[nl-1].arrange(product(delb[nl-1].flat,(-(neta/m))));
