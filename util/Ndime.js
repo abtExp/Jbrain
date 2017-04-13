@@ -274,4 +274,10 @@ function sum(arr1,arr2){
 	}
 }
 
-export default Vector
+var vect_obj = {
+	sum : sum,
+	product : product,
+	Vector : Vector
+};
+
+module.exports = vect_obj;

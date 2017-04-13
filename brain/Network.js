@@ -9,14 +9,14 @@
  *
  */
 
-import Vector from 'Vector';
-import net_util from 'net_util';
+/* Browser support not available 
+ * import Vector from 'Vector';
+ * import net_util from 'net_util';
+ */
 
-var net_util;
+var net_util = require('net_util');
+var vect = require('vect_obj');
 
-if(module){
-	net_util = require('net_util');
-}
 
 /* define a network with net_config representing each layer with the number of 
  * neurons in them : net_config is an array, the length of the array determines the 
@@ -32,8 +32,8 @@ class Network{
 		this.biases = [];
 		this.Z = [];
 		for(var i=1; i<this.lyrs_count; i++){
-			this.weights.push(lyr(this.net_config[i],this.net_config[i-1]));
-			this.biases.push(lyr(this.net_config[i]));
+			this.weights.push(net_util.lyr(this.net_config[i],this.net_config[i-1]));
+			this.biases.push(net_util.lyr(this.net_config[i]));
 		}
 	}
 	
@@ -62,7 +62,7 @@ class Network{
 			console.log(`Layer No.: ${i}`);
 			var part_act = [],z_min = [];
 			for(var j=0; j<this.net_config[i]; j++){
-				part_act.push(sigmoid_function(z_min[j] = weighted_input(this.weights[i-1],activation[i-1],this.biases[i-1],j)));
+				part_act.push(net_util.sigmoid_function(z_min[j] = net_util.weighted_input(this.weights[i-1],activation[i-1],this.biases[i-1],j)));
 			}
 			activation.push(part_act);
 			z.push(z_min);
@@ -88,8 +88,7 @@ class Network{
 				}
 				var delw = delW_B[0], delb = delW_B[1];
 				/* updation of weights and biases by Stochastic Gradient Descent */
-				
-				/* Run the Vector.flatten method here before multiplying as the delw and delb have initialised flat arr as 0 arrs. */
+
 				for(var nl =1; nl<this.lyrs_count; nl++){
 					delw[nl-1].arrange(product(delw[nl-1].flat,(-(neta/m))));
 					delb[nl-1].arrange(product(delb[nl-1].flat,(-(neta/m))));
@@ -97,8 +96,8 @@ class Network{
 
 				/* updating the weights */
 				for(var l=1; l<this.lyrs_count; l++){
-					this.weights[l-1].arrange(Vector.add(this.weights[l-1],delw[l-1]));
-					this.biases[l-1].arrange(Vector.add(this.biases[l-1],delb[l-1]));
+					this.weights[l-1].arrange(vect.Vector.add(this.weights[l-1],delw[l-1]));
+					this.biases[l-1].arrange(vect.Vector.add(this.biases[l-1],delb[l-1]));
 				}
 				j++;
 			}
@@ -114,18 +113,18 @@ class Network{
 		let nw = [],nb = [];
 		let delW_B = []; 
    		for(let i=1; i<this.lyrs_count; i++){
-			nw.push(Vector.zeroes(this.weights[i-1].shape));
-			nb.push(Vector.zeroes(this.biases[i-1].shape));
+			nw.push(vect.Vector.zeroes(this.weights[i-1].shape));
+			nb.push(vect.Vector.zeroes(this.biases[i-1].shape));
 		}	
 
 		/* calculating the error in the output layer */
 		let del = [];
 		let sig_ = [];
-		this.Z[ip_num][this.lyrs_count-2].forEach((i)=>{sig_.push(sigma_dash(i));});
+		this.Z[ip_num][this.lyrs_count-2].forEach((i)=>{sig_.push(net_util.sigma_dash(i));});
 		/* this.Z[ip_num][this.lyrs_count-1] was undefined because we're just storing lyrs_count - 1 lyrs in Z as the input lyr 
 		doesn't have weights and biases */
-		var gradC = cost_grad.call(this,this.activations[ip_num][this.lyrs_count-1],this.labels[ip_num]);
-		let opdel = product(sig_,gradC);
+		var gradC = net_util.cost_grad(this.activations[ip_num][this.lyrs_count-1],this.labels[ip_num]);
+		let opdel = vect.product(sig_,gradC);
 		del[this.lyrs_count-1] = opdel;
 		/* backpropagating */
 		for(let i = this.lyrs_count-2; i>=1; i--){
@@ -133,11 +132,11 @@ class Network{
 			if(del[i+1].length == 1){
 				ele = del[i+1][0];
 			}
-			var partErr = product(this.weights[i-1].array,ele);
+			var partErr = vect.product(this.weights[i-1].array,ele);
 			console.log(`weights for layer ${i} = ${this.weights[i-1].array}`);
 			console.log(`delta for l+1 layer = ${ele}`);
 			console.log(`w(l+1).del(l+1) = ${partErr}`);
-			let err = product(partErr,this.Z[ip_num][i-1]);
+			let err = vect.product(partErr,this.Z[ip_num][i-1]);
       		console.log(`partErr.sigma'(z(l)) = ${err}`);
       		/* error : del contains only 1 element at the stage for 
 			calculating the error for the second last layer thus del[i+1] i.e., del[2] will be undefined */
@@ -150,7 +149,7 @@ class Network{
     
     for(var i=1; i<this.lyrs_count; i++){
 		for(var j=0; j<this.net_config[i]; j++){
-			  nw[i-1].array[j] = (product(this.activations[ip_num][i-1],del[i][j])); 
+			  nw[i-1].array[j] = (vect.product(this.activations[ip_num][i-1],del[i][j])); 
 			  nb[i-1].array[j] = del[i][j];
 		}
 	}
@@ -166,65 +165,8 @@ class Network{
 
 }
 
-/* defines each layer's weight and biases, if two parameters are provided weights are
- * returned else biases.
- */
-function lyr(neuron_count,ip_wts,fill_style=1){
-	var v;
-	if(!ip_wts){
-		if(fill_style === 1){
-			v = new Vector([neuron_count]);
-			v.array = Vector.fill(neuron_count);
-		}
-		else{
-			v = Vector.zeroes([neuron_count]);
-		}
-	}
-	else{
-		if(fill_style === 1){
-			v = new Vector([neuron_count,ip_wts]);
-			v.arrange();
-		}
-		else{
-			v = Vector.zeroes([neuron_count,ip_wts]);
-		}
-	}
-	return v;
-}
-	
-
-/* sigmoid_function : performs the sigmoid activation function */
-
-function sigmoid_function(z){
-	return (1/1+(Math.exp(-z)));
-}
-
-/* weighted_input : calculates sigma(w*x) + b */
-
-function weighted_input(w,x,b,j){
-	let z =  sum(product(w.array[j],x)) + b.array[j];
-	console.log(`z for ${j}th neuron is ${z}`);
-	return z;
-}
-
-/* cost_grad : returns gradC wrt activ */
-
-function cost_grad(a,y){
-	for(var i=0; i<y.length; i++){
-		y[i] = -y[i];
-	}
-	var gradC = sum(a,y);
-	return gradC;
-}
-
-/* sigma_dash : returns the sigma' for calculating the errors. */
-
-function sigma_dash(z){
-	return (sigmoid_function(z)*(1-(sigmoid_function(z))));
-}
-
 (()=>{
-	if(module){
+	if(typeof module!= undefined){
 		module.exports = Network;
 	}
 })();
