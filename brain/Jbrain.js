@@ -1,12 +1,12 @@
-import Network from 'Network';
-import svm from 'SVM';
-import naive_bayes from 'nb';
+// import Network from 'Network';
+// import svm from 'SVM';
+// import naive_bayes from 'nb';
 
 (()=>{
     if(module){
-        Network = require('Network');
-        svm = require('svm');
-        naive_bayes = require('nb');
+        var Network = require('Network');
+        var svm = require('svm');
+        var naive_bayes = require('nb');
     }
 })()
 
@@ -20,4 +20,4 @@ if(module){
     module.exports = Jbrain;
 }
 
-export default Jbrain;
+// export default Jbrain;
