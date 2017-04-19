@@ -2,13 +2,9 @@
 // import svm from 'SVM';
 // import naive_bayes from 'nb';
 
-(()=>{
-    if(module){
-        var Network = require('Network');
-        var svm = require('svm');
-        var naive_bayes = require('nb');
-    }
-})()
+Network = require('/Network');
+svm = require('/svm');
+naive_bayes = require('/nb');
 
 var Jbrain = {
     Network : Network,
@@ -16,8 +12,6 @@ var Jbrain = {
     nb : naive_bayes
 };
 
-if(module){
-    module.exports = Jbrain;
-}
+module.exports = Jbrain;
 
 // export default Jbrain;

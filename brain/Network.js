@@ -14,8 +14,8 @@
  * import net_util from 'net_util';
  */
 
-var net_util = require('net_util');
-var vect = require('vect_obj');
+var net_util = require('/net_util');
+var vect = require('vector_js');
 
 
 /* define a network with net_config representing each layer with the number of 
@@ -165,8 +165,4 @@ class Network{
 
 }
 
-(()=>{
-	if(typeof module!= undefined){
-		module.exports = Network;
-	}
-})();
+module.exports = Network;
