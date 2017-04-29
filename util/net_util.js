@@ -29,14 +29,32 @@ function lyr(neuron_count,ip_wts,fill_style=1){
 /* sigmoid_function : performs the sigmoid activation function */
 
 function sigmoid_function(z){
-	return (1/1+(Math.exp(-z)));
+	if(!Array.isArray(z)){
+		return (1/1+(Math.exp(-z)));
+	}
+	else{
+		var wip = [];
+		z.forEach((i)=>{
+			wip.push((1/(1+(Math.exp(-i)))));
+		});
+
+		return wip;
+	}
 }
 
 /* weighted_input : calculates sigma(w*x) + b */
 
-function weighted_input(w,x,b,j){
-	let z =  vect.sum(vect.product(w.array[j],x)) + b.array[j];
-	console.log(`z for ${j}th neuron is ${z}`);
+function weighted_input(w,x,b){
+// 	console.log(`w = ${w}`);
+// 	console.log(`x = ${x}`);
+// 	console.log(`b = ${b}`);
+// 	console.log(product(w,x));
+	var wa = vect.product(w,x);
+// 	console.log(`w.x = ${wa}`);
+// 	console.log(`sigma w.x = ${sum(wa)}`);
+	let z =  vect.sum(sum(wa), b);
+// 	console.log("! " + z);
+// 	console.log(`z for ${j}th neuron is ${z}`);
 	return z;
 }
 
@@ -56,12 +74,18 @@ function sigma_dash(z){
 	return (sigmoid_function(z)*(1-(sigmoid_function(z))));
 }
 
+function shuffle(input,mini_batch_size){
+	//TODO
+	
+}
+
 var net_util = {
     lyr : lyr,
     sigma_dash : sigma_dash,
     sigmoid_function : sigmoid_function,
     weighted_input : weighted_input,
-    cost_grad : cost_grad
+    cost_grad : cost_grad,
+	shuffle : shuffle
 };
 
 

@@ -14,7 +14,7 @@
  * import net_util from 'net_util';
  */
 
-var net_util = require('/net_util');
+var net_util = require('./util/net_util');
 var vect = require('vector_js');
 
 
@@ -39,7 +39,7 @@ class Network{
 	
 	/* fit : method to optimise weights and biases by passing in the training_Data */
 
-	fit(train_features, train_labels, neta=0.5, epoch=400, m=10/*, cost=cross_entropy*/){
+	fit(train_features, train_labels, neta=0.5, epoch=40, m=10/*, cost=cross_entropy*/){
 		this.input = train_features;
 		this.labels = train_labels;
 		this.activations = [];
@@ -90,14 +90,14 @@ class Network{
 				/* updation of weights and biases by Stochastic Gradient Descent */
 
 				for(var nl =1; nl<this.lyrs_count; nl++){
-					delw[nl-1].arrange(product(delw[nl-1].flat,(-(neta/m))));
-					delb[nl-1].arrange(product(delb[nl-1].flat,(-(neta/m))));
+					delw[nl-1].arrange(vect.product(delw[nl-1].flat,(-(neta/m))));
+					delb[nl-1].arrange(vect.product(delb[nl-1].flat,(-(neta/m))));
 				}
 
 				/* updating the weights */
 				for(var l=1; l<this.lyrs_count; l++){
-					this.weights[l-1].arrange(vect.Vector.add(this.weights[l-1],delw[l-1]));
-					this.biases[l-1].arrange(vect.Vector.add(this.biases[l-1],delb[l-1]));
+					this.weights[l-1].arrange(vect.Vector.add(this.weights[l-1],delw[l-1]).flat);
+					this.biases[l-1].arrange(vect.Vector.add(this.biases[l-1],delb[l-1]).flat);
 				}
 				j++;
 			}
@@ -133,6 +133,7 @@ class Network{
 				ele = del[i+1][0];
 			}
 			var partErr = vect.product(this.weights[i-1].array,ele);
+			/* Error Here */
 			console.log(`weights for layer ${i} = ${this.weights[i-1].array}`);
 			console.log(`delta for l+1 layer = ${ele}`);
 			console.log(`w(l+1).del(l+1) = ${partErr}`);
@@ -146,20 +147,25 @@ class Network{
 			   now we set nw = a.del, nb = del; (for ith layer) 
 			*/
     }
-    
-    for(var i=1; i<this.lyrs_count; i++){
+
+	for(var i=1; i<this.lyrs_count; i++){
 		for(var j=0; j<this.net_config[i]; j++){
 			  nw[i-1].array[j] = (vect.product(this.activations[ip_num][i-1],del[i][j])); 
 			  nb[i-1].array[j] = del[i][j];
 		}
+		nw[i-1].flat = [];
+		nb[i-1].flat = [];
+		nw[i-1].flatten(nw[i-1].array);
+		nb[i-1].flatten(nb[i-1].array);
 	}
+
 		delW_B[0] = nw;
 		delW_B[1] = nb;
 		return delW_B;
 	}
 
 	predict(test_features){
-		var res = this.feed_forward(test_features,0);
+		var res = this.feed_forward(test_features);
 		return res[this.lyrs_count-1];
 	}
 

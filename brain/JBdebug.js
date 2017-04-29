@@ -208,7 +208,7 @@ class Vector{
 
 /* some generic array methods */
 function product(arr1,arr2){
-	console.log(`arg1 = ${arr1}, arg2 = ${arr2}`);
+// 	console.log(`arg1 = ${arr1}, arg2 = ${arr2}`);
 	var i;
 	var prod;
 	if(Array.isArray(arr2)){
@@ -240,7 +240,7 @@ function product(arr1,arr2){
 		})
 	}
 
-	console.log(`product = ${prod}`);
+// 	console.log(`product = ${prod}`);
 	return prod;
 }
 
@@ -339,7 +339,7 @@ class Network{
 		var activation = [],z=[];
 		activation.push(input);
 		for(var i=1; i<this.lyrs_count; i++){
-			console.log(`Layer No.: ${i}`);
+// 			console.log(`Layer No.: ${i}`);
 			var part_act = [],z_min = [];
 			for(var j=0; j<this.net_config[i]; j++){
 				part_act.push(sigmoid_function(z_min[j] = weighted_input(this.weights[i-1],activation[i-1],this.biases[i-1],j)));
@@ -358,7 +358,7 @@ class Network{
 	SGD(neta,epoch,m){
 		var n = epoch;
 		while(epoch > 0){
-			console.log(`Epoch ${n-epoch}`);
+// 			console.log(`Epoch ${n-epoch}`);
 			var i = Math.round(Math.random()*(this.input.length-1));
 			var j = 0 ;
 			while(j<m){
@@ -369,27 +369,27 @@ class Network{
 				}
 				var delw = delW_B[0], delb = delW_B[1];
 				/* updation of weights and biases by Stochastic Gradient Descent */
-				console.log(`delw after backprop = ${delw[0].array}`);
+// 				console.log(`delw after backprop = ${delw[0].array}`);
 
 				for(var nl=1; nl<this.lyrs_count; nl++){
-					console.log(`delw just before sgd = ${delw[nl-1].array}`);
-					console.log(`delw.flat = ${delw[nl-1].flat}`);
-					console.log(`neta/m = ${-(neta/m)}`);
-					console.log(`product with neta/m =  ${product(delw[nl-1].flat,(-neta/m))}`);
+// 					console.log(`delw just before sgd = ${delw[nl-1].array}`);
+// 					console.log(`delw.flat = ${delw[nl-1].flat}`);
+// 					console.log(`neta/m = ${-(neta/m)}`);
+// 					console.log(`product with neta/m =  ${product(delw[nl-1].flat,(-neta/m))}`);
 					delw[nl-1].arrange(product(delw[nl-1].flat,(-(neta/m))));
-					console.log(`delw just after sgd = ${delw[nl-1].array}`);
+// 					console.log(`delw just after sgd = ${delw[nl-1].array}`);
 					delb[nl-1].arrange(product(delb[nl-1].flat,(-(neta/m))));
 				}
 
-				console.log(`delw after SGD = ${delw[0].array}`);
+// 				console.log(`delw after SGD = ${delw[0].array}`);
 
 				/* updating the weights */
 				for(var l=1; l<this.lyrs_count; l++){
-					console.log(`delw = ${delw[l-1].array}`);
-					console.log(`delw.shape = ${delw[l-1].shape} , w.shape = ${this.weights[l-1].shape}`);
+// 					console.log(`delw = ${delw[l-1].array}`);
+// 					console.log(`delw.shape = ${delw[l-1].shape} , w.shape = ${this.weights[l-1].shape}`);
 					this.weights[l-1].arrange(Vector.add(this.weights[l-1],delw[l-1]));
 					this.biases[l-1].arrange(Vector.add(this.biases[l-1],delb[l-1]));
-					console.log(`weights after update = ${this.weights[l-1].array}`);
+// 					console.log(`weights after update = ${this.weights[l-1].array}`);
 				}
 				j++;
 			}
@@ -425,14 +425,14 @@ class Network{
 				ele = del[i+1][0];
 			}
 			var partErr = product(this.weights[i-1].array,ele);
-			console.log(`weights for layer ${i} = ${this.weights[i-1].array}`);
-			console.log(`delta for l+1 layer = ${ele}`);
-			console.log(`w(l+1).del(l+1) = ${partErr}`);
+// 			console.log(`weights for layer ${i} = ${this.weights[i-1].array}`);
+// 			console.log(`delta for l+1 layer = ${ele}`);
+// 			console.log(`w(l+1).del(l+1) = ${partErr}`);
 			let err = product(partErr,this.Z[ip_num][i-1]);
-      		console.log(`partErr.sigma'(z(l)) = ${err}`);
+//       		console.log(`partErr.sigma'(z(l)) = ${err}`);
       		/* error : del contains only 1 element at the stage for
 			calculating the error for the second last layer thus del[i+1] i.e., del[2] will be undefined */
-			console.log(`Error terms in layer ${i} = ${err}`);
+// 			console.log(`Error terms in layer ${i} = ${err}`);
 			del[i] = err;
 			/* equivalent to nw = 0 (initially), nb = 0 (initially),
 			   now we set nw = a.del, nb = del; (for ith layer)
@@ -441,10 +441,22 @@ class Network{
 
     for(var i=1; i<this.lyrs_count; i++){
 		for(var j=0; j<this.net_config[i]; j++){
+        console.log("activ = " + this.activations[ip_num][i-1]);
+        console.log("del = " + del[i][j]);
 			  nw[i-1].array[j] = (product(this.activations[ip_num][i-1],del[i][j]));
+        console.log("** " + nw[i-1].array[j]);
 			  nb[i-1].array[j] = del[i][j];
 		}
+//       console.log(nw[i-1].array);
+//       console.log(nw[i-1].flat);
+      nw[i-1].flat = [];
+      nw[i-1].flatten(nw[i-1].array);
+      nb[i-1].flat = [];
+      nb[i-1].flatten(nb[i-1].array);
+//       console.log(nw[i-1].flat);
+//       console.log(nb[i-1].flat);
 	}
+
 		delW_B[0] = nw;
 		delW_B[1] = nb;
 		return delW_B;
@@ -494,7 +506,7 @@ function sigmoid_function(z){
 
 function weighted_input(w,x,b,j){
 	let z =  sum(product(w.array[j],x)) + b.array[j];
-	console.log(`z for ${j}th neuron is ${z}`);
+// 	console.log(`z for ${j}th neuron is ${z}`);
 	return z;
 }
 
@@ -524,7 +536,7 @@ function sigma_dash(z){
 
 var test_net = new Network([3,2,1]);
 var train_features = [[10,24,5],[15,20,6],[1,2,3]];
-var train_labels = [1,0,0];
+var train_labels = [1,1,0];
 test_net.fit(train_features,train_labels,0.5,10,2);
 /* default cost = cross-entropy */
 var pred = test_net.predict([10,8,2]);
