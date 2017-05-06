@@ -14,7 +14,7 @@ class Vector{
 		this.size = this.calc_size(this.shape);
 		this.dim = this.find_dim();
 		this.flat = [];
-		this.flatten(this.array);
+		Vector.flatten(this.array,this.flat);
 	}
 	
 	/* class specific (static) methods */
@@ -58,6 +58,19 @@ class Vector{
 		   return new Error("Unequal Size");
 	   }
    }
+
+   /* function to convert n-dimension array into 1-D array */
+
+	static flatten(arr,tarr){
+		for(var i of arr){
+			if(Array.isArray(i)){
+				this.flatten(i,tarr);
+			}
+			else{
+				tarr.push(i);
+			}
+	    }
+	}
 
 
    /* fills the vector acc to passed args */
@@ -132,19 +145,6 @@ class Vector{
 		return size;
 	}
 
-	/* function to convert n-dimension array into 1-D array */
-
-	flatten(arr){
-		for(var i of arr){
-			if(Array.isArray(i)){
-				this.flatten(i);
-			}
-			else{
-				this.flat.push(i);
-			}
-	    }
-	}
-
   
 	/* a method to arrange or create a Vector from the given elements */
 	arrange(elems_arr){
@@ -172,7 +172,7 @@ class Vector{
 		}
 		this.array = final_arr;
 		this.flat = [];
-		this.flatten(this.array);
+		Vector.flatten(this.array,this.flat);
 	}
 
 	/* reshapes the vector only if for the new shape the number of elements remain same */

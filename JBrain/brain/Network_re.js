@@ -139,7 +139,8 @@ class Network{
             /* plus the activation for last hidden layer(in this case lyr having 2 neurons
             contains 2 elems, but the delta for the output layer is scalar, thus uneven size error)
             */
-            nw[i-1].arrange(vect.product(a[i-1],delta[i]));
+            var arr = [];
+            nw[i-1].arrange(vect.Vector.flatten(vect.product(a[i-1],delta[i]),arr));
             nb[i-1].arrange(delta[i])
         }
 
