@@ -132,16 +132,14 @@ class Network{
         }
 
         for(let i = 1; i<this.lyrs_count; i++){
-            /* Error here, product returns a 2-d arr of 2 elems having 3 elems each
-            arrange arranges these 2 arrays in 3 arrays in nb thus creating a 3-d array,
-            hence the updation is wrong */
-
             /* plus the activation for last hidden layer(in this case lyr having 2 neurons
             contains 2 elems, but the delta for the output layer is scalar, thus uneven size error)
             */
-            var arr = [];
-            nw[i-1].arrange(vect.Vector.flatten(vect.product(a[i-1],delta[i]),arr));
-            nb[i-1].arrange(delta[i])
+            var warr = [], barr = [];
+            vect.Vector.flatten(vect.product(a[i-1],delta[i-1]),arr);
+            vect.Vector.flatten(delta[i-1],barr);
+            nw[i-1].arrange(warr);
+            nb[i-1].arrange(barr);
         }
 
         return [nw,nb];      

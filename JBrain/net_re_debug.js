@@ -405,15 +405,19 @@ class Network{
 							return sigma_dash(i);
 						})
 					  delta[i-1] = product(part_act,sig_);
-					  console.log(delta[i-1]);
         }
 			
 
         for(let i = 1; i<this.lyrs_count; i++){
-					  var arr = [];
-					  Vector.flatten(product(delta[i-1],a[i-1]),arr);
-				    nw[i-1].arrange(arr);
-            nb[i-1].arrange(delta[i-1])
+					  var warr = [],barr = [];
+					  Vector.flatten(product(delta[i-1],a[i-1]),warr);
+					  Vector.flatten(delta[i-1],barr);
+					  console.log("delta[l+1].w[l+1].sigma_[l] : ");
+					  console.log(warr);
+				    nw[i-1].arrange(warr);
+            nb[i-1].arrange(barr);
+						console.log(nw[i-1]);
+					  console.log(nb[i-1]);
         }
 
         return [nw,nb];      
