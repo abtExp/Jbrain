@@ -1,0 +1,21 @@
+{
+  "name": "jbrain",
+  "version": "0.2.0",
+  "description": "Machine Learning...",
+  "main": "Jbrain",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "MachineLearning",
+    "NeuralNetworks",
+    "recurrent networks",
+    "convolution nets",
+    "deep learning."
+  ],
+  "author": "abt10 <atworkstudios@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "vector_js": "0.0.8"
+  }
+}
