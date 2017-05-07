@@ -51,7 +51,7 @@ class Network{
         this.activ_fn = activ_fn;
         this.cost_fn = cost_fn;
         /* optimise weights and biases for each input example x, by SGD using backprop */
-        this.SGD(epoch,neta,m,cost_fn);
+        this.SGD(neta,epoch,m,cost_fn);
     }
 
     /* Feed forward the activation of each layer as input to next layer 
