@@ -286,40 +286,54 @@ function product(arr1,arr2){
 }
 
 function sum(arr1,arr2){
-	var i=0;
 	var summ;
 	if(!Array.isArray(arr1) && !Array.isArray(arr2)){
-		return (arr1+arr2);
+		return arr1+arr2;
 	}
+	else{
 		if(!arr2){
-			if(Array.isArray(arr1[i])){
-				summ = [];
-				arr1.forEach((j)=>{
-					if(Array.isArray(j)){
-						summ.push(sum(j));
-					}
-				});
+			if(!arr2){
+			if(Array.isArray(arr1[0])){
+				summ = arr1.map((i)=>{
+					return sum(i);
+				})
+				return summ;
 			}
 			else{
-					summ = 0;
-					arr1.forEach((j)=>{
-						summ += j;
-					});
-				}
+				summ = 0;
+				arr1.forEach((i)=>{
+					summ += i;
+				})
+				return summ;
 			}
+		}
+		if(Array.isArray(arr1) && !Array.isArray(arr2)){
+			summ = [];
+			arr1.forEach((i)=>{
+				summ.push(i+arr2);
+			});
+		} 
+		else if(Array.isArray(arr2) && !Array.isArray(arr1)){
+			sum(arr2,arr1);
+		}
 		else{
 			if(arr1.length === arr2.length){
 				summ = [];
-				for(i=0; i<arr1.length; i++){
-					summ[i] = arr1[i] + arr2[i];
+				if(Array.isArray(arr1[0]) && Array.isArray(arr2[0])){
+					for(var i=0; i<arr1.length; i++){
+						summ.push(sum(arr1[i],arr2[i]));
+					}
+				}
+				else{
+					for(var i=0; i<arr1.length; i++){
+						summ.push(arr1[i] + arr2[i]);
+					}
 				}
 			}
-			else{
-				throw new Error("Uneven Size!");
-			}
 		}
-		return summ;
 	}
+	return summ;	
+}
 
 
 module.exports =  {

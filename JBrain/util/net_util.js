@@ -45,7 +45,9 @@ function sigmoid_function(z){
 
 function weighted_input(w,x,b){
 	var wa = vect.product(w,x);
-	let z =  vect.sum(vect.sum(wa), b);
+	var flb = [];
+	Vector.flatten(b,flb);
+	let z =  vect.sum(vect.sum(wa), flb);
 	return z;
 }
 

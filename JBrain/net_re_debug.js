@@ -268,41 +268,52 @@ function product(arr1,arr2){
 	return prod;
 }
 
+
 function sum(arr1,arr2){
-	var i=0;
-	var summ;
 	if(!Array.isArray(arr1) && !Array.isArray(arr2)){
-		return (arr1+arr2);
+		return arr1+arr2;
 	}
-		if(!arr2){
-			if(Array.isArray(arr1[i])){
-				summ = [];
-				arr1.forEach((j)=>{
-					if(Array.isArray(j)){
-						summ.push(sum(j));
-					}
-				});
-			}
-			else{
-					summ = 0;
-					arr1.forEach((j)=>{
-						summ += j;
-					});
-				}
-			}
+	var summ;
+	if(!arr2){
+		if(Array.isArray(arr1[0])){
+			summ = [];
+			arr1.forEach((j)=>{
+				summ.push(sum(j));
+			})
+			return summ;
+	  }
 		else{
-			if(arr1.length === arr2.length){
-				summ = [];
-				for(i=0; i<arr1.length; i++){
-					summ[i] = arr1[i] + arr2[i];
+			summ = 0;
+			arr1.forEach((j)=>{
+				summ += j;
+			})
+			return summ;
+		}	
+	}
+	
+	else{
+		summ = [];
+		if(arr1.length === arr2.length){
+			if(Array.isArray(arr1[0]) && Array.isArray(arr2[0])){
+				for(var i=0; i<arr1.length; i++){
+					summ.push(sum(arr1[i],arr2[i]));
+				}
+			}
+			else if(!Array.isArray(arr1[0]) && !Array.isArray(arr2[0])){
+				for(var i=0; i<arr1.length; i++){
+					summ.push((arr1[i]+arr2[i]));
 				}
 			}
 			else{
-				throw new Error("Uneven Size!");
+				throw new Error("Uneven dimensions!");
 			}
 		}
-		return summ;
+		else{
+			throw new Error("Uneven size");
+		}
 	}
+	return summ;
+}
 
 
 
@@ -328,7 +339,7 @@ class Network{
         this.activ_fn = activ_fn;
 //         this.cost_fn = cost_fn;
         /* optimise weights and biases for each input example x, by SGD using backprop */
-        this.SGD(epoch,neta,m/*cost_fn*/);
+        this.SGD(neta,epoch,m/*cost_fn*/);
     }
 
     /* Feed forward the activation of each layer as input to next layer 
@@ -355,7 +366,7 @@ class Network{
     SGD(neta,epoch,m/*cost_fn*/){
         var factor = -(neta/m);
         var x,y,delta_w,delta_b;
-        while(epoch){
+        while(epoch>0){
             [x,y] = shuffle(this.input,m,this.labels);
             for(let i=0; i<m; i++){
                 [delta_w,delta_b] =  this.backprop(x[i],y[i]);
@@ -410,22 +421,19 @@ class Network{
 
         for(let i = 1; i<this.lyrs_count; i++){
 					  var warr = [],barr = [];
-					  Vector.flatten(product(delta[i-1],a[i-1]),warr);
+					  var del = delta[i-1].length === 1 ? delta[i-1][0] : delta[i-1];
+					  Vector.flatten(product(del,a[i-1]),warr);
 					  Vector.flatten(delta[i-1],barr);
-					  console.log("delta[l+1].w[l+1].sigma_[l] : ");
-					  console.log(warr);
-				    nw[i-1].arrange(warr);
-            nb[i-1].arrange(barr);
-						console.log(nw[i-1]);
-					  console.log(nb[i-1]);
+				      nw[i-1].arrange(warr);
+            		  nb[i-1].arrange(barr);
         }
 
         return [nw,nb];      
     }
 
     predict(test_features){
-        var res = this.feed_forward(test_features);
-        return res[res.length-1];
+        var res = this.feed_forward(test_features,sigmoid_function);
+        return res[0][this.lyrs_count-1];
     }
 
     evaluate(prediction,test_labels){
@@ -436,16 +444,16 @@ class Network{
 
 function lyr(neuron_count,ip_wts,fill_style=1){
 	var v;
-	if(!ip_wts){
-		if(fill_style === 1){
+	if(!ip_wts){  //defining biases
+		if(fill_style === 1){  
 			v = new Vector([neuron_count]);
-			v.array = Vector.fill(neuron_count);
+			v.arrange();
 		}
 		else{
 			v = Vector.zeroes([neuron_count]);
 		}
 	}
-	else{
+	else{  //defining weights
 		if(fill_style === 1){
 			v = new Vector([neuron_count,ip_wts]);
 			v.arrange();
@@ -476,20 +484,16 @@ function sigmoid_function(z){
 /* weighted_input : calculates sigma(w*x) + b */
 
 function weighted_input(w,x,b){
-	console.log("calculating z for : ");
-	console.log(w);
-	console.log(x);
-	console.log(b);
 	var wa = product(w,x);
-	let z =  sum(sum(wa), b);
+	var flb = [];
+	Vector.flatten(b,flb);
+	let z =  sum(sum(wa), flb);
 	return z;
 }
 
 /* cost_grad : returns gradC wrt activ */
 
 function cost_grad(a,y){
-	console.log("Calculating gradient wrt : " + a + " & " + y );
-	console.log(Array.isArray(a) + " " + Array.isArray(y));
 	if(Array.isArray(y)){
 		for(var i=0; i<y.length; i++){
 			y[i] = -y[i];
@@ -521,9 +525,9 @@ function shuffle(input,mini_batch_size,labels){
 }
 
 var v = new Network([3,2,1]);
-var train_features = [[1,2,3],[0,0,1]];
-var train_labels = [1,0];
+var train_features = [[1,2,3],[0,0,1],[2,3,0],[1,0,1]];
+var train_labels = [1,0,1,0];
 
-v.fit(train_features,train_labels);
-var pred = v.predict([1,1,1]);
-console.log(pred);
+v.fit(train_features,train_labels,neta=0.5,epoch=2);
+var pred = v.predict([0,0,0]);
+console.log("Predicted Value : " + pred);
