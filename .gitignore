@@ -1,3 +1,6 @@
 node_modules
 net_re_debug.js
-test.js
+.codeclimate.yml
+_config.yml
+npm-debug.log
+webpack.config.js
