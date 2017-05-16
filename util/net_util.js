@@ -2,7 +2,7 @@ var vect = require('./vector_js');
 /* defines each layer's weight and biases, if two parameters are provided weights are
  * returned else biases.
  */
-function lyr(neuron_count,ip_wts,fill_style=1){
+function lyr(neuron_count,ip_wts, fill_style = 1){
 	var v;
 	if(!ip_wts){
 		if(fill_style === 1){
@@ -46,7 +46,7 @@ function sigmoid_function(z){
 function weighted_input(w,x,b){
 	var wa = vect.product(w,x);
 	var flb = [];
-	Vector.flatten(b,flb);
+	vect.Vector.flatten(b,flb);
 	let z =  vect.sum(vect.sum(wa), flb);
 	return z;
 }

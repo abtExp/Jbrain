@@ -292,7 +292,6 @@ function sum(arr1,arr2){
 	}
 	else{
 		if(!arr2){
-			if(!arr2){
 			if(Array.isArray(arr1[0])){
 				summ = arr1.map((i)=>{
 					return sum(i);
