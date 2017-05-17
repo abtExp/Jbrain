@@ -4,7 +4,7 @@
   "description": "Machine Learning library in JavaScript",
   "main": "Jbrain.js",
   "scripts": {
-    "build" : "webpack",
+    "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,5 +23,8 @@
   "homepage": "https://github.com/abt10/Jbrain#readme",
   "devDependencies": {
     "webpack": "^2.5.1"
+  },
+  "dependencies": {
+    "vector_js": "^0.1.2"
   }
 }

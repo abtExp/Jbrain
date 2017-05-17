@@ -1,4 +1,4 @@
-var vect = require('./vector_js');
+var vect = require('../node_modules/vector_js');
 /* defines each layer's weight and biases, if two parameters are provided weights are
  * returned else biases.
  */

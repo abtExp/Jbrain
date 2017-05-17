@@ -1,7 +1,8 @@
+const path = require('path');
 module.exports = {
-    entry : './Jbrain.js',
+    entry : 'D:/Jbrain/test.js',
     output :{
-        path : './build',
+        path : path.resolve(__dirname,'build'),
         filename : 'build.js'
     }
 };

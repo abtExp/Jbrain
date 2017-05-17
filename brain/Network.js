@@ -19,7 +19,7 @@ statements for if not in node environment
 var net_util = require('../util/net_util');
 var cost = require('../util/cost');
 var activ = require('../util/activ');
-var vect = require('../util/vector_js');
+var vect = require('../node_modules/vector_js');
 
 
 /* define a network with net_config representing each layer with the number of 
