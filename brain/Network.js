@@ -123,9 +123,7 @@ class Network{
         for(let i=this.lyrs_count-2; i>=1; i--){
             var ele = delta[i].length > 1 ? delta[i] : delta[i][0];
             var part_act = vect.product(this.weights[i-1].array,ele);
-            let sig_ = z[i-1].map((i)=>{
-                return sigma_dash(i);
-            })
+            let sig_ = z[i-1].map(i=>sigma_dash(i))
             delta[i-1] = vect.product(part_act,sig_);
         }
 
