@@ -416,7 +416,7 @@ Network = __webpack_require__(2);
 // conv_net = require('./brain/convnet');
 
 var Jbrain = {
-    Network : Network,
+    Network : Network//,
     // SVM : svm,
     // nb : naive_bayes,
     // conv_net : conv_net
