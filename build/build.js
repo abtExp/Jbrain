@@ -436,7 +436,6 @@ module.exports = Jbrain;
  *
  * Project Name : JBrain
  * Project Code Name : JSimpl
- * Version : 0.1.1
  * Author : Anubhav Tiwari <atworkstudios@gmail.com>
  *
  */
@@ -444,7 +443,7 @@ module.exports = Jbrain;
 /* Browser support not available , un-comment if using transpiler and comment require
 statements for if not in node environment
 
- * import Vector from 'Vector';
+ * import Vector from 'vector_js';
  * import net_util from 'net_util';
  */
 
@@ -477,7 +476,7 @@ class Network{
 
     /* Fit the Network (i.e., train) */
 
-    fit(train_features,train_labels,neta=0.5,epoch=10,m=2,cost_fn=cost.cross_entropy,activ_fn=activ.sigmoid){
+    fit({train_features,train_labels,neta=0.5,epoch=10,m=2,cost_fn=cost.cross_entropy,activ_fn=activ.sigmoid}){
         this.input = train_features;
         this.labels = train_labels;
         this.activ_fn = activ_fn;
@@ -557,9 +556,7 @@ class Network{
         for(let i=this.lyrs_count-2; i>=1; i--){
             var ele = delta[i].length > 1 ? delta[i] : delta[i][0];
             var part_act = vect.product(this.weights[i-1].array,ele);
-            let sig_ = z[i-1].map((i)=>{
-                return sigma_dash(i);
-            })
+            let sig_ = z[i-1].map(i=>sigma_dash(i))
             delta[i-1] = vect.product(part_act,sig_);
         }
 
@@ -598,10 +595,10 @@ var Jbrain = __webpack_require__(1);
 
 var net = new Jbrain.Network([3,2,1]);
 
-var train_features = [[1,2,3],[4,2,0]];
-var train_labels = [0,1];
+var train_features = [[1,2,3],[4,2,0],[0,0,0]];
+var train_labels = [0,1,0];
 
-net.fit(train_features,train_labels);
+net.fit({train_features,train_labels, epoch: 4});
 
 var predict = net.predict([2,1,0]);
 console.log(predict);
