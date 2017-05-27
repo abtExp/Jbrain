@@ -431,8 +431,7 @@ module.exports = Jbrain;
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* JBrain : The Brain of Jason , your SEO agent.
- * A neural network implementation in Javascript.
+/* JBrain : A neural network implementation in Javascript.
  *
  *
  * Project Name : JBrain

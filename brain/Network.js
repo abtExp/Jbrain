@@ -1,10 +1,8 @@
-/* JBrain : The Brain of Jason , your SEO agent.
- * A neural network implementation in Javascript.
+/* JBrain : A neural network implementation in Javascript.
  *
  *
  * Project Name : JBrain
  * Project Code Name : JSimpl
- * Version : 0.1.1
  * Author : Anubhav Tiwari <atworkstudios@gmail.com>
  *
  */
@@ -12,7 +10,7 @@
 /* Browser support not available , un-comment if using transpiler and comment require
 statements for if not in node environment
 
- * import Vector from 'Vector';
+ * import Vector from 'vector_js';
  * import net_util from 'net_util';
  */
 
@@ -45,7 +43,7 @@ class Network{
 
     /* Fit the Network (i.e., train) */
 
-    fit(train_features,train_labels,neta=0.5,epoch=10,m=2,cost_fn=cost.cross_entropy,activ_fn=activ.sigmoid){
+    fit({train_features,train_labels,neta=0.5,epoch=10,m=2,cost_fn=cost.cross_entropy,activ_fn=activ.sigmoid}){
         this.input = train_features;
         this.labels = train_labels;
         this.activ_fn = activ_fn;
