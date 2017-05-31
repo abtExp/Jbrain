@@ -5,7 +5,7 @@
   "main": "Jbrain.js",
   "scripts": {
     "build": "webpack",
-    "test": "test.js"
+    "test": "test"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,6 @@
     "webpack": "^2.5.1"
   },
   "dependencies": {
-    "vector_js": "^0.1.2"
+    "vecto": "^0.2.3"
   }
 }
