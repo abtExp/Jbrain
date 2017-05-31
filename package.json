@@ -25,6 +25,7 @@
     "webpack": "^2.5.1"
   },
   "dependencies": {
+    "eslint": "^3.19.0",
     "vecto": "^0.2.3"
   }
 }
