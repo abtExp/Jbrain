@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/abt10/Jbrain#readme",
   "devDependencies": {
-    "webpack": "^2.5.1"
+    "webpack": "^2.6.1"
   },
   "dependencies": {
     "eslint": "^3.19.0",

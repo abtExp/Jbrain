@@ -1,4 +1,4 @@
-const { Vector, sum, product } = require('../node_modules/vector_js');
+const { Vector, sum, product } = require('../node_modules/vecto');
 /* defines each layer's weight and biases, if two parameters are provided weights are
  * returned else biases.
  */
