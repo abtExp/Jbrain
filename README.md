@@ -1,7 +1,7 @@
 # Jbrain                    
 Neural network in javascript
 
-[![Code Climate](https://codeclimate.com/github/AbT10/Jbrain/badges/gpa.svg)](https://codeclimate.com/github/AbT10/Jbrain) | [![Build Status](https://travis-ci.org/AbT10/Jbrain.svg?branch=master)](https://travis-ci.org/AbT10/Jbrain) | [![npm version](https://badge.fury.io/js/jbrain.svg)](https://badge.fury.io/js/jbrain)
+[![Code Climate](https://codeclimate.com/github/AbT10/Jbrain/badges/gpa.svg)](https://codeclimate.com/github/AbT10/Jbrain) [![Build Status](https://travis-ci.org/AbT10/Jbrain.svg?branch=master)](https://travis-ci.org/AbT10/Jbrain)  [![npm version](https://badge.fury.io/js/jbrain.svg)](https://badge.fury.io/js/jbrain)
 
 Work in progress.
 
