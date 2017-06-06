@@ -8,13 +8,9 @@ Network = require('./brain/Network');
 // naive_bayes = require('./brain/nb');
 // conv_net = require('./brain/convnet');
 
-var Jbrain = {
-    Network : Network//,
-    // SVM : svm,
-    // nb : naive_bayes,
-    // conv_net : conv_net
-};
 
-module.exports = Jbrain;
+module.exports ={
+    Network : Network
+}
 
 // export default Jbrain;

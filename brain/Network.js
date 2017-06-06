@@ -11,10 +11,11 @@ statements for if not in node environment
  * import Vector from 'vector_js';
  * import net_util from 'net_util';
  */
-var net_util = require('../util/net_util');
-var cost = require('../util/cost');
-var activ = require('../util/activ');
-var vect = require('../node_modules/vecto');
+const { lyr,sigma_dash,sigmoid_function,
+		weighted_input,cost_grad,shuffle } = require('../util/net_util');
+const cost = require('../util/cost');
+const activ = require('../util/activ');
+const {Vector,sum,product} = require('../node_modules/vecto');
 
 
 /* define a network with net_config representing each layer with the number of 
@@ -33,8 +34,8 @@ class Network {
 
 		/* Random initialization of weights and biases */
 		for (let i = 1; i < this.lyrs_count; i++) {
-			this.weights.push(net_util.lyr(this.net_config[i], this.net_config[i - 1]));
-			this.biases.push(net_util.lyr(this.net_config[i]));
+			this.weights.push(lyr(this.net_config[i], this.net_config[i - 1]));
+			this.biases.push(lyr(this.net_config[i]));
 		}
 	}
 
@@ -53,11 +54,11 @@ class Network {
 	and recieve the output of final layer as network's output */
 
 	feed_forward(input, activ_fn) {
-		var activation = [];
-		var Z = [];
+		const activation = [];
+		const Z = [];
 		activation.push(input);
 		for (let i = 1; i < this.lyrs_count; i++) {
-			let z = net_util.weighted_input(this.weights[i - 1].array, activation[i - 1], this.biases[i - 1].array);
+			let z = weighted_input(this.weights[i - 1].array, activation[i - 1], this.biases[i - 1].array);
 			let activ = activ_fn(z);
 			activation.push(activ);
 			Z.push(z);
@@ -72,24 +73,24 @@ class Network {
 	*/
 
 	SGD(neta, epoch, m, cost_fn) {
-		var factor = -(neta / m);
-		var x, y, delta_w, delta_b;
+		const factor = -(neta / m);
+		let x, y, delta_w, delta_b;
 		while (epoch) {
-            [x, y] = net_util.shuffle(this.input, m, this.labels);
+            [x, y] = shuffle(this.input, m, this.labels);
 			for (let i = 0; i < m; i++) {
                 [delta_w, delta_b] = this.backprop(x[i], y[i]);
 				/* Optimising weights and biases by gradient descent */
 				for (let j = 1; j < this.lyrs_count; j++) {
-					delta_w[j - 1].arrange(vect.product(delta_w[j - 1].flat, factor));
-					delta_b[j - 1].arrange(vect.product(delta_b[j - 1].flat, factor));
+					delta_w[j - 1].arrange(product(delta_w[j - 1].flat, factor));
+					delta_b[j - 1].arrange(product(delta_b[j - 1].flat, factor));
 				}
 
 				/* Updating the weights and biases */
 
 				for (let j = 1; j < this.lyrs_count; j++) {
-					this.weights[j - 1].arrange(vect.Vector.add(this.weights[j - 1], delta_w[j - 1])
+					this.weights[j - 1].arrange(Vector.add(this.weights[j - 1], delta_w[j - 1])
 						.flat);
-					this.biases[j - 1].arrange(vect.Vector.add(this.biases[j - 1], delta_b[j - 1])
+					this.biases[j - 1].arrange(Vector.add(this.biases[j - 1], delta_b[j - 1])
 						.flat);
 				}
 			}
@@ -102,40 +103,40 @@ class Network {
 	*/
 
 	backprop(x, y) {
-		var nw = [],
+		let nw = [],
 			nb = [];
 		for (let i = 1; i < this.lyrs_count; i++) {
-			nw.push(vect.Vector.zeroes(this.weights[i - 1].shape));
-			nb.push(vect.Vector.zeroes(this.biases[i - 1].shape));
+			nw.push(Vector.zeroes(this.weights[i - 1].shape));
+			nb.push(Vector.zeroes(this.biases[i - 1].shape));
 		}
 
-		var a = [],
-			z = [];
-		var delta = [];
+		let a = [],
+			z = [],
+			delta = [];
         [a, z] = this.feed_forward(x, this.activ_fn);
-		var grad_c = net_util.cost_grad(a[this.lyrs_count - 1], y);
+		let grad_c = cost_grad(a[this.lyrs_count - 1], y);
 		let sig_ = z[this.lyrs_count - 1].map((i) => {
-			return net_util.sigma_dash(i);
+			return sigma_dash(i);
 		});
 
-		delta[this.lyrs_count - 2] = vect.product(sig_, grad_c);
+		delta[this.lyrs_count - 2] = product(sig_, grad_c);
 
 		/* Backpropagating */
 		for (let i = this.lyrs_count - 2; i >= 1; i--) {
-			var ele = delta[i].length > 1 ? delta[i] : delta[i][0];
-			var part_act = vect.product(this.weights[i - 1].array, ele);
+			let ele = delta[i].length > 1 ? delta[i] : delta[i][0];
+			let part_act = product(this.weights[i - 1].array, ele);
 			let sig_ = z[i - 1].map(i => sigma_dash(i))
-			delta[i - 1] = vect.product(part_act, sig_);
+			delta[i - 1] = product(part_act, sig_);
 		}
 
 		for (let i = 1; i < this.lyrs_count; i++) {
 			/* plus the activation for last hidden layer(in this case lyr having 2 neurons
 			contains 2 elems, but the delta for the output layer is scalar, thus uneven size error)
 			*/
-			var warr = [],
+			let warr = [],
 				barr = [];
-			vect.Vector.flatten(vect.product(a[i - 1], delta[i - 1]), arr);
-			vect.Vector.flatten(delta[i - 1], barr);
+			Vector.flatten(product(a[i - 1], delta[i - 1]), arr);
+			Vector.flatten(delta[i - 1], barr);
 			nw[i - 1].arrange(warr);
 			nb[i - 1].arrange(barr);
 		}
@@ -144,12 +145,12 @@ class Network {
 	}
 
 	predict(test_features) {
-		var res = this.feed_forward(test_features);
+		const res = this.feed_forward(test_features);
 		return res[res.length - 1];
 	}
 
 	evaluate(prediction, test_labels) {
-		return (vect.sum(test_labels, (-1 * (predictions))));
+		return (sum(test_labels, (-1 * (predictions))));
 	}
 }
 

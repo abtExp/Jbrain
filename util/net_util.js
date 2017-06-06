@@ -22,21 +22,6 @@ function lyr(neuron_count, ip_wts, fill_style = 1) {
     return v;
 }
 
-
-/* sigmoid_function : performs the sigmoid activation function */
-
-function sigmoid_function(z) {
-    if (!Array.isArray(z)) {
-        return (1 / 1 + (Math.exp(-z)));
-    } else {
-        var wip = z.map((i) => {
-            return (1 / (1 + (Math.exp(-i))));
-        });
-
-        return wip;
-    }
-}
-
 /* weighted_input : calculates sigma(w*x) + b */
 
 function weighted_input(w, x, b) {
@@ -80,7 +65,6 @@ function shuffle(input, mini_batch_size, labels) {
 module.exports = {
     lyr: lyr,
     sigma_dash: sigma_dash,
-    sigmoid_function: sigmoid_function,
     weighted_input: weighted_input,
     cost_grad: cost_grad,
     shuffle: shuffle

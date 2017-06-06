@@ -4,5 +4,12 @@ module.exports = {
     output :{
         path : path.resolve(__dirname,'build'),
         filename : 'build.js'
+    },
+    module: {
+        loaders: [{ 
+            test: /\.js$/, 
+            exclude: [/node_modules/,/build/], 
+            loader: "babel-loader" 
+        }]
     }
 };
