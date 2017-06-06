@@ -1,6 +1,5 @@
 node_modules
 net_re_debug.js
-.codeclimate.yml
-_config.yml
 npm-debug.log
 build
+coverage
