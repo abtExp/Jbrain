@@ -3,7 +3,7 @@ const { Vector, sum, product } = require('../node_modules/vecto');
  * returned else biases.
  */
 function lyr(neuron_count, ip_wts, fill_style = 1) {
-    var v;
+    let v;
     if (!ip_wts) {
         if (fill_style === 1) {
             v = new Vector([neuron_count]);
@@ -25,9 +25,13 @@ function lyr(neuron_count, ip_wts, fill_style = 1) {
 /* weighted_input : calculates sigma(w*x) + b */
 
 function weighted_input(w, x, b) {
-    var wa = product(w, x);
-    var flb = [];
+    console.log(w,x);
+    const wa = product(w, x);
+    let flb = [];
     Vector.flatten(b, flb);
+    console.log(wa);
+    console.log(sum(wa));
+    console.log(flb);
     let z = sum(sum(wa), flb);
     return z;
 }
@@ -35,10 +39,10 @@ function weighted_input(w, x, b) {
 /* cost_grad : returns gradC wrt activ */
 
 function cost_grad(a, y) {
-    for (var i = 0; i < y.length; i++) {
+    for (let i = 0; i < y.length; i++) {
         y[i] = -y[i];
     }
-    var gradC = sum(a, y);
+    const gradC = sum(a, y);
     return gradC;
 }
 
@@ -49,9 +53,9 @@ function sigma_dash(z) {
 }
 
 function shuffle(input, mini_batch_size, labels) {
-    var batch = [],
-        y = [];
-    var i;
+    const batch = [],
+    y = [];
+    let i;
     while (batch.length <= mini_batch_size) {
         i = Math.floor(Math.random() * input.length);
         batch.push(input[i]);

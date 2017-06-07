@@ -53,12 +53,12 @@ class Network {
 	/* Feed forward the activation of each layer as input to next layer 
 	and recieve the output of final layer as network's output */
 
-	feed_forward(input, activ_fn) {
+	feed_forward(input, activ_fn=activ.sigmoid) {
 		const activation = [];
 		const Z = [];
 		activation.push(input);
 		for (let i = 1; i < this.lyrs_count; i++) {
-			let z = weighted_input(this.weights[i - 1].array, activation[i - 1], this.biases[i - 1].array);
+			let z = weighted_input(this.weights[i-1].array, activation[i-1], this.biases[i-1].array);
 			let activ = activ_fn(z);
 			activation.push(activ);
 			Z.push(z);
@@ -115,7 +115,7 @@ class Network {
 			delta = [];
         [a, z] = this.feed_forward(x, this.activ_fn);
 		let grad_c = cost_grad(a[this.lyrs_count - 1], y);
-		let sig_ = z[this.lyrs_count - 1].map((i) => {
+		let sig_ = z[this.lyrs_count - 2].map((i) => {
 			return sigma_dash(i);
 		});
 

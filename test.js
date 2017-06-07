@@ -1,7 +1,9 @@
-var Jbrain = require('./Jbrain');
+var { Network } = require('./Jbrain');
 
-var net = new Jbrain.Network([3,2,1]);
+var net = new Network([3,2,1]);
 console.log(net);
 
-var n2 = new Jbrain.Network([4,4,2,2,1]);
+var n2 = new Network([4,4,2,2,1]);
 console.log(n2);
+
+console.log(net.feed_forward([1,1,1])[0]);

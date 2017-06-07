@@ -397,7 +397,9 @@ var Network = function () {
 
 	}, {
 		key: 'feed_forward',
-		value: function feed_forward(input, activ_fn) {
+		value: function feed_forward(input) {
+			var activ_fn = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : activ.sigmoid;
+
 			var activation = [];
 			var Z = [];
 			activation.push(input);
@@ -482,7 +484,7 @@ var Network = function () {
 			z = _feed_forward2[1];
 
 			var grad_c = cost_grad(a[this.lyrs_count - 1], y);
-			var sig_ = z[this.lyrs_count - 1].map(function (i) {
+			var sig_ = z[this.lyrs_count - 2].map(function (i) {
 				return sigma_dash(i);
 			});
 
@@ -544,6 +546,8 @@ console.log(net);
 
 var n2 = new Jbrain.Network([4, 4, 2, 2, 1]);
 console.log(n2);
+
+console.log(net.feed_forward([1, 1, 1])[0]);
 
 /***/ }),
 /* 4 */
@@ -654,7 +658,7 @@ var _require = __webpack_require__(0),
 function lyr(neuron_count, ip_wts) {
     var fill_style = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
 
-    var v;
+    var v = void 0;
     if (!ip_wts) {
         if (fill_style === 1) {
             v = new Vector([neuron_count]);
@@ -676,9 +680,13 @@ function lyr(neuron_count, ip_wts) {
 /* weighted_input : calculates sigma(w*x) + b */
 
 function weighted_input(w, x, b) {
+    console.log(w, x);
     var wa = product(w, x);
     var flb = [];
     Vector.flatten(b, flb);
+    console.log(wa);
+    console.log(sum(wa));
+    console.log(flb);
     var z = sum(sum(wa), flb);
     return z;
 }
@@ -702,7 +710,7 @@ function sigma_dash(z) {
 function shuffle(input, mini_batch_size, labels) {
     var batch = [],
         y = [];
-    var i;
+    var i = void 0;
     while (batch.length <= mini_batch_size) {
         i = Math.floor(Math.random() * input.length);
         batch.push(input[i]);
