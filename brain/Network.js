@@ -42,6 +42,7 @@ class Network {
 	/* Fit the Network (i.e., train) */
 
 	fit({ train_features, train_labels, neta = 0.5, epoch = 10, m = 2, cost_fn = cost.cross_entropy, activ_fn = activ.sigmoid }) {
+		// console.log(train_features);
 		this.input = train_features;
 		this.labels = train_labels;
 		this.activ_fn = activ_fn;
@@ -135,7 +136,8 @@ class Network {
 			*/
 			let warr = [],
 				barr = [];
-			Vector.flatten(product(a[i - 1], delta[i - 1]), arr);
+			console.log(a[i-1],delta[i-1]);
+			Vector.flatten(product(a[i - 1], delta[i - 1]), warr);
 			Vector.flatten(delta[i - 1], barr);
 			nw[i - 1].arrange(warr);
 			nb[i - 1].arrange(barr);

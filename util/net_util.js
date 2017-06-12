@@ -7,7 +7,7 @@ function lyr(neuron_count, ip_wts, fill_style = 1) {
     if (!ip_wts) {
         if (fill_style === 1) {
             v = new Vector([neuron_count]);
-            v.array = Vector.fill(neuron_count);
+            v.arrange();
         } else {
             v = Vector.zeroes([neuron_count]);
         }
@@ -25,13 +25,9 @@ function lyr(neuron_count, ip_wts, fill_style = 1) {
 /* weighted_input : calculates sigma(w*x) + b */
 
 function weighted_input(w, x, b) {
-    console.log(w,x);
     const wa = product(w, x);
     let flb = [];
     Vector.flatten(b, flb);
-    console.log(wa);
-    console.log(sum(wa));
-    console.log(flb);
     let z = sum(sum(wa), flb);
     return z;
 }
@@ -49,7 +45,8 @@ function cost_grad(a, y) {
 /* sigma_dash : returns the sigma' for calculating the errors. */
 
 function sigma_dash(z) {
-    return (sigmoid_function(z) * (1 - (sigmoid_function(z))));
+    const sigmoid = require('./activ/sigmoid'); 
+    return (sigmoid(z) * (1 - (sigmoid(z))));
 }
 
 function shuffle(input, mini_batch_size, labels) {

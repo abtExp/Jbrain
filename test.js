@@ -1,9 +1,12 @@
-var { Network } = require('./Jbrain');
+const { Network } = require('./Jbrain');
 
-var net = new Network([3,2,1]);
-console.log(net);
+let net = new Network([3,2,1]);
 
-var n2 = new Network([4,4,2,2,1]);
-console.log(n2);
+let train_features = [[1,1,1],[1,1,0],[1,0,1],[0,1,1],[0,0,1],[0,1,0],[1,0,0],[0,0,0]];
+let train_labels = [1,1,1,1,0,0,0,0];
 
-console.log(net.feed_forward([1,1,1])[0]);
+net.fit({train_features,train_labels,neta:0.5,epoch:100,m:2});
+// console.log(net.input);
+
+let test_features = [1,1,1];
+console.log(net.predict(test_features));
