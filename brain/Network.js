@@ -127,11 +127,10 @@ class Network {
 		});
 
 		delta[this.lyrs_count - 2] = product(sig_, grad_c);
-
 		/* Backpropagating */
 		for (let i = this.lyrs_count - 2; i >= 1; i--) {
 			let ele = delta[i].length > 1 ? delta[i] : delta[i][0];
-			let part_act = product(this.weights[i - 1].array, ele);
+			let part_act = product(this.weights[i].array, ele);
 			let sig_ = z[i - 1].map(i => sigma_dash(i))
 			delta[i - 1] = product(part_act, sig_);
 		}
@@ -144,6 +143,8 @@ class Network {
 				barr = [];
 			let ele = delta[i-1].length > 1 ? delta[i-1] : delta[i-1][0];
 			let part = product(a[i - 1], ele);
+			console.log(`activ = `,a[i-1]);
+			console.log(`del = `,ele);
 			Vector.flatten(part, warr);
 			Vector.flatten(delta[i-1], barr);
 			nw[i - 1].arrange(warr);
