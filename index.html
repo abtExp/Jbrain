@@ -9,7 +9,15 @@
 <title>some_app</title>
 </head>
 <body>
-
+<canvas id='canv' width='500' height='500'></canvas>
 <script src='./build/build.js'></script>
+<script>
+    const canv = document.getElementById('canv');
+    const ctx = canv.getContext('2d');
+    ctx.fillStyle = '#000';
+    ctx.fillRect(1,0,2,500);
+    ctx.fillRect(1,498,500,2);
+    
+</script>
 </body>
 </html>

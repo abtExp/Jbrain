@@ -74,7 +74,6 @@
  * Referenced from numpy.
  * Author : Anubhav Tiwari <atworkstudios@gmail.com>
  */
-
 const sum = __webpack_require__(13);
 const product = __webpack_require__(12);
 
@@ -82,8 +81,8 @@ const product = __webpack_require__(12);
 class Vector {
 	constructor(shape = [], arr = []) {
 		this.array = arr;
-		this.shape = ((shape.length) > 0) ? shape : (this.calc_shape(this.array));
-		this.size = this.calc_size(this.shape);
+		this.shape = ((shape.length) > 0) ? shape : (Vector.calc_shape(this.array));
+		this.size = Vector.calc_size(this.shape);
 		this.dim = this.find_dim();
 		this.flat = [];
 		Vector.flatten(this.array, this.flat);
@@ -142,6 +141,19 @@ class Vector {
 		}
 	}
 
+	/* form chunks */
+	static form_chunks(size,no,arr){
+		let chunk = [],final = [], k = 0;
+		for(let i=0; i<no; i++){
+			chunk = [];
+			for(let j=0; j<size; j++){
+				chunk[j] = arr[k++];
+				if(k>=arr.length) k =0;
+			}
+			final.push(chunk);
+		}
+		return final;
+	}
 
 	/* fills the vector acc to passed args */
 	static fill(len, fill_style = "array", ...args) {
@@ -177,9 +189,11 @@ class Vector {
 			else {
 				let min = args[0],
 					max = args[1],
+					step = (args.length === 3) ? args[2] : 1,
 					num = min;
 				for (i = 0; i < len; i++) {
-					arr[i] = num++;
+					arr[i] = parseFloat((num).toPrecision(2));
+					num += step;
 					if (num > max) {
 						num = min;
 					}
@@ -188,6 +202,28 @@ class Vector {
 		}
 		return arr;
 	}
+
+	/* find the shape of array */
+	static calc_shape(arr) {
+		const shape = [];
+		shape.push(arr.length);
+		let a = arr[0];
+		while (Array.isArray(a)) {
+			shape.push(a.length);
+			a = a[0];
+		}
+		return shape;
+	}
+
+	/* find the size of the array */
+	static calc_size(shape) {
+		let size = 1;
+		for (let i of shape) {
+			size *= i;
+		}
+		return size;
+	}
+
 
 
 	/* -------------------------------------------------------------------------------------------------------------------------------------------- */
@@ -200,36 +236,14 @@ class Vector {
 		return this.shape.length;
 	}
 
-	calc_shape(arr) {
-		const shape = [];
-		shape.push(arr.length);
-		let a = arr[0];
-		while (Array.isArray(a)) {
-			shape.push(a.length);
-			a = a[0];
-		}
-		return shape;
-	}
-
-	/* find the size of the array */
-	calc_size(shape) {
-		let size = 1;
-		for (let i of shape) {
-			size *= i;
-		}
-		return size;
-	}
-
-
 	/* a method to arrange or create a Vector from the given elements */
-	arrange(elems_arr, fill_style = "array") {
-		const dim = this.dim;
-		let base_arr = elems_arr,
-			curr_arr;
-		for (let i = dim - 2; i >= -1; i--) {
-			curr_arr = Vector.fill(this.shape[i + 1], fill_style, base_arr);
+	arrange(elems_arr, fill_style = "linear") {
+		let base_arr = elems_arr ? elems_arr : Vector.fill(Math.floor(this.size),"linear"),
+		curr_arr = [];
+		for(let i=this.dim - 1; i > 0; i--){
+			let size = this.shape[i],no=i>1 ? this.shape[i-1]*this.shape[i-2] : this.shape[i-1];
+			curr_arr = Vector.form_chunks(size,no,base_arr);
 			base_arr = curr_arr;
-			fill_style = "array";
 		}
 		this.array = base_arr;
 		this.flat = [];
@@ -238,7 +252,7 @@ class Vector {
 
 	/* reshapes the vector only if for the new shape the number of elements remain same */
 	reshape(new_shape) {
-		if (this.calc_size(new_shape) === this.size) {
+		if (Vector.calc_size(new_shape) === this.size) {
 			/* reshape */
 			const temp_arr = this.flat;
 			this.shape = new_shape;
@@ -255,7 +269,7 @@ class Vector {
 	resize(new_shape) {
 		const temp_arr = this.flat;
 		this.shape = new_shape;
-		this.size = this.calc_size(new_shape);
+		this.size = Vector.calc_size(new_shape);
 		this.dim = this.find_dim();
 		this.flat = [];
 		this.arrange(temp_arr, "linear");
@@ -284,23 +298,20 @@ module.exports = {
 "use strict";
 
 
-// import Network from 'Network';
-// import svm from 'SVM';
-// import naive_bayes from 'nb';
-// import conv_net from 'convnet';
+function sigmoid(z) {
+	if (!Array.isArray(z)) {
+		return 1 / 1 + Math.exp(-z);
+	} else {
+		var wip = [];
+		z.forEach(function (i) {
+			wip.push(1 / (1 + Math.exp(-i)));
+		});
 
-Network = __webpack_require__(2);
-// svm = require('./brain/svm');
-// naive_bayes = require('./brain/nb');
-// conv_net = require('./brain/convnet');
+		return wip;
+	}
+}
 
-
-module.exports = {
-    Network: Network
-
-    // export default Jbrain;
-
-};
+module.exports = sigmoid;
 
 /***/ }),
 /* 2 */
@@ -328,7 +339,7 @@ statements for if not in node environment
  * import Vector from 'vector_js';
  * import net_util from 'net_util';
  */
-var _require = __webpack_require__(11),
+var _require = __webpack_require__(10),
     lyr = _require.lyr,
     sigma_dash = _require.sigma_dash,
     sigmoid_function = _require.sigmoid_function,
@@ -336,7 +347,7 @@ var _require = __webpack_require__(11),
     cost_grad = _require.cost_grad,
     shuffle = _require.shuffle;
 
-var cost = __webpack_require__(7);
+var cost = __webpack_require__(6);
 var activ = __webpack_require__(4);
 
 var _require2 = __webpack_require__(0),
@@ -382,12 +393,25 @@ var Network = function () {
 			    _ref$cost_fn = _ref.cost_fn,
 			    cost_fn = _ref$cost_fn === undefined ? cost.cross_entropy : _ref$cost_fn,
 			    _ref$activ_fn = _ref.activ_fn,
-			    activ_fn = _ref$activ_fn === undefined ? activ.sigmoid : _ref$activ_fn;
+			    activ_fn = _ref$activ_fn === undefined ? activ.sigmoid : _ref$activ_fn,
+			    _ref$evaluate = _ref.evaluate,
+			    evaluate = _ref$evaluate === undefined ? true : _ref$evaluate,
+			    _ref$eval_epoch = _ref.eval_epoch,
+			    eval_epoch = _ref$eval_epoch === undefined ? 5 : _ref$eval_epoch,
+			    _ref$validate = _ref.validate,
+			    validate = _ref$validate === undefined ? false : _ref$validate,
+			    _ref$validate_dat = _ref.validate_dat,
+			    validate_dat = _ref$validate_dat === undefined ? null : _ref$validate_dat;
 
+			// console.log(train_features);
 			this.input = train_features;
 			this.labels = train_labels;
 			this.activ_fn = activ_fn;
 			this.cost_fn = cost_fn;
+			this.evaluate = evaluate;
+			this.eval_epoch = eval_epoch;
+			this.validate = validate;
+			this.val_dat = validate_dat;
 			/* optimise weights and biases for each input example x, by SGD using backprop */
 			this.SGD(neta, epoch, m, cost_fn);
 		}
@@ -506,23 +530,25 @@ var Network = function () {
     */
 				var warr = [],
 				    barr = [];
-				Vector.flatten(product(a[_i2 - 1], delta[_i2 - 1]), arr);
+				var _ele = delta[_i2 - 1].length > 1 ? delta[_i2 - 1] : delta[_i2 - 1][0];
+				var part = product(a[_i2 - 1], _ele);
+				Vector.flatten(part, warr);
 				Vector.flatten(delta[_i2 - 1], barr);
 				nw[_i2 - 1].arrange(warr);
 				nb[_i2 - 1].arrange(barr);
 			}
-
 			return [nw, nb];
 		}
 	}, {
 		key: 'predict',
 		value: function predict(test_features) {
 			var res = this.feed_forward(test_features);
-			return res[res.length - 1];
+			return res[0][this.lyrs_count - 1];
 		}
 	}, {
 		key: 'evaluate',
 		value: function evaluate(prediction, test_labels) {
+
 			return sum(test_labels, -1 * predictions);
 		}
 	}]);
@@ -539,15 +565,23 @@ module.exports = Network;
 "use strict";
 
 
-var Jbrain = __webpack_require__(1);
+// import Network from 'Network';
+// import svm from 'SVM';
+// import naive_bayes from 'nb';
+// import conv_net from 'convnet';
 
-var net = new Jbrain.Network([3, 2, 1]);
-console.log(net);
+Network = __webpack_require__(2);
+// svm = require('./brain/svm');
+// naive_bayes = require('./brain/nb');
+// conv_net = require('./brain/convnet');
 
-var n2 = new Jbrain.Network([4, 4, 2, 2, 1]);
-console.log(n2);
 
-console.log(net.feed_forward([1, 1, 1])[0]);
+module.exports = {
+    Network: Network
+
+    // export default Jbrain;
+
+};
 
 /***/ }),
 /* 4 */
@@ -556,8 +590,8 @@ console.log(net.feed_forward([1, 1, 1])[0]);
 "use strict";
 
 
-var sigmoid = __webpack_require__(5);
-var softmax = __webpack_require__(6);
+var sigmoid = __webpack_require__(1);
+var softmax = __webpack_require__(5);
 
 var activ = {
     sigmoid: sigmoid,
@@ -573,20 +607,9 @@ module.exports = activ;
 "use strict";
 
 
-function sigmoid(z) {
-	if (!Array.isArray(z)) {
-		return 1 / 1 + Math.exp(-z);
-	} else {
-		var wip = [];
-		z.forEach(function (i) {
-			wip.push(1 / (1 + Math.exp(-i)));
-		});
-
-		return wip;
-	}
-}
-
-module.exports = sigmoid;
+module.exports = function () {
+    //TODO
+};
 
 /***/ }),
 /* 6 */
@@ -595,20 +618,9 @@ module.exports = sigmoid;
 "use strict";
 
 
-module.exports = function () {
-    //TODO
-};
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var quad_cost = __webpack_require__(10);
-var cross_entropy = __webpack_require__(8);
-var log_like = __webpack_require__(9);
+var quad_cost = __webpack_require__(9);
+var cross_entropy = __webpack_require__(7);
+var log_like = __webpack_require__(8);
 
 var cost = {
     quad_cost: quad_cost,
@@ -617,6 +629,13 @@ var cost = {
 };
 
 module.exports = cost;
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 /***/ }),
 /* 8 */
@@ -639,13 +658,6 @@ module.exports = cost;
 "use strict";
 
 
-/***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 var _require = __webpack_require__(0),
     Vector = _require.Vector,
     sum = _require.sum,
@@ -662,7 +674,7 @@ function lyr(neuron_count, ip_wts) {
     if (!ip_wts) {
         if (fill_style === 1) {
             v = new Vector([neuron_count]);
-            v.array = Vector.fill(neuron_count);
+            v.arrange();
         } else {
             v = Vector.zeroes([neuron_count]);
         }
@@ -680,13 +692,9 @@ function lyr(neuron_count, ip_wts) {
 /* weighted_input : calculates sigma(w*x) + b */
 
 function weighted_input(w, x, b) {
-    console.log(w, x);
     var wa = product(w, x);
     var flb = [];
     Vector.flatten(b, flb);
-    console.log(wa);
-    console.log(sum(wa));
-    console.log(flb);
     var z = sum(sum(wa), flb);
     return z;
 }
@@ -704,7 +712,8 @@ function cost_grad(a, y) {
 /* sigma_dash : returns the sigma' for calculating the errors. */
 
 function sigma_dash(z) {
-    return sigmoid_function(z) * (1 - sigmoid_function(z));
+    var sigmoid = __webpack_require__(1);
+    return sigmoid(z) * (1 - sigmoid(z));
 }
 
 function shuffle(input, mini_batch_size, labels) {
@@ -731,8 +740,23 @@ module.exports = {
 };
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports) {
+
+module.exports = class Matrix{
+    static matrix_prod(m1,m2){
+        return "Bazziinnggaa";
+    }
+
+    static matrix_add(m1,m2){
+        return "Double Bazziinnggaaa";
+    }
+}
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
 
 /* product : test cases : 
 ^ *1 [a,b,c] * [x,y,z]  // equal length 1-d arrays
@@ -742,71 +766,85 @@ module.exports = {
 ^ *5 [[a,b,c],[d,e,f]] * [x,y,z]  // len(arg1) !== len(arg2) but len(arg1[i]) == len(arg2), must multiply arg2 with each arg[i]
 ^ *6 a * x || [a] * [x]  // return a*x
 */
-module.exports = function product(arr1, arr2) {
-	const prod = [];
-	if (!Array.isArray(arr1) && !Array.isArray(arr2)) {
-		return arr1 * arr2;
+const Matrix = __webpack_require__(11);
+
+function product(arr1, arr2) {
+	let prod = [];
+	if(Array.isArray(arr1) && !Array.isArray(arr2)){
+		if(Array.isArray(arr1[0])){
+			arr1.forEach(i=>{
+				prod.push(product(i,arr2));
+			})
+		}
+		else{
+			arr1.forEach(i=>{
+				prod.push(i*arr2);
+			})
+		}
 	}
-	else {
-		if (Array.isArray(arr1) && !Array.isArray(arr2)) {
-			arr1.forEach((i) => {
-				if (Array.isArray(i)) {
-					prod.push(product(i, arr2));
+
+	else if(!Array.isArray(arr1) && Array.isArray(arr2)){
+		return product(arr2,arr1);
+	}
+
+	else{
+		if(Array.isArray(arr1[0]) && Array.isArray(arr2[0])){
+			const { Vector } = __webpack_require__(0);
+			let ar1_shape = Vector.calc_shape(arr1);
+			let ar2_shape = Vector.calc_shape(arr2);
+			if(ar1_shape.length === ar2_shape.length === 2){
+				if(ar1_shape[1] === ar2_shape[0]){
+					return Matrix.matrix_prod(arr1,arr2);
 				}
-				else {
-					prod.push(i * arr2);
-				}
-			});
-		}
-		else if (!Array.isArray(arr1) && Array.isArray(arr2)) {
-			return product(arr2, arr1);
-		}
-		else {
-			if (Array.isArray(arr1[0]) && !Array.isArray(arr2[0])) { //checking if arg1 is n-d and arg2 is 1-d
-				if (arr1[0].length === arr2.length) {
-					arr1.forEach((j) => {
-						prod.push(product(j, arr2));
-					})
-				}
-				else {
-					if (arr1.length === arr2.length) {
-						let i = 0;
-						arr1.forEach((j) => {
-							prod.push(product(j, arr2[i++]));
-						})
+				else{
+					if(ar1_shape.toString() === ar2_shape.toString()){
+						for(let i=0; i<ar1.length; i++){
+							prod.push(product(ar1[i],ar2[i]));
+						}
 					}
-					else {
-						throw new Error("Uneven size!");
+					else{
+						throw new Error("Uneven Size");
 					}
 				}
 			}
-			else {
-				if (Array.isArray(arr1[0]) && Array.isArray(arr2[0])) {
-					if (arr1.length === arr2.length) {
-						for (let i = 0; i < arr1.length; i++) {
-							prod.push(product(arr1[i], arr2[i]));
-						}
-					}
-					else {
-						throw new Error("Uneven Size");
-					}
-				}
-				else {
-					if (arr1.length === arr2.length) {
-						for (let i = 0; i < arr1.length; i++) {
-							prod.push(arr1[i] * arr2[i]);
-						}
-					}
-					else {
-						throw new Error("Uneven Size");
-					}
-				}
+		}
+		else if(Array.isArray(arr1[0]) && !Array.isArray(arr2[0])){
+			if(arr1.length === arr2.length){
+				let j=0;
+				arr1.forEach(i=>{
+					prod.push(product(i,arr2[j++]));
+				})
+			}
+			else if(arr1[0].length === arr2.length){
+				arr1.forEach(i=>{
+					prod.push(product(i,arr2));
+				})
+			}
+			else{
+				return new Error("Uneven Size");
+			}
+		}
+
+		else if(!Array.isArray(arr1[0]) && Array.isArray(arr2[0])){
+			return product(arr2,arr1);
+		}
+
+		else{
+			if(arr1.length === arr2.length){
+				let k=0;
+				arr1.forEach(i=>{
+					prod.push(i*arr2[k++]);
+				})
+			}
+			else{
+				throw new Error("Uneven Size");
 			}
 		}
 	}
 	return prod;
 }
 
+module.exports = product;
 
 /***/ }),
 /* 13 */

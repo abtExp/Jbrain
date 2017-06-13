@@ -43,13 +43,14 @@ class Network {
 
 	fit({ train_features, train_labels, neta = 0.5, epoch = 10, m = 2, 
 		  cost_fn = cost.cross_entropy, activ_fn = activ.sigmoid, evaluate=true,
-		  validate=false, validate_dat = null }) {
+		  eval_epoch=5, validate=false, validate_dat = null }) {
 		// console.log(train_features);
 		this.input = train_features;
 		this.labels = train_labels;
 		this.activ_fn = activ_fn;
 		this.cost_fn = cost_fn;
 		this.evaluate = evaluate;
+		this.eval_epoch = eval_epoch;
 		this.validate = validate;
 		this.val_dat = validate_dat;
 		/* optimise weights and biases for each input example x, by SGD using backprop */
@@ -157,6 +158,7 @@ class Network {
 	}
 
 	evaluate(prediction, test_labels) {
+
 		return (sum(test_labels, (-1 * (predictions))));
 	}
 }
