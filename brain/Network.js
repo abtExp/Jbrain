@@ -82,10 +82,6 @@ class Network {
 		const factor = -(neta / m);
 		let x, y, delta_w, delta_b;
 		while (epoch) {
-			console.log(`--------------------------------`);
-			for(let i=1; i<this.lyrs_count; i++){
-				console.log(this.weights[i-1].array);
-			}	
 			[x, y] = shuffle(this.input, m, this.labels);
 			for (let i = 0; i < m; i++) {
                 [delta_w, delta_b] = this.backprop(x[i], y[i]);
@@ -103,10 +99,6 @@ class Network {
 					this.biases[j - 1].arrange(Vector.add(this.biases[j - 1], delta_b[j - 1])
 						.flat);
 				}
-			}
-			console.log(`;;;;;;;;;;;;;;;;;;;;;;;;`);
-			for(let i=1; i<this.lyrs_count; i++){
-				console.log(this.weights[i-1].array);
 			}
 			epoch--;
 		}
@@ -156,7 +148,6 @@ class Network {
 			nw[i - 1].arrange(warr);
 			nb[i - 1].arrange(barr);
 		}
-
 		return [nw, nb];
 	}
 
