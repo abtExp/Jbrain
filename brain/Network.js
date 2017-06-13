@@ -41,12 +41,17 @@ class Network {
 
 	/* Fit the Network (i.e., train) */
 
-	fit({ train_features, train_labels, neta = 0.5, epoch = 10, m = 2, cost_fn = cost.cross_entropy, activ_fn = activ.sigmoid }) {
+	fit({ train_features, train_labels, neta = 0.5, epoch = 10, m = 2, 
+		  cost_fn = cost.cross_entropy, activ_fn = activ.sigmoid, evaluate=true,
+		  validate=false, validate_dat = null }) {
 		// console.log(train_features);
 		this.input = train_features;
 		this.labels = train_labels;
 		this.activ_fn = activ_fn;
 		this.cost_fn = cost_fn;
+		this.evaluate = evaluate;
+		this.validate = validate;
+		this.val_dat = validate_dat;
 		/* optimise weights and biases for each input example x, by SGD using backprop */
 		this.SGD(neta, epoch, m, cost_fn);
 	}
@@ -77,7 +82,11 @@ class Network {
 		const factor = -(neta / m);
 		let x, y, delta_w, delta_b;
 		while (epoch) {
-            [x, y] = shuffle(this.input, m, this.labels);
+			console.log(`--------------------------------`);
+			for(let i=1; i<this.lyrs_count; i++){
+				console.log(this.weights[i-1].array);
+			}	
+			[x, y] = shuffle(this.input, m, this.labels);
 			for (let i = 0; i < m; i++) {
                 [delta_w, delta_b] = this.backprop(x[i], y[i]);
 				/* Optimising weights and biases by gradient descent */
@@ -94,6 +103,10 @@ class Network {
 					this.biases[j - 1].arrange(Vector.add(this.biases[j - 1], delta_b[j - 1])
 						.flat);
 				}
+			}
+			console.log(`;;;;;;;;;;;;;;;;;;;;;;;;`);
+			for(let i=1; i<this.lyrs_count; i++){
+				console.log(this.weights[i-1].array);
 			}
 			epoch--;
 		}
@@ -136,9 +149,10 @@ class Network {
 			*/
 			let warr = [],
 				barr = [];
-			console.log(a[i-1],delta[i-1]);
-			Vector.flatten(product(a[i - 1], delta[i - 1]), warr);
-			Vector.flatten(delta[i - 1], barr);
+			let ele = delta[i-1].length > 1 ? delta[i-1] : delta[i-1][0];
+			let part = product(a[i - 1], ele);
+			Vector.flatten(part, warr);
+			Vector.flatten(delta[i-1], barr);
 			nw[i - 1].arrange(warr);
 			nb[i - 1].arrange(barr);
 		}
@@ -148,7 +162,7 @@ class Network {
 
 	predict(test_features) {
 		const res = this.feed_forward(test_features);
-		return res[res.length - 1];
+		return res[0][this.lyrs_count - 1];
 	}
 
 	evaluate(prediction, test_labels) {
