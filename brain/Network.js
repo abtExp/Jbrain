@@ -8,14 +8,14 @@
  */
 /* Browser support not available , un-comment if using transpiler and comment require
 statements for if not in node environment
- * import Vector from 'vector_js';
+ * import ndarray from 'vecto';
  * import net_util from 'net_util';
  */
 const { lyr,sigma_dash,sigmoid_function,
 		weighted_input,cost_grad,shuffle } = require('../util/net_util');
 const cost = require('../util/cost');
 const activ = require('../util/activ');
-const {Vector,sum,product} = require('../node_modules/vecto');
+const { ndarray,sum,product } = require('../node_modules/vecto');
 
 
 /* define a network with net_config representing each layer with the number of 
@@ -95,9 +95,9 @@ class Network {
 				/* Updating the weights and biases */
 
 				for (let j = 1; j < this.lyrs_count; j++) {
-					this.weights[j - 1].arrange(Vector.add(this.weights[j - 1], delta_w[j - 1])
+					this.weights[j - 1].arrange(ndarray.add(this.weights[j - 1], delta_w[j - 1])
 						.flat);
-					this.biases[j - 1].arrange(Vector.add(this.biases[j - 1], delta_b[j - 1])
+					this.biases[j - 1].arrange(ndarray.add(this.biases[j - 1], delta_b[j - 1])
 						.flat);
 				}
 			}
@@ -113,8 +113,8 @@ class Network {
 		let nw = [],
 			nb = [];
 		for (let i = 1; i < this.lyrs_count; i++) {
-			nw.push(Vector.zeroes(this.weights[i - 1].shape));
-			nb.push(Vector.zeroes(this.biases[i - 1].shape));
+			nw.push(ndarray.zeroes(this.weights[i - 1].shape));
+			nb.push(ndarray.zeroes(this.biases[i - 1].shape));
 		}
 
 		let a = [],
@@ -132,7 +132,7 @@ class Network {
 			let ele = delta[i].length > 1 ? delta[i] : delta[i][0];
 			let part_act = product(this.weights[i].array, ele);
 			let sig_ = z[i - 1].map(i => sigma_dash(i))
-			delta[i - 1] = product(part_act, sig_);
+			delta[i - 1] = product(part_act, sig_,'dot');//wrong, have to calculate (w^T.del)osig_
 		}
 
 		for (let i = 1; i < this.lyrs_count; i++) {
@@ -145,8 +145,8 @@ class Network {
 			let part = product(a[i - 1], ele);
 			console.log(`activ = `,a[i-1]);
 			console.log(`del = `,ele);
-			Vector.flatten(part, warr);
-			Vector.flatten(delta[i-1], barr);
+			ndarray.flatten(part, warr);
+			ndarray.flatten(delta[i-1], barr);
 			nw[i - 1].arrange(warr);
 			nb[i - 1].arrange(barr);
 		}

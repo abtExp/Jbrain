@@ -1,4 +1,4 @@
-const { Vector, sum, product } = require('../node_modules/vecto');
+const { ndarray, sum, product, core } = require('../node_modules/vecto');
 /* defines each layer's weight and biases, if two parameters are provided weights are
  * returned else biases.
  */
@@ -6,17 +6,17 @@ function lyr(neuron_count, ip_wts, fill_style = 1) {
     let v;
     if (!ip_wts) {
         if (fill_style === 1) {
-            v = new Vector([neuron_count]);
+            v = new ndarray([neuron_count]);
             v.arrange();
         } else {
-            v = Vector.zeroes([neuron_count]);
+            v = ndarray.zeroes([neuron_count]);
         }
     } else {
         if (fill_style === 1) {
-            v = new Vector([neuron_count, ip_wts]);
+            v = new ndarray([neuron_count, ip_wts]);
             v.arrange();
         } else {
-            v = Vector.zeroes([neuron_count, ip_wts]);
+            v = ndarray.zeroes([neuron_count, ip_wts]);
         }
     }
     return v;
@@ -25,10 +25,10 @@ function lyr(neuron_count, ip_wts, fill_style = 1) {
 /* weighted_input : calculates sigma(w*x) + b */
 
 function weighted_input(w, x, b) {
-    const wa = product(w, x);
-    let flb = [];
-    Vector.flatten(b, flb);
-    let z = sum(sum(wa), flb);
+    const wa = product(w, x, 'dot');
+    const sigwx = sum(wa);
+    let z = sum(sigwx, b);// whatif bias is a single element ? 
+    //As in for the output array or any hidden layer have only 1 neuron
     return z;
 }
 
@@ -70,6 +70,3 @@ module.exports = {
     cost_grad: cost_grad,
     shuffle: shuffle
 }
-
-
-// export default net_util;
