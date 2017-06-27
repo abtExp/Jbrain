@@ -11,11 +11,11 @@ statements for if not in node environment
  * import ndarray from 'vecto';
  * import net_util from 'net_util';
  */
-const { sigma_dash,weighted_input,cost_grad,shuffle } = require('../util/net_util'),
+const { sigma_dash,cost_grad,shuffle } = require('../util/net_util'),
 cost = require('../util/cost'),
 activ = require('../util/activ'),
 lyr = require('./util/layers'),
-{ sum,product,core } = require('../node_modules/vecto');
+{ ndarray,sum,product,core } = require('../node_modules/vecto');
 
 
 /* define a network with net_config representing each layer with the number of 
@@ -57,6 +57,8 @@ class Network{
     * @eval_epoch : number ( int ), of epochs(learning cycles) after which to evaluate the learning
     * @validate : !Boolean!, whether validation data will be provided for better learning
     * @validate_dat : [array], of validation features to learn better, @validate must be true
+    *
+    * Returns : Nothing, Just optimises the neurons's weights and biases.
     */
 
     fit({ train_features, train_labels, neta = 0.5, epoch = 10, m = 2, cost_fn = cost.cross_entropy, 
@@ -76,7 +78,16 @@ class Network{
 
                   //updating weights and biases
                   for(let i=0; i<x.length; i++){
-                    this.SGD();
+                      let a = [],
+                          z = [],
+                       delw = [],
+                       delb = [];
+
+                      [a,z] = this.feed_forward(x[i]);
+                      this.z = z;
+                      this.activations = a;
+                      [delw, delb] = this.backprop(a[this.lyrs_count-1],y[i]);
+                      this.SGD(neta, m, cost_fn, delw, delb);
                   }
 
                   //EVALUATE
@@ -91,13 +102,15 @@ class Network{
 
     /* feed_forward : Calculates the activation of each layer.
     * @input : the input to the input layer
+    * Returns : An array containing Activations of each layer
+    *           and also the weighted inputs for each layer.  
     */
     
     feed_forward(input){
         let  activ = [],
         z = [];
         activ.push(input);
-        for(let i=0;i<this.lyrs.length; i++){
+        for(let i=0;i<this.lyrs.length-1; i++){
             let res = this.lyrs[i].fire(activ[i-1]);
             activ.push(res[0]);
             z.push(res[1]);
@@ -105,21 +118,36 @@ class Network{
         return [activ,z];
     }
 
-    /* SGD : Stochastic Gradient Descent, Stepwise learning
-    */
+    /* SGD : Stochastic Gradient Descent, Stepwise learning */
+    SGD(neta, m, cost, delw, delb){
+        let factor = (-(neta/m));
 
-    SGD(){
+        for(let i=0; i<this.lyrs_count-1; i++){
 
+        }
     }
 
     /* backpropagation : Calculates the error in activation of every layer */
-    backprop(){
+    backprop(a,y){
+        let nw = [], 
+        nb = [];
+        for(let i=0; i<this.lyrs_count-1; i++){
+            nw.push(ndarray.zeroes(this.lyrs[i].weights.shape));
+            nb.push(ndarray.zeroes(this.lyrs[i].biases.shape));
+        }
 
+        let grad_c = cost_grad(a,y),
+        sig_; // Continue from here.............
     }
 
     /* eval : evaluates the learning of network by comparing the accuracy */
     eval(){
 
+    }
+
+    /* predict : Predicts the output for the given test feature */
+    predict(test_features){
+        return this.feed_forward(test_features)[0][this.lyrs_count-1];
     }
 
 
