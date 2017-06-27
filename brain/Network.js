@@ -26,7 +26,7 @@ const { ndarray,sum,product } = require('../node_modules/vecto');
 
 
 class Network {
-	constructor(net_config) {
+	constructor(net_config,type='sigmoid') {
 		this.net_config = net_config;
 		this.lyrs_count = net_config.length;
 		this.weights = [];

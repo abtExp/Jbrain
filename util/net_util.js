@@ -1,26 +1,4 @@
 const { ndarray, sum, product, core } = require('../node_modules/vecto');
-/* defines each layer's weight and biases, if two parameters are provided weights are
- * returned else biases.
- */
-function lyr(neuron_count, ip_wts, fill_style = 1) {
-    let v;
-    if (!ip_wts) {
-        if (fill_style === 1) {
-            v = new ndarray([neuron_count]);
-            v.arrange();
-        } else {
-            v = ndarray.zeroes([neuron_count]);
-        }
-    } else {
-        if (fill_style === 1) {
-            v = new ndarray([neuron_count, ip_wts]);
-            v.arrange();
-        } else {
-            v = ndarray.zeroes([neuron_count, ip_wts]);
-        }
-    }
-    return v;
-}
 
 /* weighted_input : calculates sigma(w*x) + b */
 
@@ -50,9 +28,9 @@ function sigma_dash(z) {
 }
 
 function shuffle(input, mini_batch_size, labels) {
-    const batch = [],
+    let batch = [],
     y = [];
-    let i;
+    i;
     while (batch.length <= mini_batch_size) {
         i = Math.floor(Math.random() * input.length);
         batch.push(input[i]);
@@ -64,7 +42,6 @@ function shuffle(input, mini_batch_size, labels) {
 
 
 module.exports = {
-    lyr: lyr,
     sigma_dash: sigma_dash,
     weighted_input: weighted_input,
     cost_grad: cost_grad,
