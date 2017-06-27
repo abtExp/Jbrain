@@ -8,7 +8,7 @@ settings:
     build_pushes: true
 addons:
   code_climate:
-    repo_token: 5d911e7c70b84a87eac0b3565e017bf29e352ed619808cc2a16ba2350a3434b2
+    repo_token: 06efb4ff6ca3401937c9dcbf98c54b1fb8cb9978a368bb9e2ea9f5ba0440bfd9
 after_success:
   - npm install -g codeclimate-test-reporter
   - codeclimate-test-reporter < ./coverage/lcov.info
