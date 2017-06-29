@@ -1,5 +1,5 @@
 module.exports = class lyr{
-    constructor(ip_wts,neuron_count,neuron_type='sigoid'){
+    constructor(ip_wts,neuron_count,neuron_type='sigmoid'){
         const activ = require('./activ'),
         { ndarray } = require('../node_modules/vecto');
 
@@ -17,10 +17,16 @@ module.exports = class lyr{
 
         let z = weighted_input(this.weights.array,x,this.biases.array),
         a = this.activation_fn(z);
+        this.activ_ = activ_dash(z);
         return [a,z];
     }
 
+    //Performs activ_dash
+    activ_dash(z){
+        return this.activation_fn.dash(z);
+    }
 
+    
 
 
     

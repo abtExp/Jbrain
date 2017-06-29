@@ -37,7 +37,7 @@ class Network{
         this.net_config = net_config;
 		this.lyrs_count = net_config.length;
 		this.lyrs = [];
-
+        this.activ_ = [];
 		/* Make Layers by providing input weights and the 
         neuron count for lth layer and also the type of layer */
 		for (let i = 1; i < this.lyrs_count-1; i++) {
@@ -108,13 +108,18 @@ class Network{
     
     feed_forward(input){
         let  activ = [],
-        z = [];
+             z = [],
+             activ_ = [];
+
         activ.push(input);
         for(let i=0;i<this.lyrs.length-1; i++){
             let res = this.lyrs[i].fire(activ[i-1]);
             activ.push(res[0]);
             z.push(res[1]);
+            activ_.push(this.lyrs[i].activ_dash(z[i]));
         }
+
+        this.activ_ = activ_;
         return [activ,z];
     }
 
@@ -129,15 +134,18 @@ class Network{
 
     /* backpropagation : Calculates the error in activation of every layer */
     backprop(a,y){
-        let nw = [], 
-        nb = [];
+        let delw = [],
+            delb = [],
+            grad_c = cost_grad(a,y),
+            delta = [];
+
         for(let i=0; i<this.lyrs_count-1; i++){
-            nw.push(ndarray.zeroes(this.lyrs[i].weights.shape));
-            nb.push(ndarray.zeroes(this.lyrs[i].biases.shape));
+            delw.push(ndarray.zeroes(this.lyrs[i].weights.shape));
+            delb.push(ndarray.zeroes(this.lyrs[i].biases.shape));
         }
 
-        let grad_c = cost_grad(a,y),
-        sig_; // Continue from here.............
+        delta.push(product(grad_c,this.activ_[this.lyrs_count-1]));
+
     }
 
     /* eval : evaluates the learning of network by comparing the accuracy */
