@@ -20,13 +20,6 @@ function cost_grad(a, y) {
     return gradC;
 }
 
-/* sigma_dash : returns the sigma' for calculating the errors. */
-
-function sigma_dash(z) {
-    const sigmoid = require('./activ/sigmoid'); 
-    return (sigmoid(z) * (1 - (sigmoid(z))));
-}
-
 function shuffle(input, mini_batch_size, labels) {
     let batch = [],
     y = [];

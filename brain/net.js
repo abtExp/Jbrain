@@ -6,15 +6,16 @@
  * Author : Anubhav Tiwari <atworkstudios@gmail.com>
  *
  */
-/* Browser support not available , un-comment if using transpiler and comment require
-statements for if not in node environment
- * import ndarray from 'vecto';
- * import net_util from 'net_util';
+
+/* Support not available , un-comment if using transpiler
+ * import { ndarray, sum, product, core } from '../node_modules/vecto';
+ * import { cost_grad, shuffle } from '../util/net_util';
+ * import cost form '../util/cost';
+ * import lyr from '../util/layers';
  */
-const { sigma_dash,cost_grad,shuffle } = require('../util/net_util'),
+const { cost_grad,shuffle } = require('../util/net_util'),
 cost = require('../util/cost'),
-activ = require('../util/activ'),
-lyr = require('./util/layers'),
+lyr = require('../util/layers'),
 { ndarray,sum,product,core } = require('../node_modules/vecto');
 
 
@@ -112,7 +113,7 @@ class Network{
              activ_ = [];
 
         activ.push(input);
-        for(let i=0;i<this.lyrs.length-1; i++){
+        for(let i=0;i<this.lyrs.length; i++){
             let res = this.lyrs[i].fire(activ[i-1]);
             activ.push(res[0]);
             z.push(res[1]);
@@ -132,7 +133,12 @@ class Network{
         }
     }
 
-    /* backpropagation : Calculates the error in activation of every layer */
+    /* backpropagation : Calculates the error in activation of every layer 
+    * @a : [array] , The activation of the output layer
+    * @y : [array] , The labels(desired output) for given input
+    * Returns : [delw,delb], delw is an array of ndarrays having error in weights
+    *           of every layer and delb is array of ndarrays having errors in biases
+    */
     backprop(a,y){
         let delw = [],
             delb = [],
@@ -144,7 +150,20 @@ class Network{
             delb.push(ndarray.zeroes(this.lyrs[i].biases.shape));
         }
 
-        delta.push(product(grad_c,this.activ_[this.lyrs_count-1]));
+        delta[this.lyrs_count-2] = (product(grad_c,this.activ_[this.lyrs_count-2]));
+        
+        //backpropogation
+        for(let i=this.lyrs_count-3; i>=0; i--){
+            let wt = this.lyrs[i+1].weights.transpose();
+            let part_act = product(wt,delta[i+1],'matrix');
+            delta[i] = product(part_act,this.activ_[i],'dot');
+        }
+
+        for(let i=0; i<this.lyrs.length; i++){
+            //Continue from here tommorrow.............
+        }
+
+        return [delw, delb];
 
     }
 
