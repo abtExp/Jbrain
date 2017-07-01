@@ -6,16 +6,17 @@
  * Author : Anubhav Tiwari <atworkstudios@gmail.com>
  *
  */
-/* Browser support not available , un-comment if using transpiler and comment require
-statements for if not in node environment
- * import ndarray from 'vecto';
- * import net_util from 'net_util';
+
+/* Support not available , un-comment if using transpiler
+ * import { ndarray, sum, product, core } from '../node_modules/vecto';
+ * import { cost_grad, shuffle } from '../util/net_util';
+ * import cost form '../util/cost';
+ * import lyr from '../util/layers';
  */
-const { lyr,sigma_dash,sigmoid_function,
-		weighted_input,cost_grad,shuffle } = require('../util/net_util');
-const cost = require('../util/cost');
-const activ = require('../util/activ');
-const { ndarray,sum,product } = require('../node_modules/vecto');
+const { cost_grad,shuffle } = require('../util/net_util'),
+cost = require('../util/cost'),
+lyr = require('../util/layers'),
+{ ndarray,sum,product,core } = require('../node_modules/vecto');
 
 
 /* define a network with net_config representing each layer with the number of 
@@ -24,144 +25,182 @@ const { ndarray,sum,product } = require('../node_modules/vecto');
  * in the ith layer.
  */
 
-
-class Network {
-	constructor(net_config,type='sigmoid') {
-		this.net_config = net_config;
+class Network{
+    /* Constructor
+    * 
+    * @net_config : [array ( int )], ( the layer wise representation of the network)
+    * @lyr_type : 'String' ( The type of neurons, the layer consists of )
+    * Possible types : sigmoid, softmax, relu, etc.
+    * @op_lyr : 'String' ( Type of neurons in the output layer )
+    */
+    
+    constructor(net_config,lyr_type='sigmoid',op_lyr='sigmoid'){
+        this.net_config = net_config;
 		this.lyrs_count = net_config.length;
-		this.weights = [];
-		this.biases = [];
-
-		/* Random initialization of weights and biases */
-		for (let i = 1; i < this.lyrs_count; i++) {
-			this.weights.push(lyr(this.net_config[i], this.net_config[i - 1]));
-			this.biases.push(lyr(this.net_config[i]));
+		this.lyrs = [];
+        this.activ_ = [];
+		/* Make Layers by providing input weights and the 
+        neuron count for lth layer and also the type of layer */
+		for (let i = 1; i < this.lyrs_count-1; i++) {
+			this.lyrs.push(new lyr(this.net_config[i], this.net_config[i - 1],lyr_type));
 		}
+        // output layer
+        this.lyrs.push(new lyr(this.net_config[this.lyrs_count-2],this.net_config[this.lyrs_count-1],op_lyr));
+    }
+
+    /* Fit the Network (i.e., train) 
+    * @train_features : [array], of features for the network to learn on
+    * @train_labels : [array], of desired results
+    * @neta : number ( float value ), the learning rate
+    * @epoch : number ( int ), Number of learning cycles over which the optimisation takes place
+    * @cost_fn : 'String', The cost function to be used for optimisation of weights and biases ( learning )
+    * @evaluate : !Boolean!, whether to evaluate the learning of the network
+    * @eval_epoch : number ( int ), of epochs(learning cycles) after which to evaluate the learning
+    * @validate : !Boolean!, whether validation data will be provided for better learning
+    * @validate_dat : [array], of validation features to learn better, @validate must be true
+    *
+    * Returns : Nothing, Just optimises the neurons's weights and biases.
+    */
+
+    fit({ train_features, train_labels, neta = 0.5, epoch = 10, m = 2, cost_fn = cost.cross_entropy, 
+          evaluate=true,eval_epoch=5, validate=false, validate_dat = null }) {
+              let n = 0;
+              this.input = train_features;
+              this.labels = train_labels;
+
+              // Training the network
+
+              while(n<epoch){
+                  //forming mini batches
+                  let activation = [],
+                  x = [], 
+                  y = [];
+                  [x, y] = shuffle(this.input, m, this.labels);
+
+                  //updating weights and biases
+                  for(let i=0; i<x.length; i++){
+                      let a = [],
+                          z = [],
+                       delw = [],
+                       delb = [];
+
+                      [a,z] = this.feed_forward(x[i]);
+                      this.z = z;
+                      this.activations = a;
+                      [delw, delb] = this.backprop(a[this.lyrs_count-1],y[i]);
+                      this.SGD(neta, m, cost_fn, delw, delb);
+                  }
+
+                  //EVALUATE
+                  if(evaluate){
+                      if(n%eval_epoch === 0){
+                        this.eval();
+                      }
+                  }
+                  n++;
+              }
 	}
 
-	/* Fit the Network (i.e., train) */
+    /* feed_forward : Calculates the activation of each layer.
+    * @input : the input to the input layer
+    * Returns : An array containing Activations of each layer
+    *           and also the weighted inputs for each layer.  
+    */
+    
+    feed_forward(input){
+        let  activ = [],
+             z = [],
+             activ_ = [];
 
-	fit({ train_features, train_labels, neta = 0.5, epoch = 10, m = 2, 
-		  cost_fn = cost.cross_entropy, activ_fn = activ.sigmoid, evaluate=true,
-		  eval_epoch=5, validate=false, validate_dat = null }) {
-		// console.log(train_features);
-		this.input = train_features;
-		this.labels = train_labels;
-		this.activ_fn = activ_fn;
-		this.cost_fn = cost_fn;
-		this.evaluate = evaluate;
-		this.eval_epoch = eval_epoch;
-		this.validate = validate;
-		this.val_dat = validate_dat;
-		/* optimise weights and biases for each input example x, by SGD using backprop */
-		this.SGD(neta, epoch, m, cost_fn);
-	}
+        activ.push(input);
+        for(let i=0;i<this.lyrs.length; i++){
+            let res = this.lyrs[i].fire(activ[i-1]);
+            activ.push(res[0]);
+            z.push(res[1]);
+            activ_.push(this.lyrs[i].activ_dash(z[i]));
+        }
 
-	/* Feed forward the activation of each layer as input to next layer 
-	and recieve the output of final layer as network's output */
+        this.activ_ = activ_;
+        return [activ,z];
+    }
 
-	feed_forward(input, activ_fn=activ.sigmoid) {
-		const activation = [];
-		const Z = [];
-		activation.push(input);
-		for (let i = 1; i < this.lyrs_count; i++) {
-			let z = weighted_input(this.weights[i-1].array, activation[i-1], this.biases[i-1].array);
-			let activ = activ_fn(z);
-			activation.push(activ);
-			Z.push(z);
-		}
+    /* SGD : Stochastic Gradient Descent, Stepwise learning 
+    * @neta : fl.oat value, the learning rate
+    * @m : int , the number of epochs
+    * @cost : 'String' , the name of the cost function,
+    *         currently only 'quad_cost' and 'cross_entropy' are 
+    *         supported
+    * @delw : [array[ndarrays]] , the dc/dw
+    * @delb : [array[ndarrays]] , the dc/db
+    * Returns : Nothing , just performs gradient descent and optimises weights
+    *           and biases
+    */
+    SGD(neta, m, cost, delw, delb){
+        let factor = (-(neta/m));
 
-		return [activation, Z];
-	}
+        //optimising weights and biases
+        for(let i=0; i<this.lyrs.length-1; i++){
+            delw[i].arrange(product(delw[i].array,factor));
+            delb[i].arrange(product(delb[i].array,factor));
+            this.lyrs[i].weights.add(delw[i]);
+            this.lyrs[i].biases.add(delb[i]);
+        }
+    }
 
-	/* SGD : (Stochastic Gradient Descent), Updates the weights and biases 
-	by gradient descent using stochastic/online learning (values of w and b optimised for
-	every example rather than averaging over the whole batch as in batch learning)
-	*/
+    /* backpropagation : Calculates the error in activation of every layer 
+    * @a : [array] , The activation of the output layer
+    * @y : [array] , The labels(desired output) for given input
+    * Returns : [delw,delb], delw is an array of ndarrays having error in weights
+    *           of every layer and delb is array of ndarrays having errors in biases
+    */
+    backprop(a,y){
+        let delw = [],
+            delb = [],
+            grad_c = cost_grad(a,y),
+            delta = [];
 
-	SGD(neta, epoch, m, cost_fn) {
-		const factor = -(neta / m);
-		let x, y, delta_w, delta_b;
-		while (epoch) {
-			[x, y] = shuffle(this.input, m, this.labels);
-			for (let i = 0; i < m; i++) {
-                [delta_w, delta_b] = this.backprop(x[i], y[i]);
-				/* Optimising weights and biases by gradient descent */
-				for (let j = 1; j < this.lyrs_count; j++) {
-					delta_w[j - 1].arrange(product(delta_w[j - 1].flat, factor));
-					delta_b[j - 1].arrange(product(delta_b[j - 1].flat, factor));
-				}
+        for(let i=0; i<this.lyrs.length; i++){
+            delw.push(ndarray.zeroes(this.lyrs[i].weights.shape));
+            delb.push(ndarray.zeroes(this.lyrs[i].biases.shape));
+        }
 
-				/* Updating the weights and biases */
+        delta[this.lyrs.length-1] = (product(grad_c,this.activ_[this.lyrs_count-2],'dot'));
+        
+        //backpropogation
+        for(let i=this.lyrs.length-2; i>=0; i--){
+            for(let j=0; j<this.lyrs[i+1].weights.array.length; j++){
+                let wt = core.transpose(this.lyrs[i+1].weights.array[j]);
+                let part_act = product(wt,delta[i+1],'matrix');
+                delta[i] = product(part_act,this.activ_[i],'dot');
+            }
+        }
 
-				for (let j = 1; j < this.lyrs_count; j++) {
-					this.weights[j - 1].arrange(ndarray.add(this.weights[j - 1], delta_w[j - 1])
-						.flat);
-					this.biases[j - 1].arrange(ndarray.add(this.biases[j - 1], delta_b[j - 1])
-						.flat);
-				}
-			}
-			epoch--;
-		}
-	}
+        //needs to be tested
+        for(let i=0; i<this.lyrs.length; i++){
+            let part = product(this.activations[i],delta[i]);
+            let fpart = [];
+            core.flatten(part,fpart);
+            delw[i].arrange(fpart);
+            delb[i].arrange(delta[i]);
+        }
 
-	/* backprop : calculates the error or noise in weights and biases and optimises the 
-	   weights and biases to give more accurate results and thus modelling learning
-	*/
+        return [delw, delb];
 
-	backprop(x, y) {
-		let nw = [],
-			nb = [];
-		for (let i = 1; i < this.lyrs_count; i++) {
-			nw.push(ndarray.zeroes(this.weights[i - 1].shape));
-			nb.push(ndarray.zeroes(this.biases[i - 1].shape));
-		}
+    }
 
-		let a = [],
-			z = [],
-			delta = [];
-        [a, z] = this.feed_forward(x, this.activ_fn);
-		let grad_c = cost_grad(a[this.lyrs_count - 1], y);
-		let sig_ = z[this.lyrs_count - 2].map((i) => {
-			return sigma_dash(i);
-		});
+    /* eval : evaluates the learning of network by comparing the accuracy */
+    eval(){
 
-		delta[this.lyrs_count - 2] = product(sig_, grad_c);
-		/* Backpropagating */
-		for (let i = this.lyrs_count - 2; i >= 1; i--) {
-			let ele = delta[i].length > 1 ? delta[i] : delta[i][0];
-			let part_act = product(this.weights[i].array, ele);
-			let sig_ = z[i - 1].map(i => sigma_dash(i))
-			delta[i - 1] = product(part_act, sig_,'dot');//wrong, have to calculate (w^T.del)osig_
-		}
+    }
 
-		for (let i = 1; i < this.lyrs_count; i++) {
-			/* plus the activation for last hidden layer(in this case lyr having 2 neurons
-			contains 2 elems, but the delta for the output layer is scalar, thus uneven size error)
-			*/
-			let warr = [],
-				barr = [];
-			let ele = delta[i-1].length > 1 ? delta[i-1] : delta[i-1][0];
-			let part = product(a[i - 1], ele);
-			console.log(`activ = `,a[i-1]);
-			console.log(`del = `,ele);
-			ndarray.flatten(part, warr);
-			ndarray.flatten(delta[i-1], barr);
-			nw[i - 1].arrange(warr);
-			nb[i - 1].arrange(barr);
-		}
-		return [nw, nb];
-	}
-
-	predict(test_features) {
-		const res = this.feed_forward(test_features);
-		return res[0][this.lyrs_count - 1];
-	}
-
-	evaluate(prediction, test_labels) {
-
-		return (sum(test_labels, (-1 * (predictions))));
-	}
+    /* predict : Predicts the output for the given test feature 
+    * @test_features : [array] , The features for which the prediction is 
+    *                  to be made.
+    * Returns : [array] , The activation of the output layer.                       
+    */
+    predict(test_features){
+        return this.feed_forward(test_features)[0][this.lyrs_count-1];
+    }
 }
 
 module.exports = Network;
