@@ -51,11 +51,11 @@ class Network{
     /* Fit the Network (i.e., train) 
     * @train_features : [array], of features for the network to learn on
     * @train_labels : [array], of desired results
-    * @neta : number ( float value ), the learning rate
-    * @epoch : number ( int ), Number of learning cycles over which the optimisation takes place
+    * @neta : fl.oat value, the learning rate
+    * @epoch : int , Number of learning cycles over which the optimisation takes place
     * @cost_fn : 'String', The cost function to be used for optimisation of weights and biases ( learning )
     * @evaluate : !Boolean!, whether to evaluate the learning of the network
-    * @eval_epoch : number ( int ), of epochs(learning cycles) after which to evaluate the learning
+    * @eval_epoch : int , of epochs(learning cycles) after which to evaluate the learning
     * @validate : !Boolean!, whether validation data will be provided for better learning
     * @validate_dat : [array], of validation features to learn better, @validate must be true
     *
@@ -102,8 +102,8 @@ class Network{
 	}
 
     /* feed_forward : Calculates the activation of each layer.
-    * @input : the input to the input layer
-    * Returns : An array containing Activations of each layer
+    * @input : [array] , the input to the input layer
+    * Returns : [a,z] ,  An array containing Activations of each layer
     *           and also the weighted inputs for each layer.  
     */
     
