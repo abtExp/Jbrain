@@ -24,12 +24,5 @@ module.exports = class lyr{
     //Performs activ_dash
     activ_dash(z){
         return this.activation_fn.dash(z);
-    }
-
-    
-
-
-    
+    }    
 }
-
-module.exports = lyr;
