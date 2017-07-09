@@ -36,14 +36,14 @@ class Network{
     
     constructor(net_config,lyr_type='sigmoid',op_lyr='sigmoid'){
         this.net_config = net_config;
-		this.lyrs_count = net_config.length;
-		this.lyrs = [];
+	this.lyrs_count = net_config.length;
+	this.lyrs = [];
         this.activ_ = [];
-		/* Make Layers by providing input weights and the 
+	/* Make Layers by providing input weights and the 
         neuron count for lth layer and also the type of layer */
-		for (let i = 1; i < this.lyrs_count-1; i++) {
-			this.lyrs.push(new lyr(this.net_config[i], this.net_config[i - 1],lyr_type));
-		}
+	for (let i = 1; i < this.lyrs_count-1; i++) {
+		this.lyrs.push(new lyr(this.net_config[i], this.net_config[i - 1],lyr_type));
+	}
         // output layer
         this.lyrs.push(new lyr(this.net_config[this.lyrs_count-2],this.net_config[this.lyrs_count-1],op_lyr));
     }
