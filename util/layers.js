@@ -13,13 +13,8 @@ module.exports = class lyr{
     // Calculates activation for this layer
     fire(x){
         const { weighted_input } = require('../util/net_util');
-        // console.log(this.weights.array);
-        // console.log(x);
-        // console.log(this.biases.array);
         let z = weighted_input(this.weights.array,x,this.biases.array),
         a = this.activation_fn(z);
-        console.log(z);
-        console.log(a);
         this.activ_ = this.activ_dash(z);
         return [a,z];
     }

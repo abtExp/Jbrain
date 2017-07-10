@@ -45,7 +45,7 @@ class Network{
 		this.lyrs.push(new lyr(this.net_config[i], this.net_config[i - 1],lyr_type));
 	}
         // output layer
-        this.lyrs.push(new lyr(this.net_config[this.lyrs_count-2],this.net_config[this.lyrs_count-1],op_lyr));
+        this.lyrs.push(new lyr(this.net_config[this.lyrs_count-1],this.net_config[this.lyrs_count-2],op_lyr));
     }
 
     /* Fit the Network (i.e., train) 
