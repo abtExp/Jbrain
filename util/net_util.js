@@ -5,9 +5,8 @@ const { ndarray, sum, product, core } = require('../node_modules/vecto');
 function weighted_input(w, x, b) {
     const wa = product(w, x, 'dot');
     const sigwx = sum(wa);
-    let z = sum(sigwx, b);// whatif bias is a single element ? 
-    //As in for the output array or any hidden layer have only 1 neuron
-    return z;
+    let z = sum(sigwx, b);
+    return 0;
 }
 
 /* cost_grad : returns gradC wrt activ */
@@ -22,7 +21,7 @@ function cost_grad(a, y) {
 
 function shuffle(input, mini_batch_size, labels) {
     let batch = [],
-    y = [];
+    y = [],
     i;
     while (batch.length <= mini_batch_size) {
         i = Math.floor(Math.random() * input.length);
@@ -35,7 +34,6 @@ function shuffle(input, mini_batch_size, labels) {
 
 
 module.exports = {
-    sigma_dash: sigma_dash,
     weighted_input: weighted_input,
     cost_grad: cost_grad,
     shuffle: shuffle

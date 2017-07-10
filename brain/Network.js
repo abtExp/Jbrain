@@ -94,7 +94,7 @@ class Network{
                   //EVALUATE
                   if(evaluate){
                       if(n%eval_epoch === 0){
-                        this.eval();
+                        this.eval();//todo
                       }
                   }
                   n++;
@@ -114,7 +114,7 @@ class Network{
 
         activ.push(input);
         for(let i=0;i<this.lyrs.length; i++){
-            let res = this.lyrs[i].fire(activ[i-1]);
+            let res = this.lyrs[i].fire(activ[i]);
             activ.push(res[0]);
             z.push(res[1]);
             activ_.push(this.lyrs[i].activ_dash(z[i]));
