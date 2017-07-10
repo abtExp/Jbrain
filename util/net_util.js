@@ -1,4 +1,4 @@
-const { ndarray, sum, product, core } = require('../node_modules/vecto');
+const { sum, product} = require('../node_modules/vecto');
 
 /* weighted_input : calculates sigma(w*x) + b */
 
@@ -35,6 +35,6 @@ function shuffle(input, mini_batch_size, labels) {
 
 module.exports = {
     weighted_input: weighted_input,
-    cost_grad: cost_grad,
-    shuffle: shuffle
+    shuffle: shuffle,
+    cost_grad : cost_grad
 }
