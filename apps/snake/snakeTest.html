@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width,initial-scale=1.0' />
+    <meta name='description' content='A snake game' />
+    <meta name='keywords' content='canvas,js' />
+    <meta name='theme-color' content='#333' />
+    <title>A Snake Game</title>
+    <!-- <link rel='stylesheet' href='' /> -->
+    <style>
+        p {
+            color: blueviolet;
+            font-size: 3em;
+            display: inline;
+            font-family: Courier New, Courier, monospace;
+        }
+        
+        #score {
+            color: #008382;
+            display: inline;
+            font-family: Courier New, Courier, monospace;
+            font-size: 3em;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas width='500px' height='500px'></canvas>
+    <div id='scoreCard'>
+        <p>Score :
+            <p id='score'>0</p>
+        </p>
+    </div>
+    <sciprt src='../../build/build.js'></sciprt>
+    <script src='./snake.js'></script>
+</body>
+
+</html>

@@ -1,10 +1,8 @@
-const { sum, product} = require('../node_modules/vecto');
+const { sum, product } = require('../node_modules/vecto');
 
 /* weighted_input : calculates sigma(w*x) + b */
 
 function weighted_input(w, x, b) {
-    console.log(w);
-    console.log(x);
     const wa = product(w, x, 'dot');
     const sigwx = sum(wa);
     let z = sum(sigwx, b);
@@ -23,8 +21,8 @@ function cost_grad(a, y) {
 
 function shuffle(input, mini_batch_size, labels) {
     let batch = [],
-    y = [],
-    i;
+        y = [],
+        i;
     while (batch.length <= mini_batch_size) {
         i = Math.floor(Math.random() * input.length);
         batch.push(input[i]);
@@ -38,5 +36,5 @@ function shuffle(input, mini_batch_size, labels) {
 module.exports = {
     weighted_input: weighted_input,
     shuffle: shuffle,
-    cost_grad : cost_grad
+    cost_grad: cost_grad
 }
