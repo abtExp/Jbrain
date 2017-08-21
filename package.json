@@ -29,7 +29,8 @@
     "babel-preset-es2015": "^6.24.1",
     "coveralls": "^2.13.1",
     "istanbul": "^0.4.5",
-    "webpack": "^2.6.1"
+    "webpack": "^2.6.1",
+    "webpack-dashboard": "^1.0.0-4"
   },
   "dependencies": {
     "vecto": "^0.6.2"
