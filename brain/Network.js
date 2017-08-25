@@ -84,7 +84,6 @@ class Network {
                 x = [],
                 y = [];
             [x, y] = shuffle(this.input, m, this.labels);
-
             //updating weights and biases
             for (let i = 0; i < x.length; i++) {
                 let a = [],
@@ -93,9 +92,10 @@ class Network {
                     delb = [];
 
                 [a, z] = this.feed_forward(x[i]);
+                // console.log(a);
                 this.z = z;
                 this.activations = a;
-                [delw, delb] = this.backprop(a[this.lyrs_count - 1], y[i]);
+                [delw, delb] = this.backprop(core.flatten(a[this.lyrs_count - 1]), y[i]);
                 this.SGD(neta, m, cost_fn, delw, delb);
             }
 
@@ -123,7 +123,7 @@ class Network {
         activ.push(core.transpose(input));
         for (let i = 0; i < this.lyrs.length; i++) {
             let res = this.lyrs[i].fire(activ[i]);
-            activ.push(res[0]);
+            activ.push(core.transpose(res[0]));
             z.push(res[1]);
             activ_.push(this.lyrs[i].activ_dash(z[i]));
         }
@@ -172,8 +172,9 @@ class Network {
             delb.push(ndarray.zeroes(this.lyrs[i].biases.shape));
         }
 
-        delta[this.lyrs.length - 1] = (math.product(grad_c, this.activ_[this.lyrs_count - 2], 'dot'));
+        delta[this.lyrs.length - 1] = grad_c;
         //backpropogation
+        delta.shift();
         for (let i = this.lyrs.length - 2; i >= 0; i--) {
             for (let j = 0; j < this.lyrs[i + 1].weights.array.length; j++) {
                 let wt = core.transpose(this.lyrs[i + 1].weights.array[j]);

@@ -3,7 +3,7 @@ function crossEntropy(y, a, m) {
     let cost = 0,
         y_ = y.map(i => 1 - i),
         a_ = a.map(i => 1 - i);
-    cost += (-1 / m) * (math.sum(math.product(y, math.log(a)), math.product(y_, math.log(a_))));
+    cost += (-1 / m) * (math.sum(math.product(y, math.log(a), 'dot'), math.product(y_, math.log(a_), 'dot')));
     return cost;
 }
 
