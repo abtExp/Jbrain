@@ -1,11 +1,10 @@
-const { sum, product } = require('../node_modules/vecto');
+const { math } = require('../node_modules/vecto');
 
 /* weighted_input : calculates sigma(w*x) + b */
 
 function weighted_input(w, x, b) {
-    const wa = product(w, x, 'dot');
-    const sigwx = sum(wa);
-    let z = sum(sigwx, b);
+    const wa = math.product(w, x, 'matrix');
+    let z = math.sum(wa, b);
     return z;
 }
 
@@ -15,7 +14,7 @@ function cost_grad(a, y) {
     for (let i = 0; i < y.length; i++) {
         y[i] = -y[i];
     }
-    const gradC = sum(a, y);
+    const gradC = math.sum(a, y);
     return gradC;
 }
 

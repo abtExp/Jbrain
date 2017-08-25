@@ -1,10 +1,17 @@
-function crossEntropy(y, a) {
-    const { sum, core, product, log } = require('../../node_modules/vecto');
-    let cost = 0;
-    cost += (-1 / m) * (sum(product(y, log(a), product(sum(1, -y), log(sum(1, -a)))))); // something like this
+function crossEntropy(y, a, m) {
+    const { core } = require('../../node_modules/vecto');
+    let cost = 0,
+        y_ = y.map(i => 1 - i),
+        a_ = a.map(i => 1 - i);
+    cost += (-1 / m) * (math.sum(math.product(y, math.log(a)), math.product(y_, math.log(a_))));
     return cost;
 }
 
 crossEntropy.grad = (y, a) => {
-    return -(sum(divide(y, a), -(divide(sum(1, -y), sum(1, -a))))); // something like this....
+    let y_ = y.map(i => 1 - i),
+        a_ = a.map(i => 1 - i),
+        o = math.divide(y_, a_).map(i => -1 * i);
+    return -(math.sum(math.divide(y, a), o));
 }
+
+module.exports = crossEntropy;
