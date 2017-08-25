@@ -1,8 +1,9 @@
-const { math } = require('../node_modules/vecto');
+const { math, core } = require('../node_modules/vecto');
 
 /* weighted_input : calculates sigma(w*x) + b */
 
 function weighted_input(w, x, b) {
+    console.log(core.calc_shape(w), core.calc_shape(x));
     const wa = math.product(w, x, 'matrix');
     let z = math.sum(wa, b);
     return z;

@@ -1,0 +1,20 @@
+{
+    "name": "img_rec",
+    "version": "0.0.1",
+    "description": "img recognition",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron ."
+    },
+    "author": "abtExp <atworkstudios@gmail.com>",
+    "license": "MIT",
+    "dependencies": {
+        "electron": "^1.7.5",
+        "jbrain": "^0.2.4",
+        "vecto": "^0.6.3-0"
+    },
+    "devDependencies": {
+        "devtron": "^1.4.0",
+        "tar": "^3.2.0"
+    }
+}

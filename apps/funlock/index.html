@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width,initial-scale=1.0' />
+    <meta name='description' content='' />
+    <meta name='keywords' content='' />
+    <meta name='theme-color' content='' />
+    <title></title>
+    <link rel='stylesheet' href='' />
+</head>
+
+<body>
+    <canvas id='canv' width='500px' height='500px'></canvas>
+    <video width='500px' height='500px'></video>
+    <script>
+        const canv = document.getElementById('canv'),
+            ctx = canv.getContext('2d'),
+            {
+                ipcRenderer,
+                desktopCapturer,
+                remote
+            } = require('electron');
+        ipcRenderer.on('capture', () => {
+            desktopCapturer.getSources({
+                    types: ['window', 'screen']
+                },
+                (err, src) => {
+                    console.log('asdaf');
+                    remote.dialog.showMessageBox({
+                        title: 'srcs',
+                        message: `${src.map(i=>i)}`
+                    })
+                    if (err) throw new Error(err);
+                    for (let i = 0; i < src.length; i++) {
+                        if (src[i].name === 'Electron') {
+                            navigator.mediaDevices.getUserMedia({
+                                audio: false,
+                                video: {
+                                    mandatory: {
+                                        width: 500,
+                                        height: 500,
+                                        chromeMediaSource: 'desktop',
+                                        chromeMediaSourceId: src[i].id
+                                    }
+                                }
+                            }, handleStream, error)
+                        }
+                        return;
+                    }
+                })
+        })
+
+
+        function handleStream(str) {
+            console.log('Streaming');
+            let vid = document.getElementsByTagName('video');
+            vid[0].src = URL.createObjectURL(str);
+            vid.onloadedmetadata = vid.play();
+        }
+    </script>
+</body>
+
+</html>

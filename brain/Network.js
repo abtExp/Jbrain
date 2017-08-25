@@ -15,7 +15,7 @@
  */
 const { cost_grad, shuffle } = require('../util/net_util'),
     cost = require('../util/cost'),
-    lyr = require('../util/layers'), { ndarray, sum, product, core } = require('../node_modules/vecto');
+    lyr = require('../util/layers'), { ndarray, math, core } = require('../node_modules/vecto');
 
 
 /* define a network with net_config representing each layer with the number of 
@@ -76,7 +76,6 @@ class Network {
         let n = 0;
         this.input = train_features;
         this.labels = train_labels;
-
         // Training the network
 
         while (n < epoch) {
@@ -121,7 +120,7 @@ class Network {
             z = [],
             activ_ = [];
 
-        activ.push(input);
+        activ.push(core.transpose(input));
         for (let i = 0; i < this.lyrs.length; i++) {
             let res = this.lyrs[i].fire(activ[i]);
             activ.push(res[0]);
@@ -149,8 +148,8 @@ class Network {
 
         //optimising weights and biases
         for (let i = 0; i < this.lyrs.length - 1; i++) {
-            delw[i].arrange(product(delw[i].array, factor));
-            delb[i].arrange(product(delb[i].array, factor));
+            delw[i].arrange(math.product(delw[i].array, factor));
+            delb[i].arrange(math.product(delb[i].array, factor));
             this.lyrs[i].weights.add(delw[i]);
             this.lyrs[i].biases.add(delb[i]);
         }
@@ -173,24 +172,21 @@ class Network {
             delb.push(ndarray.zeroes(this.lyrs[i].biases.shape));
         }
 
-        delta[this.lyrs.length - 1] = (product(grad_c, this.activ_[this.lyrs_count - 2], 'dot'));
-
+        delta[this.lyrs.length - 1] = (math.product(grad_c, this.activ_[this.lyrs_count - 2], 'dot'));
         //backpropogation
         for (let i = this.lyrs.length - 2; i >= 0; i--) {
             for (let j = 0; j < this.lyrs[i + 1].weights.array.length; j++) {
                 let wt = core.transpose(this.lyrs[i + 1].weights.array[j]);
-                console.log(wt, delta[i + 1]);
-                let part_act = product(wt, delta[i + 1], 'matrix');
-                delta[i] = product(part_act, this.activ_[i], 'dot');
+                let part_act = math.product(wt, delta[i + 1], 'matrix');
+                delta[i] = math.product(part_act, this.activ_[i], 'dot');
             }
         }
+        delta.shift();
 
         //needs to be tested
         for (let i = 0; i < this.lyrs.length; i++) {
-            let part = product(this.activations[i], delta[i]);
-            let fpart = [];
-            core.flatten(part, fpart);
-            delw[i].arrange(fpart);
+            let part = math.product(this.activations[i], delta[i]);
+            delw[i].arrange(core.flatten(part));
             delb[i].arrange(delta[i]);
         }
 
@@ -200,7 +196,7 @@ class Network {
 
     /* eval : evaluates the learning of network by comparing the accuracy */
     eval() {
-
+        let cost = this.cost_function(this.labels, this.activations);
     }
 
     /* predict : Predicts the output for the given test feature 
