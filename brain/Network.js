@@ -100,11 +100,11 @@ class Network {
             }
 
             //EVALUATE
-            if (evaluate) {
-                if (n % eval_epoch === 0) {
-                    this.eval(); //todo
-                }
-            }
+            // if (evaluate) {
+            //     if (n % eval_epoch === 0) {
+            //         this.eval(); //todo
+            //     }
+            // }
             n++;
         }
     }
@@ -172,19 +172,14 @@ class Network {
             delb.push(ndarray.zeroes(this.lyrs[i].biases.shape));
         }
 
-        delta[this.lyrs.length - 1] = grad_c;
+        delta[this.lyrs.length - 1] = core.transpose(grad_c);
         //backpropogation
-        delta.shift();
         for (let i = this.lyrs.length - 2; i >= 0; i--) {
-            for (let j = 0; j < this.lyrs[i + 1].weights.array.length; j++) {
-                let wt = core.transpose(this.lyrs[i + 1].weights.array[j]);
-                let part_act = math.product(wt, delta[i + 1], 'matrix');
-                delta[i] = math.product(part_act, this.activ_[i], 'dot');
-            }
+            let wt = this.lyrs[i + 1].weights.transpose();
+            let part_act = math.product(wt, delta[i + 1], 'matrix');
+            delta[i] = math.product(part_act, core.transpose(this.activ_[i], 'float32'), 'dot');
         }
-        delta.shift();
 
-        //needs to be tested
         for (let i = 0; i < this.lyrs.length; i++) {
             let part = math.product(this.activations[i], delta[i]);
             delw[i].arrange(core.flatten(part));

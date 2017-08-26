@@ -32,6 +32,6 @@
         "webpack": "^2.6.1"
     },
     "dependencies": {
-        "vecto": "^0.6.5"
+        "vecto": "^0.6.6-0"
     }
 }
