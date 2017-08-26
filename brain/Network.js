@@ -181,12 +181,8 @@ class Network {
         }
 
         for (let i = 0; i < this.lyrs.length; i++) {
-            console.log('a[l-1]');
-            console.log(this.activations[i]);
-            console.log('delta[l]');
-            console.log(delta[i]);
-            console.log(delw[i].shape);
-            let part = math.product(this.activations[i], delta[i]);
+            let activ = core.transpose(this.activations[i], 'float32');
+            let part = math.product(delta[i], activ, 'matrix');
             delw[i].arrange(core.flatten(part));
             delb[i].arrange(delta[i]);
         }
