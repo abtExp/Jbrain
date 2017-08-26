@@ -1,6 +1,6 @@
 const { Network } = require('./Jbrain');
 
-let net = new Network([5, 10, 4]);
+let net = new Network([5, 10, 4, 4]);
 
 let train_features = [
     [1, 1, 1, 1, 1],
@@ -25,7 +25,7 @@ let train_labels = [
 
 net.fit({ train_features, train_labels, neta: 0.5, epoch: 1, m: 3 });
 
-let test_features = [1, 1, 1, 0, 1];
+let test_features = [0, 0, 0, 0, 0];
 console.log(net.predict(test_features));
 
 // console.log(net.lyrs[0].weights);

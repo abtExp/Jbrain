@@ -123,7 +123,7 @@ class Network {
         activ.push(core.transpose(input));
         for (let i = 0; i < this.lyrs.length; i++) {
             let res = this.lyrs[i].fire(activ[i]);
-            activ.push(core.transpose(res[0]));
+            activ.push(core.transpose(res[0], 'float32'));
             z.push(res[1]);
             activ_.push(this.lyrs[i].activ_dash(z[i]));
         }
@@ -172,7 +172,7 @@ class Network {
             delb.push(ndarray.zeroes(this.lyrs[i].biases.shape));
         }
 
-        delta[this.lyrs.length - 1] = core.transpose(grad_c);
+        delta[this.lyrs.length - 1] = core.transpose(grad_c, 'float32');
         //backpropogation
         for (let i = this.lyrs.length - 2; i >= 0; i--) {
             let wt = this.lyrs[i + 1].weights.transpose();
@@ -181,6 +181,11 @@ class Network {
         }
 
         for (let i = 0; i < this.lyrs.length; i++) {
+            console.log('a[l-1]');
+            console.log(this.activations[i]);
+            console.log('delta[l]');
+            console.log(delta[i]);
+            console.log(delw[i].shape);
             let part = math.product(this.activations[i], delta[i]);
             delw[i].arrange(core.flatten(part));
             delb[i].arrange(delta[i]);
