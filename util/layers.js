@@ -1,11 +1,8 @@
 module.exports = class lyr {
-    constructor(neuron_count, ip_wts, neuron_type = 'sigmoid') {
+    constructor(config) {
         const { ndarray } = require('../node_modules/vecto');
 
-        this.neurons = neuron_count;
-        this.weights = new ndarray([neuron_count, ip_wts], [], 'float32');
-        this.biases = new ndarray([neuron_count, 1], [], 'float32');
-        this.activation_fn = set_activation(neuron_type);
+
     }
 
     // Calculates activation for this layer
@@ -34,8 +31,11 @@ function set_activation(afunc) {
         case 'softmax':
             return activ.softmax;
 
-            // case 'relu' :
-            // return activ.relu;
+        case 'relu':
+            return activ.relu;
+
+        case 'tanh':
+            return activ.tanh;
 
         default:
             return null;

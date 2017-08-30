@@ -27,24 +27,19 @@ const { cost_grad, shuffle } = require('../util/net_util'),
 class Network {
     /* Constructor
      * 
-     * @net_config : [array ( int )], ( the layer wise representation of the network)
-     * @lyr_type : 'String' ( The type of neurons, the layer consists of )
-     * Possible types : sigmoid, softmax, relu, etc.
-     * @op_lyr : 'String' ( Type of neurons in the output layer )
+     * @net_config : [array ( Objects )], ( the layer wise representation of the network)
      */
 
-    constructor(net_config, lyr_type = 'sigmoid', op_lyr = 'sigmoid') {
-        this.net_config = net_config;
+    constructor(net_config) {
+        this.net_config = net_config || [];
         this.lyrs_count = net_config.length;
         this.lyrs = [];
         this.activ_ = [];
         /* Make Layers by providing input weights and the 
         neuron count for lth layer and also the type of layer */
         for (let i = 1; i < this.lyrs_count - 1; i++) {
-            this.lyrs.push(new lyr(this.net_config[i], this.net_config[i - 1], lyr_type));
+            this.lyrs.push(new lyr(net_config[i]));
         }
-        // output layer
-        this.lyrs.push(new lyr(this.net_config[this.lyrs_count - 1], this.net_config[this.lyrs_count - 2], op_lyr));
     }
 
     /* Fit the Network (i.e., train) 
@@ -65,13 +60,19 @@ class Network {
         train_features,
         train_labels,
         neta = 0.5,
-        epoch = 10,
-        m = 2,
-        cost_fn = cost.cross_entropy,
+        epoch = 10000,
+        m = 1024,
+        cost_fn = 'logLike',
         evaluate = true,
-        eval_epoch = 5,
+        eval_epoch,
         validate = false,
-        validate_dat = null
+        validate_dat,
+        optimizer = {
+            name: 'adam',
+            beta1: 0.9,
+            beta2: 0.999,
+            epsilon: 1e-4,
+        }
     }) {
         let n = 0;
         this.input = train_features;
@@ -96,15 +97,15 @@ class Network {
                 this.z = z;
                 this.activations = a;
                 [delw, delb] = this.backprop(core.flatten(a[this.lyrs_count - 1]), y[i]);
-                this.SGD(neta, m, cost_fn, delw, delb);
+                optimizer(neta, m, cost_fn, delw, delb, W, b);
             }
 
-            //EVALUATE
-            // if (evaluate) {
-            //     if (n % eval_epoch === 0) {
-            //         this.eval(); //todo
-            //     }
-            // }
+            // EVALUATE
+            if (evaluate) {
+                if (n % eval_epoch === 0) {
+                    this.eval(); //todo
+                }
+            }
             n++;
         }
     }
