@@ -1,10 +1,10 @@
 module.exports = class lyr {
-    constructor(neuron_count, ip_wts, neuron_type = 'sigmoid', dtype = 'float32') {
+    constructor(neuron_count, ip_wts, neuron_type = 'sigmoid') {
         const { ndarray } = require('../node_modules/vecto');
 
         this.neurons = neuron_count;
-        this.weights = new ndarray([neuron_count, ip_wts], [], dtype);
-        this.biases = new ndarray([neuron_count, 1], [], dtype);
+        this.weights = new ndarray([neuron_count, ip_wts], [], 'float32');
+        this.biases = new ndarray([neuron_count, 1], [], 'float32');
         this.activation_fn = set_activation(neuron_type);
     }
 
