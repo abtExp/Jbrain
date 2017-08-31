@@ -1,23 +1,31 @@
 import { Network } from 'Jbrain';
 
 let net = new Network([{
-        type: 'conv',
+        type: 'conv2pool',
+        number: 4, // Makes 4 conv - 2 - pool layers with max pooling
+        pooling: 'maxpool',
+        pool_stride: 2,
+        pool_kernel: [2, 2],
         stride: 1, // stride length (defaults to 1)
         kernel: [5, 5], // kernel width, height(defaults to 5,5)
         fMaps: 20, // Number of feature maps (defaults to 2)
         ipShape: [50000, 28, 28, 3], // Number of ex, width, height, channels
         padding: 'valid' // Valid or real padding
     },
-    {
-        type: 'maxpool',
-        stride: 2,
-        kernel: [2, 2],
-        fMaps: 20,
-        ipShape: [25, 25, 20]
-    },
+    // {
+    //     type: 'maxpool',
+    //     stride: 2,
+    //     kernel: [2, 2],
+    //     fMaps: 20,
+    //     ipShape: [25, 25, 20]
+    // },
     {
         type: 'relu',
-        shape: [10, 20],
+        number: 2, // forms 2 relu layers
+        shape: [
+            [10, 20], // shape of first layer
+            [10, 10] // shape of second layer
+        ],
     },
     {
         type: 'softmax',

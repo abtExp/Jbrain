@@ -1,7 +1,7 @@
 module.exports = class lyr {
     constructor(config) {
         const { ndarray } = require('../node_modules/vecto');
-
+        // Make Layers based on the config
 
     }
 
