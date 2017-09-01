@@ -7,7 +7,7 @@ function weighted_input(w, x, b) {
 }
 
 /* cost_grad : returns gradC wrt activ */
-
+// To Be Removed
 function cost_grad(a, y) {
     for (let i = 0; i < y.length; i++) {
         y[i] = -y[i];
