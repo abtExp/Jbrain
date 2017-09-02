@@ -4,6 +4,7 @@ let net = new Network([{
         type: 'conv2pool',
         number: 4, // Makes 4 conv - 2 - pool layers with max pooling
         pooling: 'maxpool',
+        config: [{}], // config for each layer
         pool_stride: 2,
         pool_kernel: [2, 2],
         stride: 1, // stride length (defaults to 1)
@@ -11,6 +12,14 @@ let net = new Network([{
         fMaps: 20, // Number of feature maps (defaults to 2)
         ipShape: [50000, 28, 28, 3], // Number of ex, width, height, channels
         padding: 'valid' // Valid or real padding
+    },
+    {
+        type: 'conv',
+        kernel: [5, 5],
+        stride: 1,
+        fmaps: 20,
+        ipShape: [batch_size, img_width, img_height, channels],
+        activ: 'relu'
     },
     // {
     //     type: 'maxpool',
@@ -20,7 +29,8 @@ let net = new Network([{
     //     ipShape: [25, 25, 20]
     // },
     {
-        type: 'relu',
+        type: 'connected',
+        activation: 'relu',
         number: 2, // forms 2 relu layers
         shape: [
             [10, 20], // shape of first layer
@@ -28,7 +38,8 @@ let net = new Network([{
         ],
     },
     {
-        type: 'softmax',
+        type: 'connected',
+        activation: 'softmax',
         shape: [10, 10]
     }
 ])

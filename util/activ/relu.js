@@ -1,3 +1,4 @@
 module.exports = function relu(z) {
-    return max(0, z);
+    const { math } = require('../../node_modules/vecto');
+    return math.max(0, z);
 }

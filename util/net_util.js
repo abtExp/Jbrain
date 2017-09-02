@@ -6,17 +6,7 @@ function weighted_input(w, x, b) {
     return math.sum(math.product(w, x, 'matrix'), b);
 }
 
-/* cost_grad : returns gradC wrt activ */
-// To Be Removed
-function cost_grad(a, y) {
-    for (let i = 0; i < y.length; i++) {
-        y[i] = -y[i];
-    }
-    const gradC = math.sum(a, y);
-    return gradC;
-}
-
-function shuffle(input, mini_batch_size, labels) {
+function shuffle(input, labels, mini_batch_size) {
     let batch = [],
         y = [],
         i;
