@@ -1,23 +1,13 @@
 /* JBrain : A neural network implementation in Javascript.
- *
- *
  * Project Name : JBrain
- * Project Code Name : JSimpl
+ * Project Code Name : Jason
  * Author : Anubhav Tiwari <atworkstudios@gmail.com>
- *
  */
 
-/* Support not available , un-comment if using transpiler
- * import { ndarray, math, core } from '../node_modules/vecto';
- * import { cost_grad, shuffle } from '../util/net_util';
- * import cost form '../util/cost';
- * import lyr from '../util/layers';
- */
-const { ndarray, math, core } = require('../node_modules/vecto'),
+const { ndarray, math, core } = require('../node_modules/vecto'), { cost_grad, shuffle } = require('../util/net_util'),
     cost = require('../util/cost'),
     Layer = require('../util/layers'),
     optimizer = require('../util/optimizer');
-const { cost_grad, shuffle } = require('../util/net_util');
 
 
 /* define a network with net_config representing each layer with the configuration object
@@ -32,35 +22,38 @@ class Network {
      * @net_config : [array ( Objects )], ( the layer wise representation of the network)
      */
 
-    constructor(net_config) {
-        this.net_config = net_config || [];
+    constructor(net_config, lyr_type = 'relu', op_type = 'softmax') {
+        this.net_config = net_config;
         this.lyrs_count = net_config.length;
         this.layers = [];
         this.weights = [];
         this.biases = [];
 
-        /* Make Layers by providing input weights and the 
-        neuron count for lth layer and also the type of layer */
-        for (let i = 0; i < net_config.length; i++) {
-            if (net_config[i].number) {
-                if (net_config[i].config) {
-                    for (let j = 0; j < net_config[i].number; j++) {
-                        this.layers.push(new Layer(net_config[i].config[j]));
-                        this.weights.push(this.layers[i].weights);
-                        this.biases.push(this.layers[i].biases);
+        if (this.net_config[0].constructor.name === 'Object') {
+            for (let i = 0; i < net_config.length; i++) {
+                if (net_config[i].number) {
+                    if (net_config[i].config) {
+                        for (let j = 0; j < net_config[i].number; j++) {
+                            this.layers.push(new Layer(net_config[i].config[j]));
+                            this.weights.push(this.layers[i].weights);
+                            this.biases.push(this.layers[i].biases);
+                        }
+                    } else {
+                        console.error('Please Provide The Configurration For Each Layer');
                     }
                 } else {
-                    for (let j = 0; j < net_config[i].number; j++) {
-                        this.layers.push(new Layer(net_config[i]));
-                        this.weights.push(this.layers[i].weights);
-                        this.biases.push(this.layers[i].biases);
-                    }
+                    this.layers.push(new Layer(net_config[i]));
+                    this.weights.push(this.layers[i].weights);
+                    this.biases.push(this.layers[i].biases);
                 }
-            } else {
-                this.layers.push(new Layer(net_config[i]));
+            }
+        } else {
+            for (let i = 1; i < this.net_config.length - 1; i++) {
+                this.layers.push(new Layer([this.net_config[i], this.net_config[i - 1]], lyr_type));
                 this.weights.push(this.layers[i].weights);
                 this.biases.push(this.layers[i].biases);
             }
+            this.layers.push(new Layer([this.net_config[this.lyrs_count - 1], this.net_config[this.lyrs_count - 2]], op_type))
         }
     }
 

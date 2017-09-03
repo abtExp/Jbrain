@@ -1,19 +1,22 @@
 module.exports = class Layer {
-    constructor(config) {
+    constructor(config, activation, initializer = 'xaiver') {
         const { ndarray } = require('../node_modules/vecto');
-        this.type = config.type;
-        this.weights = new ndarray(config.shape, [], dtype = 'float32');
-        this.biases = ndarray.zeros([this.neuron_count, 1]);
-        this.activation = set_activation(config.activation);
-
-        if (this.type === 'conv') {
-            convProps(this, config);
-        } else if (this.type === 'pool') {
-            poolProps(this, config);
-        } else if (this.type === 'conv2pool') {
-            convPoolProps(this, config);
+        if (config.constructor.name === 'Object') {
+            this.type = config.type;
+            this.activation_fn = config.activation;
+            if (this.type === 'conv') {
+                convProps(this, config);
+            } else if (this.type === 'pool') {
+                poolProps(this, config);
+            } else if (this.type === 'conv2pool') {
+                convPoolProps(this, config);
+            }
+        } else {
+            this.type = 'connected';
+            this.activation_fn = activation;
+            this.weights = new ndarray(config, initializer);
+            this.biases = ndarray.zeroes([config[0], 1]);
         }
-
     }
 
     // Calculates activation for this layer
@@ -57,7 +60,7 @@ function convProps(layer, config) {
     layer.stride = config.stride;
     layer.fmaps = config.fmaps;
     layer.activation = config.activation;
-    layer.weights = new ndarray([layer.fmaps, layer.kernel[0] * layer.kernel[1], 1]);
+    layer.weights = new ndarray([layer.fmaps, layer.kernel[0] * layer.kernel[1]]);
     layer.biases = new ndarray([layer.fmaps, 1]);
 }
 
@@ -66,7 +69,7 @@ function poolProps(layer, config) {
     layer.stride = config.stride;
     layer.fmaps = config.fmaps;
     layer.activation = config.activation;
-    layer.weights = new ndarray([layer.fmaps, layer.kernel[0] * layer.kernel[1], 1]);
+    layer.weights = new ndarray([layer.fmaps, layer.kernel[0] * layer.kernel[1]]);
     layer.biases = new ndarray([layer.fmaps, 1]);
 }
 

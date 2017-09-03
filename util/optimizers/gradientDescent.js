@@ -1,5 +1,6 @@
-module.exports = class GradientDescent {
+class GradientDescent {
     GD(network, neta, itrns, opt) {
+        const { ndarray, math } = require('../../node_modules/vecto');
         let w = network.weights,
             b = network.biases,
             dw = network.dw,
@@ -16,17 +17,17 @@ module.exports = class GradientDescent {
             }
             for (let t = 0; t < itrns; t++) {
                 for (let l = 0; l < w.length; l++) {
-                    vdw[l].array = math.sum(math.product(vdw[l].array, beta), math.product(dw[l].array, (1 - beta)));
-                    vdb[l].array = math.sum(math.product(vdb[l].array, beta), math.product(db[l].array, (1 - beta)));
-                    w[l].array = math.sum(w[l].array, math.product(vdw[l].array, (-neta)));
-                    b[l].array = math.sum(b[l].array, math.product(vdb[l].array, (-neta)));
+                    vdw[l].arrange(math.sum(math.product(vdw[l].array, beta), math.product(dw[l].array, (1 - beta))));
+                    vdb[l].arrange(math.sum(math.product(vdb[l].array, beta), math.product(db[l].array, (1 - beta))));
+                    w[l].arrange(math.sum(w[l].array, math.product(vdw[l].array, (-neta))));
+                    b[l].arrange(math.sum(b[l].array, math.product(vdb[l].array, (-neta))));
                 }
             }
         } else {
             for (let t = 0; t < itrns; t++) {
                 for (let l = 0; l < w.length; l++) {
-                    w[l].array = math.sum(w[l].array, math.product(dw[l].array, (-neta)));
-                    b[l].array = math.sum(b[l].array, math.product(db[l].array, (-neta)));
+                    w[l].arrange(math.sum(w[l].array, math.product(dw[l].array, (-neta))));
+                    b[l].arrange(math.sum(b[l].array, math.product(db[l].array, (-neta))));
                 }
             }
         }
