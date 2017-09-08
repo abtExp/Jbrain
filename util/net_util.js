@@ -7,21 +7,30 @@ function weighted_input(w, x, b) {
 }
 
 function shuffle(input, labels, mini_batch_size) {
-    let batch = [],
+    let batches = [],
+        batch = [],
         y = [],
-        i;
-    while (batch.length < mini_batch_size) {
-        i = Math.floor(Math.random() * input.length);
-        batch.push(input[i]);
-        y.push(labels[i]);
+        y_ = [],
+        no_of_batches = Math.floor(input.length / mini_batch_size),
+        i, j;
+    console.log(no_of_batches);
+    for (i = 0; i < no_of_batches; i++) {
+        while (batch.length < mini_batch_size) {
+            j = Math.floor(Math.random() * input.length);
+            batch.push(input[j]);
+            y.push(labels[j]);
+        }
+        batches.push(batch);
+        y_.push(y);
+        batch = [];
+        y = [];
     }
-    return [batch, y];
+    return [batches, y_];
 }
 
 
 
 module.exports = {
     weighted_input: weighted_input,
-    shuffle: shuffle,
-    cost_grad: cost_grad
+    shuffle: shuffle
 }

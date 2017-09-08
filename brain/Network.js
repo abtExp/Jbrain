@@ -19,7 +19,7 @@ const { ndarray, math, core } = require('../node_modules/vecto'), { cost_grad, s
 class Network {
     /* Constructor
      * 
-     * @net_config : [array ( Objects )], ( the layer wise representation of the network)
+     * @net_config : [{Objects}]/[numbers], ( the layer wise representation of the network)
      */
 
     constructor(net_config, lyr_type = 'relu', op_type = 'softmax') {
@@ -50,8 +50,8 @@ class Network {
         } else {
             for (let i = 1; i < this.net_config.length - 1; i++) {
                 this.layers.push(new Layer([this.net_config[i], this.net_config[i - 1]], lyr_type));
-                this.weights.push(this.layers[i].weights);
-                this.biases.push(this.layers[i].biases);
+                this.weights.push(this.layers[i - 1].weights);
+                this.biases.push(this.layers[i - 1].biases);
             }
             this.layers.push(new Layer([this.net_config[this.lyrs_count - 1], this.net_config[this.lyrs_count - 2]], op_type))
         }
@@ -77,7 +77,7 @@ class Network {
         neta = 0.5,
         epoch = 10000,
         m = 1024,
-        cost_fn = 'logLike',
+        costFn = 'logLike',
         evaluate = true,
         eval_epoch,
         validate = false,
@@ -89,13 +89,15 @@ class Network {
             epsilon: 1e-4,
         }
     }) {
+        /* A Bit Of Confusion On How I Want To Do This */
         this.features = train_features;
         this.labels = train_labels;
-        this.validate_dat = validate_dat || null;
-        this.feed_forward(this.features);
-        this.backprop(this.activations, this.labels);
-        this.optimizer = getOptimizer(optimizer.name);
-        this.optimizer(this, neta, epoch, m, optimizer);
+        this.costFn = costFn;
+        // this.validate_dat = validate_dat || null;
+        let optimizer = getOptimizer(optimizer.name);
+        this.optimizer = new optimizer(this);
+        this.optimizer.optimize(neta, epoch, m, optimizer);
+        // this.optimizer.optimize(this, neta, epoch, m, optimizer);
     }
 
     /* feed_forward : Calculates the activation of each layer.
@@ -104,22 +106,19 @@ class Network {
      *           and also the weighted inputs for each layer.  
      */
 
-    feed_forward(input) {
+    feedForward(input) {
         let activ = [],
             z = [],
             activ_ = [];
 
         activ.push(core.transpose(input));
-        for (let i = 0; i < this.lyrs.length; i++) {
+        for (let i = 0; i < this.layers.length; i++) {
             let res = this.lyrs[i].fire(activ[i]);
             activ.push(core.transpose(res[0], 'float32'));
             z.push(res[1]);
-            activ_.push(this.lyrs[i].activ_dash(z[i]));
+            activ_.push(this.layers[i].activ_dash(z[i]));
         }
-
-        this.activ_ = activ_;
-        this.activations = activ;
-        this.z = z;
+        return [activ, z, activ_];
     }
 
     /* backpropagation : Calculates the error in activation of every layer 
@@ -134,20 +133,20 @@ class Network {
             grad_c = this.costFunction.grad(y, a) * this.activ_[this.lyrs_count - 1],
             delta = [];
 
-        for (let i = 0; i < this.lyrs.length; i++) {
-            dw.push(ndarray.zeroes(this.lyrs[i].weights.shape));
-            db.push(ndarray.zeroes(this.lyrs[i].biases.shape));
+        for (let i = 0; i < this.layers.length; i++) {
+            dw.push(ndarray.zeroes(this.layers[i].weights.shape));
+            db.push(ndarray.zeroes(this.layers[i].biases.shape));
         }
 
-        delta[this.lyrs.length - 1] = core.transpose(grad_c, 'float32');
+        delta[this.layers.length - 1] = core.transpose(grad_c, 'float32');
         //backpropogation
-        for (let i = this.lyrs.length - 2; i >= 0; i--) {
-            let wt = this.lyrs[i + 1].weights.transpose();
+        for (let i = this.layers.length - 2; i >= 0; i--) {
+            let wt = this.layers[i + 1].weights.transpose();
             let part_act = math.product(wt, delta[i + 1], 'matrix');
             delta[i] = math.product(part_act, core.transpose(this.activ_[i], 'float32'), 'dot');
         }
 
-        for (let i = 0; i < this.lyrs.length; i++) {
+        for (let i = 0; i < this.layers.length; i++) {
             let activ = core.transpose(this.activations[i], 'float32');
             let part = math.product(delta[i], activ, 'matrix');
             dw[i].arrange(core.flatten(part));
@@ -177,7 +176,7 @@ class Network {
 function getOptimizer(optName) {
     const optimizer = require('../util/optimizer');
     if (optName === 'adam') return optimizer.AdamOptimizer
-    else if (optName === 'rmsprop') return optimizer.rmsProp;
+    else if (optName === 'rmsprop') return optimizer.RMSPropOptimizer;
     else if (optName === 'gd') return optimizer.GradientDescent.GD;
     else if (optName === 'sgd') return optimizer.GradientDescent.SGD;
     else if (optName === 'mbdg') return optimizer.GradientDescent.MBGD;

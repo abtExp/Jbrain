@@ -1,5 +1,5 @@
 module.exports = class Layer {
-    constructor(config, activation, initializer = 'xaiver') {
+    constructor(config, activation, initializer = 'xavier') {
         const { ndarray } = require('../node_modules/vecto');
         if (config.constructor.name === 'Object') {
             this.type = config.type;

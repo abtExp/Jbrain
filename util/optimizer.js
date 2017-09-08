@@ -1,9 +1,9 @@
-const GradientDescent = require('./optimizers/gradientDescent'),
+const GradientDescentOptimizer = require('./optimizers/gradientDescent'),
     AdamOptimizer = require('./optimizers/adam'),
-    rmsProp = require('./optimizers/remprop');
+    RMSPropOptimizer = require('./optimizers/rmsprop');
 
 module.exports = {
-    GradientDescent,
+    GradientDescentOptimizer,
     AdamOptimizer,
-    rmsProp
+    RMSPropOptimizer
 }
