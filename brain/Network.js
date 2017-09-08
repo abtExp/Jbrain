@@ -75,13 +75,13 @@ class Network {
         train_features,
         train_labels,
         neta = 0.5,
-        epoch = 10000,
-        m = 1024,
-        costFn = 'logLike',
+        epoch = 100,
+        m = 10,
+        costFn = 'crossEntropy',
         evaluate = true,
-        eval_epoch,
+        eval_epoch = 10,
         validate = false,
-        validate_dat,
+        validate_dat = null,
         optimizer = {
             name: 'adam',
             beta1: 0.9,
@@ -92,7 +92,7 @@ class Network {
         /* A Bit Of Confusion On How I Want To Do This */
         this.features = train_features;
         this.labels = train_labels;
-        this.costFn = costFn;
+        this.costFn = getCostFn(costFn);
         // this.validate_dat = validate_dat || null;
         let optimizer = getOptimizer(optimizer.name);
         this.optimizer = new optimizer(this);
@@ -121,41 +121,6 @@ class Network {
         return [activ, z, activ_];
     }
 
-    /* backpropagation : Calculates the error in activation of every layer 
-     * @a : [array] , The activation of the output layer
-     * @y : [array] , The labels(desired output) for given input
-     * Returns : [delw,delb], delw is an array of ndarrays having error in weights
-     *           of every layer and delb is array of ndarrays having errors in biases
-     */
-    backprop(a, y) {
-        let dw = [],
-            db = [],
-            grad_c = this.costFunction.grad(y, a) * this.activ_[this.lyrs_count - 1],
-            delta = [];
-
-        for (let i = 0; i < this.layers.length; i++) {
-            dw.push(ndarray.zeroes(this.layers[i].weights.shape));
-            db.push(ndarray.zeroes(this.layers[i].biases.shape));
-        }
-
-        delta[this.layers.length - 1] = core.transpose(grad_c, 'float32');
-        //backpropogation
-        for (let i = this.layers.length - 2; i >= 0; i--) {
-            let wt = this.layers[i + 1].weights.transpose();
-            let part_act = math.product(wt, delta[i + 1], 'matrix');
-            delta[i] = math.product(part_act, core.transpose(this.activ_[i], 'float32'), 'dot');
-        }
-
-        for (let i = 0; i < this.layers.length; i++) {
-            let activ = core.transpose(this.activations[i], 'float32');
-            let part = math.product(delta[i], activ, 'matrix');
-            dw[i].arrange(core.flatten(part));
-            db[i].arrange(delta[i]);
-        }
-
-        this.dw = dw;
-        this.db = db;
-    }
 
     /* eval : evaluates the learning of network by comparing the accuracy */
     eval() {
@@ -169,7 +134,7 @@ class Network {
      * Returns : [array] , The activation of the output layer.                       
      */
     predict(test_features) {
-        return this.feed_forward(test_features)[0][this.lyrs_count - 1];
+        return this.feedForward(test_features)[0][this.lyrs_count - 1];
     }
 }
 
@@ -181,5 +146,15 @@ function getOptimizer(optName) {
     else if (optName === 'sgd') return optimizer.GradientDescent.SGD;
     else if (optName === 'mbdg') return optimizer.GradientDescent.MBGD;
 }
+
+function getCostFn(name) {
+    if (name === 'crossEntropy') return cost.cross_entropy;
+    else if (name === 'logLike') return cost.log_like;
+    else if (name === 'quadCost') return cost.quad_cost;
+    else throw new Error('Undefined Cost Function');
+}
+
+
+
 
 module.exports = Network;

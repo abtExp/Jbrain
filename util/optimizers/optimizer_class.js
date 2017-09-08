@@ -3,6 +3,9 @@
 module.exports = class Optimizer {
     constructor(network) {
         const { ndarray, math, core } = require('../../node_modules/vecto');
+        const { shuffle } = require('../net_util');
+
+        this.shuffle = shuffle;
         this.ndarray = ndarray;
         this.math = math;
         this.core = core;
@@ -31,7 +34,7 @@ module.exports = class Optimizer {
             db.push(this.ndarray.zeroes(this.layers[i].biases.shape));
         }
 
-        let gradc = cost.grad(labels[this.layers.length - 1], activations[this.layers.length - 1]),
+        let gradc = this.costFn.grad(labels[this.layers.length - 1], activations[this.layers.length - 1]),
             activ_dash = activ_[this.layers.length - 1];
 
         delta[(this.layers.length - 1)] = this.math.product(gradc, activ_dash, 'dot');
