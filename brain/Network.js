@@ -35,23 +35,17 @@ class Network {
                     if (net_config[i].config) {
                         for (let j = 0; j < net_config[i].number; j++) {
                             this.layers.push(new Layer(net_config[i].config[j]));
-                            this.weights.push(this.layers[i].weights);
-                            this.biases.push(this.layers[i].biases);
                         }
                     } else {
                         console.error('Please Provide The Configurration For Each Layer');
                     }
                 } else {
                     this.layers.push(new Layer(net_config[i]));
-                    this.weights.push(this.layers[i].weights);
-                    this.biases.push(this.layers[i].biases);
                 }
             }
         } else {
             for (let i = 1; i < this.net_config.length - 1; i++) {
                 this.layers.push(new Layer([this.net_config[i], this.net_config[i - 1]], lyr_type));
-                this.weights.push(this.layers[i - 1].weights);
-                this.biases.push(this.layers[i - 1].biases);
             }
             this.layers.push(new Layer([this.net_config[this.lyrs_count - 1], this.net_config[this.lyrs_count - 2]], op_type))
         }
@@ -82,6 +76,7 @@ class Network {
         eval_epoch = 10,
         validate = false,
         validate_dat = null,
+        validate_epochs,
         optimizer = {
             name: 'adam',
             beta1: 0.9,
@@ -97,6 +92,9 @@ class Network {
         let opt = getOptimizer(optimizer.name);
         this.optimizer = new opt(this);
         this.optimizer.optimize(neta, epoch, m, optimizer);
+        if (validate && validate_dat) {
+            this.validate(validate_dat);
+        }
         // this.optimizer.optimize(this, neta, epoch, m, optimizer);
     }
 
@@ -125,7 +123,6 @@ class Network {
     /* eval : evaluates the learning of network by comparing the accuracy */
     eval() {
         let cost = this.costFn(this.labels, this.activations);
-
     }
 
     /* predict : Predicts the output for the given test feature 

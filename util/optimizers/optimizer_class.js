@@ -48,7 +48,10 @@ module.exports = class Optimizer {
             dw[i].arrange(this.math.sum(dw[i].array, this.math.product(delta[i], activations[i])));
             db[i].arrange(this.math.sum(db[i].array, delta[i]));
         }
-
         return [dw, db];
     }
+
+    /* Other Utility Functions That are common to all optimizers
+     * Like The Generations For Every epoch and the optimization vars 
+     */
 }
