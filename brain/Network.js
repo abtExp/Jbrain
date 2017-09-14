@@ -94,8 +94,8 @@ class Network {
         this.labels = train_labels;
         this.costFn = getCostFn(costFn);
         // this.validate_dat = validate_dat || null;
-        let optimizer = getOptimizer(optimizer.name);
-        this.optimizer = new optimizer(this);
+        let opt = getOptimizer(optimizer.name);
+        this.optimizer = new opt(this);
         this.optimizer.optimize(neta, epoch, m, optimizer);
         // this.optimizer.optimize(this, neta, epoch, m, optimizer);
     }
@@ -124,7 +124,7 @@ class Network {
 
     /* eval : evaluates the learning of network by comparing the accuracy */
     eval() {
-        let cost = this.cost_function(this.labels, this.activations);
+        let cost = this.costFn(this.labels, this.activations);
 
     }
 
@@ -150,7 +150,7 @@ function getOptimizer(optName) {
 function getCostFn(name) {
     if (name === 'crossEntropy') return cost.cross_entropy;
     else if (name === 'logLike') return cost.log_like;
-    else if (name === 'quadCost') return cost.quad_cost;
+    else if (name === 'quadCost') return cost.quadCost;
     else throw new Error('Undefined Cost Function');
 }
 

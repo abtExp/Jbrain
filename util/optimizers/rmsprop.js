@@ -1,5 +1,7 @@
 'use strict';
 
+/* Currently Only For Batch Operations, Caution : Not Optimized */
+
 const Optimizer = require('./optimizer_class');
 
 class RMSPropOptimizer extends Optimizer {
@@ -23,11 +25,18 @@ class RMSPropOptimizer extends Optimizer {
         }
 
         for (let i = 0; i < itrns; i++) {
-            for (let l = 0; l < w.length; l++) {
+            let activations = [],
+                z = [],
+                dw = [],
+                db = [],
+                activ_ = [];
+            [activations, z, activ_] = this.feedForward(this.features);
+            [dw, db] = this.backprop(activations, this.labels, activ_);
+            for (let l = 0; l < this.layers.length; l++) {
                 sdw[l].arrange(math.sum(math.product(sdw[l].array, beta), math.product(dw[l].array, (1 - beta))));
                 sdb[l].arrange(math.sum(math.product(sdb[l].array, beta), math.product(db[l].array, (1 - beta))));
-                w[l].arrange(math.sum(w[l].array, math.product(math.divide(dw[l], math.sum(math.sqrt(sdw[l]), epsilon)), (-neta))));
-                b[l].arrange(math.sum(b[l].array, math.product(math.divide(db[l], math.sum(math.sqrt(sdb[l]), epsilon)), (-neta))));
+                this.layers[l].weights.arrange(math.sum(this.layers[l].weights.array, math.product(math.divide(dw[l], math.sum(math.sqrt(sdw[l]), epsilon)), (-neta))));
+                this.layers[l].biases.arrange(math.sum(this.layers[l].biases.array, math.product(math.divide(db[l], math.sum(math.sqrt(sdb[l]), epsilon)), (-neta))));
             }
         }
 

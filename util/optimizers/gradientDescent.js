@@ -100,7 +100,9 @@ class GradientDescentOptimizer extends Optimizer {
         }
     }
 
-    //SGD 
+    SGD(neta, epoch, m, opt) {
+
+    }
 }
 
 module.exports = GradientDescentOptimizer;

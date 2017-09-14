@@ -1,6 +1,6 @@
 module.exports = class Layer {
     constructor(config, activation, initializer = 'xavier') {
-        const { ndarray } = require('../node_modules/vecto');
+        const { ndarray, math } = require('../node_modules/vecto');
         if (config.constructor.name === 'Object') {
             this.type = config.type;
             this.activation_fn = config.activation;
@@ -14,8 +14,10 @@ module.exports = class Layer {
         } else {
             this.type = 'connected';
             this.activation_fn = activation;
-            this.weights = new ndarray(config, initializer);
+            this.weights = new ndarray(config);
             this.biases = ndarray.zeroes([config[0], 1]);
+            this.initializer = getInit(initializer);
+            this.initializer(math);
         }
     }
 
@@ -53,6 +55,15 @@ function set_activation(afunc) {
         default:
             return null;
     }
+}
+
+function getInit(initializer) {
+    if (initializer === 'xavier') return function(math) {
+        if (this.actvation === 'relu') factor = 2
+        else factor = 1
+        this.weights.arrange(math.sqrt(math.divide(factor, this.weights.shape[1])));
+    }
+    else this.weights.arrange();
 }
 
 function convProps(layer, config) {
