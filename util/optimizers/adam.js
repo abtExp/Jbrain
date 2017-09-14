@@ -1,5 +1,9 @@
 'use strict';
 
+/* Currently only for batch operations , Caution : Not Optimized */
+
+// Needs Testing
+
 const Optimizer = require('./optimizer_class');
 
 class AdamOptimizer extends Optimizer {

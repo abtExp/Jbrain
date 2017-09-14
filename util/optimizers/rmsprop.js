@@ -2,6 +2,8 @@
 
 /* Currently Only For Batch Operations, Caution : Not Optimized */
 
+// Needs Testing
+
 const Optimizer = require('./optimizer_class');
 
 class RMSPropOptimizer extends Optimizer {

@@ -63,23 +63,23 @@ function getInit(initializer) {
 }
 
 function convProps(layer, config) {
-    layer.kernel = config.kernel;
-    layer.stride = config.stride;
-    layer.fmaps = config.fmaps;
-    layer.activation = config.activation;
-    layer.weights = new ndarray([layer.fmaps, layer.kernel[0] * layer.kernel[1]]);
-    layer.biases = new ndarray([layer.fmaps, 1]);
+    // layer.kernel = config.kernel;
+    // layer.stride = config.stride;
+    // layer.fmaps = config.fmaps;
+    // layer.activation = config.activation;
+    // layer.weights = new ndarray([layer.fmaps, layer.kernel[0] * layer.kernel[1]]);
+    // layer.biases = new ndarray([layer.fmaps, 1]);
 }
 
 function poolProps(layer, config) {
-    layer.kernel = config.kernel;
-    layer.stride = config.stride;
-    layer.fmaps = config.fmaps;
-    layer.activation = config.activation;
-    layer.weights = new ndarray([layer.fmaps, layer.kernel[0] * layer.kernel[1]]);
-    layer.biases = new ndarray([layer.fmaps, 1]);
+    // layer.kernel = config.kernel;
+    // layer.stride = config.stride;
+    // layer.fmaps = config.fmaps;
+    // layer.activation = config.activation;
+    // layer.weights = new ndarray([layer.fmaps, layer.kernel[0] * layer.kernel[1]]);
+    // layer.biases = new ndarray([layer.fmaps, 1]);
 }
 
 function convPoolProps(layer, config) {
-
+    // Todo
 }

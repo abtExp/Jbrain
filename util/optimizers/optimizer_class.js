@@ -1,5 +1,7 @@
 'use strict';
 
+/* :construction: Under Construction :construction: */
+
 module.exports = class Optimizer {
     constructor(network) {
         const { ndarray, math, core } = require('../../node_modules/vecto');

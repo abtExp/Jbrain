@@ -2,6 +2,10 @@
 
 const Optimizer = require('./optimizer_class');
 
+/* Caution : Heavily Unoptimized */
+
+// Needs Testing
+
 class GradientDescentOptimizer extends Optimizer {
     constructor(network) {
         super(network);
