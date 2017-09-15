@@ -6,16 +6,6 @@ module.exports = {
         path: path.resolve(__dirname, 'build'),
         filename: 'build.js'
     },
-    // module: {
-    //     loaders: [{
-    //         test: /\.js$/,
-    //         loader: "babel-loader",
-    //         use: 'babel-loader?presets[]=es2015'
-    //             // query: {
-    //             //     presets: ['es2015']
-    //             // }
-    //     }]
-    // },
     module: {
         rules: [{
             test: /\.js$/,
