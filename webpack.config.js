@@ -6,15 +6,24 @@ module.exports = {
         path: path.resolve(__dirname, 'build'),
         filename: 'build.js'
     },
+    // module: {
+    //     loaders: [{
+    //         test: /\.js$/,
+    //         loader: "babel-loader",
+    //         use: 'babel-loader?presets[]=es2015'
+    //             // query: {
+    //             //     presets: ['es2015']
+    //             // }
+    //     }]
+    // },
     module: {
-        loaders: [{
+        rules: [{
             test: /\.js$/,
-            exclude: [/node_modules/, /build/],
-            loader: "babel-loader",
+            loader: 'babel-loader',
             query: {
                 presets: ['es2015']
             }
         }]
     },
     plugins: [new ujs()]
-};
+}
