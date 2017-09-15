@@ -10,7 +10,10 @@ module.exports = {
         loaders: [{
             test: /\.js$/,
             exclude: [/node_modules/, /build/],
-            loader: "babel-loader"
+            loader: "babel-loader",
+            query: {
+                presets: ['es2015']
+            }
         }]
     },
     plugins: [new ujs()]

@@ -7,7 +7,7 @@ function quadCost(a, y, m) {
 quadCost.grad = (a, y, m) => {
     const { math } = require('../../node_modules/vecto');
     y_ = y.map(i => -i);
-    return math.product(1 / m, math.sum(a, y_));
+    return math.product((1 / m), math.sum(a, y_));
 }
 
 module.exports = quadCost;

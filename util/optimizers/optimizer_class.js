@@ -17,6 +17,8 @@ module.exports = class Optimizer {
         this.lyrsCount = network.lyrs_count;
         this.features = network.features;
         this.labels = network.labels;
+
+
     }
 
     /* backpropagation : Calculates the error in activation of every layer 
@@ -53,7 +55,63 @@ module.exports = class Optimizer {
         return [dw, db];
     }
 
-    /* Other Utility Functions That are common to all optimizers
-     * Like The Generations For Every epoch and the optimization vars 
-     */
+    /* Produces The Parameter Arrays For Updation */
+
+    preProcecss(opt) {
+        let vdw = [],
+            vdb = [],
+            sdw, sdb, vdwcorr, vdbcorr, sdwcorr, sdbcorr;
+        for (let i = 0; i < this.layers.length; i++) {
+            vdw.push(this.ndarray.zeroes(this.layers[i].weights.shape));
+            vdb.push(this.ndarray.zeroes(this.layers[i].biases.shape));
+        }
+        if (opt === 'rmsprop') {
+            sdw = [];
+            sdb = [];
+            for (let i = 0; i < this.layers.length; i++) {
+                sdw.push(this.ndarray.zeroes(this.layers[i].weights.shape));
+                sdb.push(this.ndarray.zeroes(this.layers[i].biases.shape));
+            }
+        }
+        if (opt === 'adam') {
+            sdwcorr = [];
+            sdbcorr = [];
+            vdwcorr = [];
+            vdbcorr = [];
+            for (let i = 0; i < this.layers.length; i++) {
+                vdwcorr.push(this.ndarray.zeroes(this.layers[i].weights.shape));
+                vdbcorr.push(this.ndarray.zeroes(this.layers[i].biases.shape));
+                sdwcorr.push(this.ndarray.zeroes(this.layers[i].weights.shape));
+                sdbcorr.push(this.ndarray.zeroes(this.layers[i].biases.shape));
+            }
+        }
+    }
+
+    /* Performs Forward And Backward Propagation And Returns The Gradients */
+
+    Props(batch_x, batch_y) {
+        let activations = [],
+            z = [],
+            dw = [],
+            db = [],
+            activ_ = [];
+        [activations, z, activ_] = this.feedForward(batch_x);
+        return this.backprop(activations, batch_y, activ_);
+    }
+
+    /* Form Mini Batches Of Size m */
+
+    formBatches(m) {
+        let batches_x, btaches_y;
+        return this.shuffle(this.features, this.labels, m);
+    }
+
+    /* Updates The Weights And Biases Of The Network */
+
+    updateProcess() {
+        /* The Generic Code For Updation Of Both The Parameters Of The Network As Well As The 
+         * Update Parameters (vdw,vdb,sdw,sdb,vdwcorr,vdbcorr,sdwcorr,sdbcorr)
+         */
+    }
+
 }
