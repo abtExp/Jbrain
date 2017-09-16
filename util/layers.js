@@ -6,21 +6,21 @@
  */
 
 module.exports = class Layer {
-    constructor(config, activation, initializer = 'xavier') {
+    constructor(config, activation, /* initializer = 'xavier' */ ) {
         const { ndarray, math } = require('../node_modules/vecto');
         if (config.constructor.name === 'Object') {
             this.type = config.type || 'connected';
-            this.activation_fn = config.activation;
+            this.activation_fn = set_activation(config.activation);
             if (this.type === 'conv') convProps(this, config);
             else if (this.type === 'pool') poolProps(this, config);
             else if (this.type === 'conv2pool') convPoolProps(this, config);
         } else {
             this.type = 'connected';
-            this.activation_fn = activation;
+            this.activation_fn = set_activation(activation);
             this.weights = new ndarray(config);
             this.biases = ndarray.zeroes([config[0], 1]);
-            this.initializer = getInit(initializer);
-            this.initializer(math);
+            // this.initializer = getInit(initializer);
+            // this.initializer(math);
         }
     }
 

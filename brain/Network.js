@@ -90,6 +90,7 @@ class Network {
         this.costFn = getCostFn(costFn);
         // this.validate_dat = validate_dat || null;
         let opt = getOptimizer(optimizer.name);
+        console.log(opt);
         this.optimizer = new opt(this);
         this.optimizer.optimize(neta, epoch, m, optimizer);
         if (validate && validate_dat) {
@@ -111,7 +112,7 @@ class Network {
 
         activ.push(core.transpose(input));
         for (let i = 0; i < this.layers.length; i++) {
-            let res = this.lyrs[i].fire(activ[i]);
+            let res = this.layers[i].fire(activ[i]);
             activ.push(core.transpose(res[0], 'float32'));
             z.push(res[1]);
             activ_.push(this.layers[i].activ_dash(z[i]));
@@ -139,9 +140,7 @@ function getOptimizer(optName) {
     const optimizer = require('../util/optimizer');
     if (optName === 'adam') return optimizer.AdamOptimizer
     else if (optName === 'rmsprop') return optimizer.RMSPropOptimizer;
-    else if (optName === 'gd') return optimizer.GradientDescent.GD;
-    else if (optName === 'sgd') return optimizer.GradientDescent.SGD;
-    else if (optName === 'mbdg') return optimizer.GradientDescent.MBGD;
+    else if (optName === 'gd' || optName === 'sgd' || optName === 'mbgd') return optimizer.GradientDescent;
 }
 
 function getCostFn(name) {

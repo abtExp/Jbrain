@@ -1,9 +1,14 @@
-var sigmoid = require('./activ/sigmoid');
-var softmax = require('./activ/softmax');
+const sigmoid = require('./activ/sigmoid'),
+    tanh = require('./activ/tanh'),
+    relu = require('./activ/relu'),
+    softmax = require('./activ/softmax');
 
-var activ = {
-    sigmoid : sigmoid,
-    softmax : softmax
+
+const activ = {
+    sigmoid: sigmoid,
+    softmax: softmax,
+    tanh: tanh,
+    relu: relu
 }
 
 module.exports = activ;

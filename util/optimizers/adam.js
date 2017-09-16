@@ -19,7 +19,7 @@ class AdamOptimizer extends Optimizer {
         this.preProcecss('adam');
         for (let i = 0; i < itrns; i++) {
             let dw, db;
-            [dw, db] = this.Props();
+            [dw, db] = this.Props(this.features, this.labels);
             for (let l = 0; l < this.layers.length; l++) {
                 vdw[l].arrange(this.math.sum(this.math.product(vdw[l].array, beta1), this.math.product(dw[l].array, (1 - beta1))));
                 vdb[l].arrange(this.math.sum(this.math.product(vdb[l].array, beta1), this.math.product(db[l].array, (1 - beta1))));
@@ -35,3 +35,5 @@ class AdamOptimizer extends Optimizer {
         }
     }
 }
+
+module.exports = AdamOptimizer;

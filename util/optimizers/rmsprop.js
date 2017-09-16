@@ -27,3 +27,5 @@ class RMSPropOptimizer extends Optimizer {
 
     }
 }
+
+module.exports = RMSPropOptimizer;
