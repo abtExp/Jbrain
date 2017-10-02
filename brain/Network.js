@@ -4,7 +4,7 @@
  * Author : Anubhav Tiwari <atworkstudios@gmail.com>
  */
 
-const { ndarray, math, core } = require('../node_modules/vecto'), { cost_grad, shuffle } = require('../util/net_util'),
+const { core } = require('../node_modules/vecto'), { cost_grad, shuffle } = require('../util/net_util'),
     cost = require('../util/cost'),
     Layer = require('../util/layers'),
     optimizer = require('../util/optimizer');

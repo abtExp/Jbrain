@@ -62,3 +62,21 @@ net.fit({
         epsilon: 1e-4,
     }
 })
+
+
+
+let net = new Network([{
+    type: 'connected',
+    number: 2,
+    config: [{
+        activation: 'tanh',
+        shape: [20, 10]
+    }, {
+        activation: 'relu',
+        shape: [5, 20]
+    }]
+}, {
+    type: 'connected',
+    activation: 'softmax',
+    config: [2, 5]
+}])

@@ -5,23 +5,12 @@
  * And Also Provides An Easy And Fast Way To Perform ML Tasks
  */
 
+const { ndarray, math } = require('../node_modules/vecto');
+
 module.exports = class Layer {
     constructor(config, activation, /* initializer = 'xavier' */ ) {
-        const { ndarray, math } = require('../node_modules/vecto');
-        if (config.constructor.name === 'Object') {
-            this.type = config.type || 'connected';
-            this.activation_fn = set_activation(config.activation);
-            if (this.type === 'conv') convProps(this, config);
-            else if (this.type === 'pool') poolProps(this, config);
-            else if (this.type === 'conv2pool') convPoolProps(this, config);
-        } else {
-            this.type = 'connected';
-            this.activation_fn = set_activation(activation);
-            this.weights = new ndarray(config);
-            this.biases = ndarray.zeroes([config[0], 1]);
-            // this.initializer = getInit(initializer);
-            // this.initializer(math);
-        }
+        if (config.constructor.name === 'Object') constructLayer(this, config);
+        else connectedLayer(this, { shape: config });
     }
 
     // Calculates activation for this layer
@@ -89,4 +78,21 @@ function poolProps(layer, config) {
 
 function convPoolProps(layer, config) {
     // Todo
+}
+
+function connectedLayer(layer, config) {
+    console.log(config);
+    layer.type = 'connected';
+    layer.activation = set_activation(config.activation) || set_activation('tanh');
+    layer.weights = new ndarray(config, 'float32');
+    layer.biases = ndarray.zeroes([config[0], 1], 'float32');
+}
+
+function constructLayer(layer, config) {
+    layer.type = config.type || 'connected';
+    layer.activation = set_activation(config.activation) || set_activation('tanh');
+    if (config.type === 'conv') convProps(layer, config);
+    else if (config.type === 'pool') poolProps(layer, config);
+    else if (config.type === 'conv2pool') convPoolProps(layer, config);
+    else if (config.type === 'connected') connectedLayer(layer, config);
 }
