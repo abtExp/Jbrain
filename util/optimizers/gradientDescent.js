@@ -1,6 +1,6 @@
 'use strict';
 
-const Optimizer = require('./optimizer_class');
+const Optimizer = require('./optimizerClass');
 
 /* Caution : Heavily Unoptimized */
 

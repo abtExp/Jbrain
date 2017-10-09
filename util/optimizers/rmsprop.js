@@ -4,7 +4,7 @@
 
 // Needs Testing
 
-const Optimizer = require('./optimizer_class');
+const Optimizer = require('./optimizerClass');
 
 class RMSPropOptimizer extends Optimizer {
     constructor(network) {
