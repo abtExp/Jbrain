@@ -4,15 +4,13 @@
 
 module.exports = class Optimizer {
     constructor(network) {
-        const { shuffle } = require('../net_util');
-
         this.feedForward = network.feedForward;
         this.layers = network.layers;
         this.costFn = network.constFn;
         this.lyrsCount = network.lyrs_count;
         this.features = network.features;
         this.labels = network.labels;
-
+        this.variablesList = [];
     }
 
     /* backpropagation : Calculates the error in activation of every layer 
@@ -61,6 +59,9 @@ module.exports = class Optimizer {
             vdw.push(ndarray.zeroes(this.layers[i].weights.shape));
             vdb.push(ndarray.zeroes(this.layers[i].biases.shape));
         }
+        this.variablesList.push({ 'vdw': vdw });
+        this.variablesList.push({ 'vdb': vdb });
+
         if (opt === 'rmsprop') {
             sdw = [];
             sdb = [];
@@ -68,18 +69,30 @@ module.exports = class Optimizer {
                 sdw.push(ndarray.zeroes(this.layers[i].weights.shape));
                 sdb.push(ndarray.zeroes(this.layers[i].biases.shape));
             }
+            this.variablesList.push({ 'sdw': sdw });
+            this.variablesList.push({ 'sdb': sdb });
         }
         if (opt === 'adam') {
+            sdw = [];
+            sdb = [];
             sdwcorr = [];
             sdbcorr = [];
             vdwcorr = [];
             vdbcorr = [];
             for (let i = 0; i < this.layers.length; i++) {
+                sdw.push(ndarray.zeroes(this.layers[i].weights.shape));
+                sdb.push(ndarray.zeroes(this.layers[i].biases.shape));
                 vdwcorr.push(ndarray.zeroes(this.layers[i].weights.shape));
                 vdbcorr.push(ndarray.zeroes(this.layers[i].biases.shape));
                 sdwcorr.push(ndarray.zeroes(this.layers[i].weights.shape));
                 sdbcorr.push(ndarray.zeroes(this.layers[i].biases.shape));
             }
+            this.variablesList.push({ 'sdw': sdw });
+            this.variablesList.push({ 'sdb': sdb });
+            this.variablesList.push({ 'vdwcorr': vdwcorr });
+            this.variablesList.push({ 'vdbcorr': vdbcorr });
+            this.variablesList.push({ 'sdwcorr': sdwcorr });
+            this.variablesList.push({ 'sdbcorr': sdbcorr });
         }
     }
 
@@ -109,6 +122,7 @@ module.exports = class Optimizer {
         /* The Generic Code For Updation Of Both The Parameters Of The Network As Well As The 
          * Update Parameters (vdw,vdb,sdw,sdb,vdwcorr,vdbcorr,sdwcorr,sdbcorr)
          */
+
     }
 
 }
