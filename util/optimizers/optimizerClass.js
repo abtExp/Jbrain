@@ -121,6 +121,8 @@ module.exports = class Optimizer {
     updateProcess() {
         /* The Generic Code For Updation Of Both The Parameters Of The Network As Well As The 
          * Update Parameters (vdw,vdb,sdw,sdb,vdwcorr,vdbcorr,sdwcorr,sdbcorr)
+         * Makes more sense to keep just the vdw,vdb,sdw and sdb as the corr versions can be calculated
+         * later at the time of the update.
          */
 
     }
