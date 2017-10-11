@@ -10,7 +10,7 @@ module.exports = class Optimizer {
         this.lyrsCount = network.lyrs_count;
         this.features = network.features;
         this.labels = network.labels;
-        this.variablesList = [];
+        this.variablesList = {};
     }
 
     /* backpropagation : Calculates the error in activation of every layer 
@@ -45,6 +45,8 @@ module.exports = class Optimizer {
             dw[i].arrange(math.sum(dw[i].array, math.product(delta[i], activations[i])));
             db[i].arrange(math.sum(db[i].array, delta[i]));
         }
+        this.dw = dw;
+        this.db = db;
         return [dw, db];
     }
 
@@ -54,45 +56,23 @@ module.exports = class Optimizer {
         const { ndarray } = require('vecto');
         let vdw = [],
             vdb = [],
-            sdw, sdb, vdwcorr, vdbcorr, sdwcorr, sdbcorr;
+            sdw, sdb;
         for (let i = 0; i < this.layers.length; i++) {
             vdw.push(ndarray.zeroes(this.layers[i].weights.shape));
             vdb.push(ndarray.zeroes(this.layers[i].biases.shape));
         }
-        this.variablesList.push({ 'vdw': vdw });
-        this.variablesList.push({ 'vdb': vdb });
+        this.variablesList.vdw = vdw;
+        this.variablesList.vdb = vdb;
 
-        if (opt === 'rmsprop') {
+        if (opt === 'rmsprop' || opt === 'adam') {
             sdw = [];
             sdb = [];
             for (let i = 0; i < this.layers.length; i++) {
                 sdw.push(ndarray.zeroes(this.layers[i].weights.shape));
                 sdb.push(ndarray.zeroes(this.layers[i].biases.shape));
             }
-            this.variablesList.push({ 'sdw': sdw });
-            this.variablesList.push({ 'sdb': sdb });
-        }
-        if (opt === 'adam') {
-            sdw = [];
-            sdb = [];
-            sdwcorr = [];
-            sdbcorr = [];
-            vdwcorr = [];
-            vdbcorr = [];
-            for (let i = 0; i < this.layers.length; i++) {
-                sdw.push(ndarray.zeroes(this.layers[i].weights.shape));
-                sdb.push(ndarray.zeroes(this.layers[i].biases.shape));
-                vdwcorr.push(ndarray.zeroes(this.layers[i].weights.shape));
-                vdbcorr.push(ndarray.zeroes(this.layers[i].biases.shape));
-                sdwcorr.push(ndarray.zeroes(this.layers[i].weights.shape));
-                sdbcorr.push(ndarray.zeroes(this.layers[i].biases.shape));
-            }
-            this.variablesList.push({ 'sdw': sdw });
-            this.variablesList.push({ 'sdb': sdb });
-            this.variablesList.push({ 'vdwcorr': vdwcorr });
-            this.variablesList.push({ 'vdbcorr': vdbcorr });
-            this.variablesList.push({ 'sdwcorr': sdwcorr });
-            this.variablesList.push({ 'sdbcorr': sdbcorr });
+            this.variablesList.sdw = sdw;
+            this.variablesList.sdb = sdb;
         }
     }
 
@@ -100,10 +80,8 @@ module.exports = class Optimizer {
 
     Props(batch_x, batch_y) {
         let activations = [],
-            z = [],
-            dw = [],
-            db = [],
-            activ_ = [];
+            z = [];
+        activ_ = [];
         [activations, z, activ_] = this.feedForward(batch_x);
         return this.backprop(activations, batch_y, activ_);
     }
@@ -118,13 +96,30 @@ module.exports = class Optimizer {
 
     /* Updates The Weights And Biases Of The Network */
 
-    updateProcess() {
+    updateProcess(beta1, beta2) {
         /* The Generic Code For Updation Of Both The Parameters Of The Network As Well As The 
          * Update Parameters (vdw,vdb,sdw,sdb,vdwcorr,vdbcorr,sdwcorr,sdbcorr)
          * Makes more sense to keep just the vdw,vdb,sdw and sdb as the corr versions can be calculated
          * later at the time of the update.
          */
+        let { vdw, vdb } = this.variablesList;
+        if (this.variablesList.sdw && this.variablesList.sdb) {
+            let { sdw, sdb } = this.variablesList;
+        }
 
+        for (let i = 0; i < this.layers.length; i++) {
+            vdw[i].arrange(math.sum(math.product(beta1, vdw[i].array), math.product((1 - beta1), this.dw[i].array)));
+            vdb[i].arrange(math.sum(math.product(beta1, vdb[i].array), math.product((1 - beta1), this.db[i].array)));
+            if (sdw && sdb) {
+                sdw[i].arrange(math.sum(math.product(beta2, sdw[i].array), math.sum((1 - beta2), this.dw[i].array)));
+                sdb[i].arrange(math.sum(math.product(beta2, sdb[i].array), math.sum((1 - beta2), this.db[i].array)));
+            }
+        }
+        this.variablesList.vdw = vdw;
+        this.variablesList.vdb = vdb;
+        if (sdw && sdb) {
+            this.variableList.sdw = sdw;
+            this.variableList.sdb = sdb;
+        }
     }
-
 }
