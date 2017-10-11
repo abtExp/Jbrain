@@ -22,15 +22,30 @@ class GradientDescentOptimizer extends Optimizer {
     }
 
     GD(neta, itrns, opt) {
-        let momentum = opt.momentum || false,
-            beta = opt.beta || 0.9;
+        let beta = opt.beta || 0.9;
+        if (opt.momentum) this.preProcecss('gd');
+        for (let t = 0; t < itrns; t++) {
+            let dw, db;
+            [dw, db] = this.Props(this.features, this.labels);
+            if (opt.momentum) {
+                this.updateProcess(beta);
+                let { vdw, vdb } = this.variablesList;
+                dw = vdw;
+                db = vdb;
+            }
+            this.updateWeights(dw, db, neta);
+        }
+    }
 
-        if (momentum) {
-            this.preProcecss('gd');
-            for (let t = 0; t < itrns; t++) {
+
+    MBGD(neta, epoch, m, opt) {
+        if (opt.momentum) this.preProcess('mbgd');
+        for (let i = 0; i < epoch; i++) {
+            let batches_x, batches_y;
+            [batches_x, batches_y] = this.formBatches(m);
+            for (let b = 0; b < batches_x.length; b++) {
                 let dw, db;
-                [dw, db] = this.Props(this.features, this.labels);
-                // Use if statement here for the momentum case reducing code repetetion
+                [dw, db] = this.Props(batches_x[b], batches_y[b]);
                 if (opt.momentum) {
                     this.updateProcess(beta);
                     let { vdw, vdb } = this.variablesList;
@@ -42,43 +57,19 @@ class GradientDescentOptimizer extends Optimizer {
         }
     }
 
-
-    MBGD(neta, epoch, m, opt) {
-        if (opt.momentum) {
-            this.preProcess('mbgd');
-            for (let i = 0; i < epoch; i++) {
-                let batches_x, batches_y;
-                [batches_x, batches_y] = this.formBatches(m);
-                for (let b = 0; b < batches_x.length; b++) {
-                    let dw, db;
-                    [dw, db] = this.Props(batches_x[b], batches_y[b]);
-                    if (opt.momentum) {
-                        this.updateProcess(beta);
-                        let { vdw, vdb } = this.variablesList;
-                        dw = vdw;
-                        db = vdb;
-                    }
-                    this.updateWeights(dw, db, neta);
-                }
-            }
-        }
-    }
-
     SGD(neta, epoch, m, opt) {
-        if (opt.momentum) {
-            this.preProcess('sgd');
-            for (let t = 0; t < itrns; t++) {
-                for (let i = 0; i < this.features.length; i++) {
-                    let dw, db;
-                    [dw, db] = this.Props(this.features[i], this.labels[i]);
-                    if (opt.momentum) {
-                        this.updateProcess(beta);
-                        let { vdw, vdb } = this.variablesList;
-                        dw = vdw;
-                        db = vdb;
-                    }
-                    this.updateWeights(dw, db, neta);
+        if (opt.momentum) this.preProcess('sgd');
+        for (let t = 0; t < itrns; t++) {
+            for (let i = 0; i < this.features.length; i++) {
+                let dw, db;
+                [dw, db] = this.Props(this.features[i], this.labels[i]);
+                if (opt.momentum) {
+                    this.updateProcess(beta);
+                    let { vdw, vdb } = this.variablesList;
+                    dw = vdw;
+                    db = vdb;
                 }
+                this.updateWeights(dw, db, neta);
             }
         }
     }
