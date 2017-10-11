@@ -17,18 +17,18 @@ module.exports = class Optimizer {
      * @activations : [array] , The activation of the output layer
      * @labels      : [array] , The labels(desired output) for given input
      * @activ_      : [array] , The g'(z) for current batch
-     * Returns      : [delw,delb], delw is an array of ndarrays having error in weights
-     *                of every layer and delb is array of ndarrays having errors in biases
+     * Returns      : [delw,delb], delw is an array of Ndarrays having error in weights
+     *                of every layer and delb is array of Ndarrays having errors in biases
      */
 
     backprop(activations, labels, activ_) {
-        const { ndarray, math } = require('vecto');
+        const { Ndarray, math } = require('vecto');
         let dw = [],
             db = [],
             delta = [];
         for (let i = o; i < this.layers.length; i++) {
-            dw.push(ndarray.zeroes(this.layers[i].weights.shape));
-            db.push(ndarray.zeroes(this.layers[i].biases.shape));
+            dw.push(Ndarray.zeroes(this.layers[i].weights.shape));
+            db.push(Ndarray.zeroes(this.layers[i].biases.shape));
         }
 
         let gradc = this.costFn.grad(labels[this.layers.length - 1], activations[this.layers.length - 1]),
@@ -53,13 +53,13 @@ module.exports = class Optimizer {
     /* Produces The Parameter Arrays For Updation */
 
     preProcecss(opt) {
-        const { ndarray } = require('vecto');
+        const { Ndarray } = require('vecto');
         let vdw = [],
             vdb = [],
             sdw, sdb;
         for (let i = 0; i < this.layers.length; i++) {
-            vdw.push(ndarray.zeroes(this.layers[i].weights.shape));
-            vdb.push(ndarray.zeroes(this.layers[i].biases.shape));
+            vdw.push(Ndarray.zeroes(this.layers[i].weights.shape));
+            vdb.push(Ndarray.zeroes(this.layers[i].biases.shape));
         }
         this.variablesList.vdw = vdw;
         this.variablesList.vdb = vdb;
@@ -68,8 +68,8 @@ module.exports = class Optimizer {
             sdw = [];
             sdb = [];
             for (let i = 0; i < this.layers.length; i++) {
-                sdw.push(ndarray.zeroes(this.layers[i].weights.shape));
-                sdb.push(ndarray.zeroes(this.layers[i].biases.shape));
+                sdw.push(Ndarray.zeroes(this.layers[i].weights.shape));
+                sdb.push(Ndarray.zeroes(this.layers[i].biases.shape));
             }
             this.variablesList.sdw = sdw;
             this.variablesList.sdb = sdb;
@@ -102,6 +102,9 @@ module.exports = class Optimizer {
          * Makes more sense to keep just the vdw,vdb,sdw and sdb as the corr versions can be calculated
          * later at the time of the update.
          */
+
+        const { math } = require('vecto');
+
         let { vdw, vdb } = this.variablesList;
         if (this.variablesList.sdw && this.variablesList.sdb) {
             let { sdw, sdb } = this.variablesList;

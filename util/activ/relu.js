@@ -1,5 +1,5 @@
 function relu(z) {
-    const { math } = require('../../node_modules/vecto');
+    const { math } = require('vecto');
     return math.max(0, z);
 }
 

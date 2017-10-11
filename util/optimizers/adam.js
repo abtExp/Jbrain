@@ -7,11 +7,13 @@
 const Optimizer = require('./optimizerClass');
 
 class AdamOptimizer extends Optimizer {
+
     constructor(network) {
             super(network);
         }
         // Didn't meant to work for batch, works with sgd
     optimize(neta, itrns, opt) {
+        const { math } = require('vecto');
         opt = opt || {};
         let beta1 = opt.beta1 || 0.9,
             beta2 = opt.beta2 || 0.999,
@@ -27,14 +29,14 @@ class AdamOptimizer extends Optimizer {
                     vdbcorr = new ndarray(this.layers[l].biases.shape),
                     sdwcorr = new ndarray(this.layers[l].weights.shape),
                     sdbcorr = new ndarray(this.layers[l].biases.shape);
-                vdwcorr.arrange(this.math.divide(vdw[l].array, (1 - (beta1 ^ (i + 1)))));
-                vdbcorr.arrange(this.math.divide(vdb[l].array, (1 - (beta1 ^ (i + 1)))));
-                sdwcorr.arrange(this.math.divide(sdw[l].array, (1 - (beta2 ^ (i + 1)))));
-                sdbcorr.arrange(this.math.divide(sdb[l].array, (1 - (beta2 ^ (i + 1)))));
+                vdwcorr.arrange(math.divide(vdw[l].array, (1 - (beta1 ^ (i + 1)))));
+                vdbcorr.arrange(math.divide(vdb[l].array, (1 - (beta1 ^ (i + 1)))));
+                sdwcorr.arrange(math.divide(sdw[l].array, (1 - (beta2 ^ (i + 1)))));
+                sdbcorr.arrange(math.divide(sdb[l].array, (1 - (beta2 ^ (i + 1)))));
 
                 //These two should be broken into individual steps
-                this.layers[l].weights.arrange(this.math.sum(this.layers[l].weights.array, this.math.product(this.math.divide(vdwcorr.array, this.math.sum(this.math.sqrt(sdwcorr.array), epsilon)), (-neta))));
-                this.layers[l].biases.arrange(this.math.sum(this.layers[l].biases.array, this.math.product(this.math.divide(vdbcorr.array, this.math.sum(this.math.sqrt(sdbcorr.array), epsilon)), (-neta))));
+                this.layers[l].weights.arrange(math.sum(this.layers[l].weights.array, math.product(math.divide(vdwcorr.array, math.sum(math.sqrt(sdwcorr.array), epsilon)), (-neta))));
+                this.layers[l].biases.arrange(math.sum(this.layers[l].biases.array, math.product(math.divide(vdbcorr.array, math.sum(math.sqrt(sdbcorr.array), epsilon)), (-neta))));
             }
         }
     }

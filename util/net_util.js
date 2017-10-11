@@ -1,4 +1,4 @@
-const { math, core } = require('../node_modules/vecto');
+const { math, core } = require('vecto');
 
 /* weighted_input : calculates sigma(w*x) + b */
 

@@ -2,7 +2,7 @@
 
 const Optimizer = require('./optimizerClass');
 
-/* Caution : Heavily Unoptimized */
+/* Caution : Heavily UNOPTIMISED!!! & UNTESTED!!! */
 
 // Needs Testing
 
@@ -75,6 +75,7 @@ class GradientDescentOptimizer extends Optimizer {
     }
 
     updateWeights(dw, db, neta) {
+        const { math } = require('vecto');
         for (let l = 0; l < this.layers.length; l++) {
             this.layers[l].weights.arrange(math.sum(this.layers[l].weights.array, math.product(dw[l].array, (-neta))));
             this.layers[l].biases.arrange(math.sum(this.layers[l].biases.array, math.product(db[l].array, (-neta))));

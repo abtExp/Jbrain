@@ -5,7 +5,7 @@
  * And Also Provides An Easy And Fast Way To Perform ML Tasks
  */
 
-const { ndarray, math } = require('../node_modules/vecto');
+const { Ndarray, math } = require('vecto');
 
 module.exports = class Layer {
     constructor(config, activation, /* initializer = 'xavier' */ ) {
@@ -63,8 +63,8 @@ function convProps(layer, config) {
     // layer.stride = config.stride;
     // layer.fmaps = config.fmaps;
     // layer.activation = config.activation;
-    // layer.weights = new ndarray([layer.fmaps, layer.kernel[0] * layer.kernel[1]]);
-    // layer.biases = new ndarray([layer.fmaps, 1]);
+    // layer.weights = new Ndarray([layer.fmaps, layer.kernel[0] * layer.kernel[1]]);
+    // layer.biases = new Ndarray([layer.fmaps, 1]);
 }
 
 function poolProps(layer, config) {
@@ -72,8 +72,8 @@ function poolProps(layer, config) {
     // layer.stride = config.stride;
     // layer.fmaps = config.fmaps;
     // layer.activation = config.activation;
-    // layer.weights = new ndarray([layer.fmaps, layer.kernel[0] * layer.kernel[1]]);
-    // layer.biases = new ndarray([layer.fmaps, 1]);
+    // layer.weights = new Ndarray([layer.fmaps, layer.kernel[0] * layer.kernel[1]]);
+    // layer.biases = new Ndarray([layer.fmaps, 1]);
 }
 
 function convPoolProps(layer, config) {
@@ -83,8 +83,8 @@ function convPoolProps(layer, config) {
 function connectedLayer(layer, config) {
     layer.type = 'connected';
     layer.activation = set_activation(config.activation) || set_activation('tanh');
-    layer.weights = new ndarray(config.shape, 'float32');
-    layer.biases = ndarray.zeroes([config.shape[0], 1], 'float32');
+    layer.weights = new Ndarray(config.shape, 'float32');
+    layer.biases = Ndarray.zeroes([config.shape[0], 1], 'float32');
 }
 
 function constructLayer(layer, config) {
