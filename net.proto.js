@@ -30,6 +30,7 @@ let net = new Network([{
     // },
     {
         type: 'connected',
+        input: LayerObject,
         activation: 'relu',
         number: 2, // forms 2 relu layers
         shape: [
