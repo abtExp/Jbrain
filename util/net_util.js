@@ -1,6 +1,7 @@
 const { math, core } = require('vecto');
 
 /* weighted_input : calculates sigma(w*x) + b */
+// Registration Number (Electricity) :  2016019738
 
 function weighted_input(w, x, b) {
     return math.sum(math.product(w, x, 'matrix'), b);

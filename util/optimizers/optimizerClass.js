@@ -114,8 +114,8 @@ module.exports = class Optimizer {
             vdw[i].arrange(math.sum(math.product(beta1, vdw[i].array), math.product((1 - beta1), this.dw[i].array)));
             vdb[i].arrange(math.sum(math.product(beta1, vdb[i].array), math.product((1 - beta1), this.db[i].array)));
             if (sdw && sdb) {
-                sdw[i].arrange(math.sum(math.product(beta2, sdw[i].array), math.sum((1 - beta2), this.dw[i].array)));
-                sdb[i].arrange(math.sum(math.product(beta2, sdb[i].array), math.sum((1 - beta2), this.db[i].array)));
+                sdw[i].arrange(math.sum(math.product(beta2, sdw[i].array), math.sum((1 - beta2), math.pow(this.dw[i].array, 2))));
+                sdb[i].arrange(math.sum(math.product(beta2, sdb[i].array), math.sum((1 - beta2), math.pow(this.db[i].array, 2))));
             }
         }
         this.variablesList.vdw = vdw;
