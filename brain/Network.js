@@ -17,9 +17,12 @@ const { core } = require('../node_modules/vecto'), { cost_grad, shuffle } = requ
  */
 
 class Network {
-    /* Constructor
+    /** constructor : Creating The Network
      * 
-     * @net_config : [{Objects}]/[numbers], ( the layer wise representation of the network)
+     * @net_config : [{Object}]/[int], ( the layer wise representation of the network)
+     * 
+     * Returns : { NetworkObject }
+     * 
      */
 
     constructor(net_config, lyr_type = 'relu', op_type = 'softmax') {
@@ -51,19 +54,40 @@ class Network {
         }
     }
 
-    /* Fit the Network (i.e., train) 
-     * @train_features : [array], of features for the network to learn on
-     * @train_labels : [array], of desired results
-     * @neta : fl.oat value, the learning rate
+    /** fit : Fit the Network (i.e., train) 
+     * 
+     * @train_features : [Number], of features for the network to learn on
+     * 
+     * @train_labels : [Number], of desired results
+     * 
+     * @neta : fl.oat , the learning rate
+     * 
      * @epoch : int , Number of learning cycles over which the optimisation takes place
+     * 
      * @cost_fn : 'String', The cost function to be used for optimisation of weights and biases ( learning )
+     *             available values : 'cross_entropy','quadCost','logLike'
+     * 
      * @evaluate : !Boolean!, whether to evaluate the learning of the network
+     * 
      * @eval_epoch : int , of epochs(learning cycles) after which to evaluate the learning
+     * 
      * @validate : !Boolean!, whether validation data will be provided for better learning
-     * @validate_dat : [array], of validation features to learn better, @validate must be true
-     *
+     * 
+     * @validate_dat : [Number], of validation features to learn better, @validate must be true
+     * 
+     * @validate_epochs : int , Number of epochs after which to evaluate the performance on validation data
+     * 
+     * @optimizer : {Object} : props : @name : 'String' , The name of the optimizer to use
+     *                                          available values : 'adam','rmsprop','gd','sgd','mbgd'
+     * 
+     *                                 @beta/1/2 : fl.oat , The optimization parameter beta(for sgd,mbgd,gd and rmsprop)
+     *                                                      beta1 and beta2 for adam 
+     *                                 @epsilon : fl.oat , The optimization parameter
+     * 
      * Returns : Nothing, Just optimises the neurons's weights and biases.
+     * 
      */
+
 
     fit({
         train_features,
@@ -84,25 +108,25 @@ class Network {
             epsilon: 1e-4,
         }
     }) {
-        /* A Bit Of Confusion On How I Want To Do This */
         this.features = train_features;
         this.labels = train_labels;
         this.costFn = getCostFn(costFn);
         // this.validate_dat = validate_dat || null;
         let opt = getOptimizer(optimizer.name);
-        console.log(opt);
         this.optimizer = new opt(this);
         this.optimizer.optimize(neta, epoch, m, optimizer);
         if (validate && validate_dat) {
             this.validate(validate_dat);
         }
-        // this.optimizer.optimize(this, neta, epoch, m, optimizer);
     }
 
-    /* feed_forward : Calculates the activation of each layer.
-     * @input : [array] , the input to the input layer
-     * Returns : [a,z] ,  An array containing Activations of each layer
+    /** feed_forward : Calculates the activation of each layer.
+     *
+     * @input : [Number] , the input to the input layer
+     * 
+     * Returns : [[Number],[Number]] ,  An array containing Activations of each layer
      *           and also the weighted inputs for each layer.  
+     * 
      */
 
     feedForward(input) {
@@ -126,15 +150,26 @@ class Network {
         let cost = this.costFn(this.labels, this.activations);
     }
 
-    /* predict : Predicts the output for the given test feature 
-     * @test_features : [array] , The features for which the prediction is 
+    /** predict : Predicts the output for the given test feature
+     * 
+     * @test_features : [Number] , The features for which the prediction is 
      *                  to be made.
-     * Returns : [array] , The activation of the output layer.                       
+     * 
+     * Returns : [Number] , The activation of the output layer.                       
+     * 
      */
     predict(test_features) {
         return this.feedForward(test_features)[0][this.lyrs_count - 1];
     }
 }
+
+/** getOptimizer : Returns the Optimizer Class to optimize the params
+ * 
+ * @optName : 'String' , the name of the optimizer   
+ *
+ * Returns : { OptimizerClassObject }
+ * 
+ */
 
 function getOptimizer(optName) {
     const optimizer = require('../util/optimizer');
@@ -142,6 +177,13 @@ function getOptimizer(optName) {
     else if (optName === 'rmsprop') return optimizer.RMSPropOptimizer;
     else if (optName === 'gd' || optName === 'sgd' || optName === 'mbgd') return optimizer.GradientDescent;
 }
+
+/** getCostFn : Returns the cost function for the given name
+ *  
+ * @name : 'String', The cost function to be used for optimisation of weights and biases ( learning )
+ *          available values : 'cross_entropy','quadCost','logLike'
+ *  
+ */
 
 function getCostFn(name) {
     if (name === 'crossEntropy') return cost.cross_entropy;

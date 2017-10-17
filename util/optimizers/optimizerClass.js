@@ -13,11 +13,15 @@ module.exports = class Optimizer {
         this.variablesList = {};
     }
 
-    /* backpropagation : Calculates the error in activation of every layer 
-     * @activations : [array] , The activation of the output layer
-     * @labels      : [array] , The labels(desired output) for given input
-     * @activ_      : [array] , The g'(z) for current batch
-     * Returns      : [delw,delb], delw is an array of Ndarrays having error in weights
+    /** backpropagation : Calculates the error in activation of every layer 
+     * 
+     * @activations : [Number] , The activation of the output layer
+     * 
+     * @labels      : [Number] , The labels(desired output) for given input
+     * 
+     * @activ_      : [Number] , The g'(z) for current batch
+     * 
+     * Returns      : [Number,Number], delw is an array of Ndarrays having error in weights
      *                of every layer and delb is array of Ndarrays having errors in biases
      */
 
