@@ -20,8 +20,9 @@ class AdamOptimizer extends Optimizer {
             epsilon = opt.epsilon || 1e-6;
         this.preProcecss('adam');
         for (let i = 0; i < itrns; i++) {
-            let dw, db;
-            [dw, db] = this.Props(this.features, this.labels);
+            // let dw, db;
+            // [dw, db] = 
+            this.Props(this.features, this.labels);
             this.updateProcess(beta1, beta2);
             let { vdw, vdb, sdw, sdb } = this.variablesList;
             for (let l = 0; l < this.layers.length; l++) {

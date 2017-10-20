@@ -21,7 +21,7 @@ module.exports = class Optimizer {
      * 
      * @activ_      : [Number] , The g'(z) for current batch
      * 
-     * Returns      : [Number,Number], delw is an array of Ndarrays having error in weights
+     * Returns      : [[Number],[Number]], delw is an array of Ndarrays having error in weights
      *                of every layer and delb is array of Ndarrays having errors in biases
      */
 

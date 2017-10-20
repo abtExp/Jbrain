@@ -40,7 +40,7 @@ class Network {
                             this.layers.push(new Layer(net_config[i].config[j]));
                         }
                     } else {
-                        console.error('Please Provide The Configurration For Each Layer');
+                        console.error('Please Provide The Configuration For Each Layer');
                     }
                 } else {
                     this.layers.push(new Layer(net_config[i]));

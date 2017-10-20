@@ -10,13 +10,13 @@ const { Ndarray, math } = require('vecto');
 module.exports = class Layer {
     constructor(config, activation, /* initializer = 'xavier' */ ) {
         if (config.constructor.name === 'Object') constructLayer(this, config);
-        else connectedLayer(this, { shape: config });
+        else connectedProps(this, { shape: config });
     }
 
     // Calculates activation for this layer
-    fire(x) {
+    fire() {
         const { weighted_input } = require('../util/net_util');
-        let z = weighted_input(this.weights.array, x, this.biases.array),
+        let z = weighted_input(this.weights.array, this.input, this.biases.array),
             a = this.activation_fn(z);
         return [a, z];
     }
@@ -80,7 +80,7 @@ function convPoolProps(layer, config) {
     // Todo
 }
 
-function connectedLayer(layer, config) {
+function connectedProps(layer, config) {
     layer.type = 'connected';
     layer.activation = set_activation(config.activation) || set_activation('tanh');
     layer.weights = new Ndarray(config.shape, 'float32');
@@ -92,5 +92,5 @@ function constructLayer(layer, config) {
     if (config.type === 'conv') convProps(layer, config);
     else if (config.type === 'pool') poolProps(layer, config);
     else if (config.type === 'conv2pool') convPoolProps(layer, config);
-    else if (config.type === 'connected') connectedLayer(layer, config);
+    else if (config.type === 'connected') connectedProps(layer, config);
 }

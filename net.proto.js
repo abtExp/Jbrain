@@ -65,19 +65,30 @@ net.fit({
 })
 
 
+// for i + 1 th layer set this.input = layer(i).activation
+// then when layer i fires it automatically sets the input for i+1 th layer
+// which can then fire
 
-let net = new Network([{
-    type: 'connected',
-    number: 2,
-    config: [{
-        activation: 'tanh',
-        shape: [20, 10]
+
+
+let net = new Network([
+    // {
+    //     type: 'input',
+    //     shape: [784, null]
+    // },
+    {
+        type: 'connected',
+        number: 2,
+        config: [{
+            activation: 'tanh',
+            shape: [20, 10]
+        }, {
+            activation: 'relu',
+            shape: [5, 20]
+        }]
     }, {
-        activation: 'relu',
-        shape: [5, 20]
-    }]
-}, {
-    type: 'connected',
-    activation: 'softmax',
-    config: [2, 5]
-}])
+        type: 'connected',
+        activation: 'softmax',
+        shape: [2, 5]
+    }
+])
