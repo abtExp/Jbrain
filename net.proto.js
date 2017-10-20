@@ -92,3 +92,21 @@ let net = new Network([
         shape: [2, 5]
     }
 ])
+
+/*
+
+for array config : [21,2,5,2,2]
+simply set input layer as new layer of shape [net_config[0] ,null]
+type : input
+activation : null
+and on calling the fit method simply set input.activation = train_features
+for training cycle
+
+for object config, require to pass in an input layer config object
+{
+    type : 'input',
+    shape : [784,null],
+    // fscaling : false,
+    // meannorm : false, 
+}
+*/

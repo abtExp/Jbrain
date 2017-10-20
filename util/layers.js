@@ -8,22 +8,23 @@
 const { Ndarray, math } = require('vecto');
 
 module.exports = class Layer {
-    constructor(config, activation, /* initializer = 'xavier' */ ) {
+    constructor(config, activationFunction, input, /* initializer = 'xavier' */ ) {
         if (config.constructor.name === 'Object') constructLayer(this, config);
-        else connectedProps(this, { shape: config });
+        else connectedProps(this, { shape: config, activationFunction: activationFunction, input: input });
     }
 
     // Calculates activation for this layer
     fire() {
         const { weighted_input } = require('../util/net_util');
         let z = weighted_input(this.weights.array, this.input, this.biases.array),
-            a = this.activation_fn(z);
+            a = this.activationFunction(z);
+        this.activation = a;
         return [a, z];
     }
 
     //Performs activ_dash
     activ_dash(z) {
-        return this.activation_fn.dash(z);
+        return this.activationFunction.dash(z);
     }
 
 }
@@ -59,37 +60,37 @@ function getInit(initializer) {
 }
 
 function convProps(layer, config) {
-    // layer.kernel = config.kernel;
-    // layer.stride = config.stride;
-    // layer.fmaps = config.fmaps;
-    // layer.activation = config.activation;
-    // layer.weights = new Ndarray([layer.fmaps, layer.kernel[0] * layer.kernel[1]]);
-    // layer.biases = new Ndarray([layer.fmaps, 1]);
+    // TODO
 }
 
 function poolProps(layer, config) {
-    // layer.kernel = config.kernel;
-    // layer.stride = config.stride;
-    // layer.fmaps = config.fmaps;
-    // layer.activation = config.activation;
-    // layer.weights = new Ndarray([layer.fmaps, layer.kernel[0] * layer.kernel[1]]);
-    // layer.biases = new Ndarray([layer.fmaps, 1]);
+    // TODO
 }
 
 function convPoolProps(layer, config) {
-    // Todo
+    // TODO
 }
 
 function connectedProps(layer, config) {
     layer.type = 'connected';
-    layer.activation = set_activation(config.activation) || set_activation('tanh');
+    layer.activationFunction = set_activation(config.activationFunction) || set_activation('tanh');
     layer.weights = new Ndarray(config.shape, 'float32');
     layer.biases = Ndarray.zeroes([config.shape[0], 1], 'float32');
+    layer.input = config.input;
+    layer.activation = [];
 }
+
+function inputLayer(layer, config) {
+    layer.type = 'input';
+    layer.shape = config.shape;
+    layer.activation = [];
+}
+
 
 function constructLayer(layer, config) {
     layer.type = config.type || 'connected';
-    if (config.type === 'conv') convProps(layer, config);
+    if (config.type === 'input') inputLayer(layer, config);
+    else if (config.type === 'conv') convProps(layer, config);
     else if (config.type === 'pool') poolProps(layer, config);
     else if (config.type === 'conv2pool') convPoolProps(layer, config);
     else if (config.type === 'connected') connectedProps(layer, config);
