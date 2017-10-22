@@ -83,10 +83,7 @@ module.exports = class Optimizer {
     /* Performs Forward And Backward Propagation And Returns The Gradients */
 
     Props(batch_x, batch_y) {
-        let activations = [],
-            z = [];
-        activ_ = [];
-        [activations, z, activ_] = this.feedForward(batch_x);
+        this.feedForward(batch_x);
         return this.backprop(activations, batch_y, activ_);
     }
 

@@ -110,7 +110,7 @@ class Network {
             epsilon: 1e-4,
         }
     }) {
-        this.features = train_features;
+        // this.features = train_features;
         this.labels = train_labels;
         this.costFn = getCostFn(costFn);
         // this.validate_dat = validate_dat || null;
@@ -132,18 +132,11 @@ class Network {
      */
 
     feedForward(input) {
-        let activ = [],
-            z = [],
-            activ_ = [];
-
-        activ.push(core.transpose(input));
-        for (let i = 0; i < this.layers.length; i++) {
-            let res = this.layers[i].fire(activ[i]);
-            activ.push(core.transpose(res[0], 'float32'));
-            z.push(res[1]);
-            activ_.push(this.layers[i].activ_dash(z[i]));
+        this.layers[0].activation.resize(core.calc_shape(input));
+        this.layers[0].activation.arrange(input);
+        for (let i = 1; i < this.layers.length; i++) {
+            this.layers[i].fire();
         }
-        return [activ, z, activ_];
     }
 
 

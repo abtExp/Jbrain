@@ -5,7 +5,7 @@
  * And Also Provides An Easy And Fast Way To Perform ML Tasks
  */
 
-const { Ndarray, math } = require('vecto');
+const { Ndarray, math, core } = require('vecto');
 
 module.exports = class Layer {
     constructor(config, activationFunction, input, /* initializer = 'xavier' */ ) {
@@ -16,10 +16,12 @@ module.exports = class Layer {
     // Calculates activation for this layer
     fire() {
         const { weighted_input } = require('../util/net_util');
-        let z = weighted_input(this.weights.array, this.input, this.biases.array),
+        let z = weighted_input(this.weights.array, this.input.array, this.biases.array),
             a = this.activationFunction(z);
-        this.activation = a;
-        return [a, z];
+        this.activation.resize(core.calc_shape(a));
+        this.activation.arrange(a);
+        this.z = z;
+        this.activ_ = this.activ_dash(z);
     }
 
     //Performs activ_dash
@@ -77,13 +79,13 @@ function connectedProps(layer, config) {
     layer.weights = new Ndarray(config.shape, 'float32');
     layer.biases = Ndarray.zeroes([config.shape[0], 1], 'float32');
     layer.input = config.input;
-    layer.activation = [];
+    layer.activation = new Ndarray([config.shape[0], null]);
 }
 
 function inputLayer(layer, config) {
     layer.type = 'input';
     layer.shape = config.shape;
-    layer.activation = [];
+    layer.activation = new Ndarray(config.shape, 'float32');
 }
 
 
