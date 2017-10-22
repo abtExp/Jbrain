@@ -25,28 +25,28 @@ module.exports = class Optimizer {
      *                of every layer and delb is array of Ndarrays having errors in biases
      */
 
-    backprop(activations, labels, activ_) {
+    backprop(labels) {
         const { Ndarray, math } = require('vecto');
         let dw = [],
             db = [],
             delta = [];
-        for (let i = o; i < this.layers.length; i++) {
+        for (let i = 1; i < this.layers.length; i++) {
             dw.push(Ndarray.zeroes(this.layers[i].weights.shape));
             db.push(Ndarray.zeroes(this.layers[i].biases.shape));
         }
 
-        let gradc = this.costFn.grad(labels[this.layers.length - 1], activations[this.layers.length - 1]),
-            activ_dash = activ_[this.layers.length - 1];
+        let gradc = this.costFn.grad(labels[this.layers.length - 1], this.layers[this.layers.length - 1].activation),
+            activ_dash = this.layers[this.layers.length - 1].activ_;
 
         delta[(this.layers.length - 1)] = math.product(gradc, activ_dash, 'dot');
 
-        for (let i = this.layers.length - 2; i >= 0; i--) {
+        for (let i = this.layers.length - 2; i > 0; i--) {
             delta[i] = math.product(math.product(delta[i + 1],
                 this.layers[i + 1].weights.transpose()), this.layers[i].activ_, 'dot');
         }
 
-        for (let i = 0; i < this.layers.length; i++) {
-            dw[i].arrange(math.sum(dw[i].array, math.product(delta[i], activations[i])));
+        for (let i = 1; i < this.layers.length; i++) {
+            dw[i].arrange(math.sum(dw[i].array, math.product(delta[i], this.layers[i - 1].activation)));
             db[i].arrange(math.sum(db[i].array, delta[i]));
         }
         this.dw = dw;
@@ -84,7 +84,7 @@ module.exports = class Optimizer {
 
     Props(batch_x, batch_y) {
         this.feedForward(batch_x);
-        return this.backprop(activations, batch_y, activ_);
+        return this.backprop(batch_y);
     }
 
     /* Form Mini Batches Of Size m */

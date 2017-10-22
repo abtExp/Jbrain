@@ -29,8 +29,7 @@ class Network {
         this.net_config = net_config;
         this.lyrs_count = net_config.length;
         this.layers = [];
-        this.weights = [];
-        this.biases = [];
+        this.activations = [];
 
         if (this.net_config[0].constructor.name === 'Object') {
             this.layers.push(new Layer(net_config[0]));
@@ -110,7 +109,7 @@ class Network {
             epsilon: 1e-4,
         }
     }) {
-        // this.features = train_features;
+        this.features = train_features;
         this.labels = train_labels;
         this.costFn = getCostFn(costFn);
         // this.validate_dat = validate_dat || null;
