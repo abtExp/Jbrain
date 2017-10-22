@@ -37,13 +37,16 @@ class Network {
                 if (net_config[i].number) {
                     if (net_config[i].config) {
                         for (let j = 0; j < net_config[i].number; j++) {
-                            this.layers.push(new Layer({...net_config[i].config[j], input: this.layers[this.layers.length - 1].activation }));
+                            net_config[i].config[j].input = this.layers[this.layers.length - 1].activation;
+                            net_config[i].config[j].type = net_config[i].type;
+                            this.layers.push(new Layer(net_config[i].config[j]));
                         }
                     } else {
                         console.error('Please Provide The Configuration For Each Layer');
                     }
                 } else {
-                    this.layers.push(new Layer({...net_config[i], input: this.layers[this.layers.length - 1].activation }));
+                    net_config[i].input = this.layers[this.layers.length - 1].activation;
+                    this.layers.push(new Layer(net_config[i]));
                 }
             }
         } else {

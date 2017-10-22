@@ -90,7 +90,7 @@ function inputLayer(layer, config) {
 
 
 function constructLayer(layer, config) {
-    layer.type = config.type || 'connected';
+    // layer.type = config.type || 'connected';
     if (config.type === 'input') inputLayer(layer, config);
     else if (config.type === 'conv') convProps(layer, config);
     else if (config.type === 'pool') poolProps(layer, config);

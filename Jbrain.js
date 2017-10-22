@@ -11,12 +11,12 @@ const Network = require('./brain/Network');
 (() => {
     if (typeof window !== 'undefined') {
         window.Network = Network;
-    } else {
-        module.exports = {
-            Network
-        }
     }
 })()
+
+module.exports = {
+    Network
+}
 
 
 
