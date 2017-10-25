@@ -10,10 +10,9 @@ const { Ndarray, math, core } = require('vecto'),
 
 class Layer {
     constructor(config, activationFunction, input) {
-        let initializer = config.initializer || 'xavier';
+        this.initializer = config.initializer || 'xavier';
         if (config.constructor.name === 'Object') constructLayer(this, config);
         else connectedProps(this, { shape: config, activationFunction: activationFunction, input: input });
-        initialize(initializer);
     }
 
     // Calculates activation for this layer
@@ -52,12 +51,12 @@ function set_activation(afunc) {
     }
 }
 
-function initialize(initializer) {
-    if (initializer === 'xavier') {
-        if (this.actvation === 'relu') factor = 2
+function initialize(layer) {
+    if (layer.initializer === 'xavier') {
+        if (layer.actvation === 'relu') factor = 2
         else factor = 1
-        this.weights.fill('custom', () => math.sqrt(math.divide(factor, this.weights.shape[1])));
-    } else this.weights.fill('linear');
+        layer.weights.fill('custom', () => (Math.random() * Math.pow((factor / layer.weights.shape[1]), 0.5)));
+    } else layer.weights.fill('linear');
 }
 
 function convProps(layer, config) {
@@ -79,6 +78,7 @@ function connectedProps(layer, config) {
     layer.biases = Ndarray.zeroes([config.shape[0], 1], 'float32');
     layer.input = config.input;
     layer.activation = new Ndarray([config.shape[0], null], 'float32', 'zeros');
+    initialize(layer);
 }
 
 function inputLayer(layer, config) {
@@ -89,7 +89,6 @@ function inputLayer(layer, config) {
 
 
 function constructLayer(layer, config) {
-    // layer.type = config.type || 'connected';
     if (config.type === 'input') inputLayer(layer, config);
     else if (config.type === 'conv') convProps(layer, config);
     else if (config.type === 'pool') poolProps(layer, config);
