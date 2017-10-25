@@ -5,17 +5,19 @@
  * And Also Provides An Easy And Fast Way To Perform ML Tasks
  */
 
-const { Ndarray, math, core } = require('vecto');
+const { Ndarray, math, core } = require('vecto'),
+    activ = require('./activ'), { weighted_input } = require('../util/net_util');
 
-module.exports = class Layer {
-    constructor(config, activationFunction, input, /* initializer = 'xavier' */ ) {
+class Layer {
+    constructor(config, activationFunction, input) {
+        let initializer = config.initializer || 'xavier';
         if (config.constructor.name === 'Object') constructLayer(this, config);
         else connectedProps(this, { shape: config, activationFunction: activationFunction, input: input });
+        initialize(initializer);
     }
 
     // Calculates activation for this layer
     fire() {
-        const { weighted_input } = require('../util/net_util');
         let z = weighted_input(this.weights.array, this.input.array, this.biases.array),
             a = this.activationFunction(z);
         this.activation.resize(core.calc_shape(a));
@@ -32,8 +34,6 @@ module.exports = class Layer {
 }
 
 function set_activation(afunc) {
-    const activ = require('./activ');
-
     switch (afunc) {
         case 'sigmoid':
             return activ.sigmoid;
@@ -52,13 +52,12 @@ function set_activation(afunc) {
     }
 }
 
-function getInit(initializer) {
-    if (initializer === 'xavier') return function(math) {
+function initialize(initializer) {
+    if (initializer === 'xavier') {
         if (this.actvation === 'relu') factor = 2
         else factor = 1
-        this.weights.arrange(math.sqrt(math.divide(factor, this.weights.shape[1])));
-    }
-    else this.weights.arrange();
+        this.weights.fill('custom', () => math.sqrt(math.divide(factor, this.weights.shape[1])));
+    } else this.weights.fill('linear');
 }
 
 function convProps(layer, config) {
@@ -79,13 +78,13 @@ function connectedProps(layer, config) {
     layer.weights = new Ndarray(config.shape, 'float32');
     layer.biases = Ndarray.zeroes([config.shape[0], 1], 'float32');
     layer.input = config.input;
-    layer.activation = new Ndarray([config.shape[0], null]);
+    layer.activation = new Ndarray([config.shape[0], null], 'zeros');
 }
 
 function inputLayer(layer, config) {
     layer.type = 'input';
     layer.shape = config.shape;
-    layer.activation = new Ndarray(config.shape, 'float32');
+    layer.activation = new Ndarray(config.shape, 'float32', 'zeros');
 }
 
 
@@ -97,3 +96,5 @@ function constructLayer(layer, config) {
     else if (config.type === 'conv2pool') convPoolProps(layer, config);
     else if (config.type === 'connected') connectedProps(layer, config);
 }
+
+module.exports = Layer;
