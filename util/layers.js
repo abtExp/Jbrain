@@ -78,7 +78,7 @@ function connectedProps(layer, config) {
     layer.weights = new Ndarray(config.shape, 'float32');
     layer.biases = Ndarray.zeroes([config.shape[0], 1], 'float32');
     layer.input = config.input;
-    layer.activation = new Ndarray([config.shape[0], null], 'zeros');
+    layer.activation = new Ndarray([config.shape[0], null], 'float32', 'zeros');
 }
 
 function inputLayer(layer, config) {
