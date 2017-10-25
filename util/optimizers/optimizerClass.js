@@ -61,7 +61,7 @@ module.exports = class Optimizer {
         let vdw = [],
             vdb = [],
             sdw, sdb;
-        for (let i = 0; i < this.layers.length; i++) {
+        for (let i = 1; i < this.layers.length; i++) {
             vdw.push(Ndarray.zeroes(this.layers[i].weights.shape));
             vdb.push(Ndarray.zeroes(this.layers[i].biases.shape));
         }
@@ -71,7 +71,7 @@ module.exports = class Optimizer {
         if (opt === 'rmsprop' || opt === 'adam') {
             sdw = [];
             sdb = [];
-            for (let i = 0; i < this.layers.length; i++) {
+            for (let i = 1; i < this.layers.length; i++) {
                 sdw.push(Ndarray.zeroes(this.layers[i].weights.shape));
                 sdb.push(Ndarray.zeroes(this.layers[i].biases.shape));
             }
@@ -111,7 +111,7 @@ module.exports = class Optimizer {
             let { sdw, sdb } = this.variablesList;
         }
 
-        for (let i = 0; i < this.layers.length; i++) {
+        for (let i = 1; i < this.layers.length; i++) {
             vdw[i].arrange(math.sum(math.product(beta1, vdw[i].array), math.product((1 - beta1), this.dw[i].array)));
             vdb[i].arrange(math.sum(math.product(beta1, vdb[i].array), math.product((1 - beta1), this.db[i].array)));
             if (sdw && sdb) {

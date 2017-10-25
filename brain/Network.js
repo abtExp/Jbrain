@@ -134,9 +134,12 @@ class Network {
      */
 
     feedForward(input) {
+        input = core.transpose(input);
         this.layers[0].activation.resize(core.calc_shape(input));
         this.layers[0].activation.arrange(input);
         for (let i = 1; i < this.layers.length; i++) {
+            console.log(this.layers[i - 1].activation.array);
+            console.log(this.layers[i].input.array);
             this.layers[i].fire();
         }
     }
