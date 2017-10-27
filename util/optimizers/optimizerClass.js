@@ -35,7 +35,7 @@ module.exports = class Optimizer {
             db.push(Ndarray.zeroes(this.layers[i].biases.shape));
         }
 
-        let gradc = this.costFn.grad(labels[this.layers.length - 1], this.layers[this.layers.length - 1].activation),
+        let gradc = this.costFn.grad(labels, this.layers[this.layers.length - 1].activation),
             activ_dash = this.layers[this.layers.length - 1].activ_;
 
         delta[(this.layers.length - 1)] = math.product(gradc, activ_dash, 'dot');
