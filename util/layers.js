@@ -19,6 +19,7 @@ class Layer {
     fire() {
         let z = weighted_input(this.weights.array, this.input.array, this.biases.array),
             a = this.activationFunction(z);
+        console.log(a, z);
         this.activation.resize(core.calc_shape(a));
         this.activation.arrange(a);
         this.z = z;

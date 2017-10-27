@@ -1,9 +1,9 @@
+const { math, core } = require('vecto');
+
 function sigmoid(z) {
-    if (!Array.isArray(z)) {
-        return (1 / 1 + (Math.exp(-z)));
-    } else {
-        return z.map((i) => (1 / (1 + (Math.exp(-i)))));
-    }
+    z_ = core.form_arr(core.flatten(z)).map(i => -i);
+    let activ = math.divide(1, math.sum(1, math.exp(z_)));
+    return activ;
 }
 
 sigmoid.dash = (z) => {
