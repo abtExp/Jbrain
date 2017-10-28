@@ -1,4 +1,4 @@
-function crossEntropy(y, a, m) {
+function crossEntropy(a, y, m) {
     const { core } = require('vecto');
     let cost = 0,
         y_ = y.map(i => 1 - i),

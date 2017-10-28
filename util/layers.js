@@ -22,14 +22,8 @@ class Layer {
         this.activation.resize(core.calc_shape(a));
         this.activation.arrange(a);
         this.z = z;
-        this.activ_ = this.activ_dash(z);
+        this.activ_ = this.activationFunction.dash(z);
     }
-
-    //Performs activ_dash
-    activ_dash(z) {
-        return this.activationFunction.dash(z);
-    }
-
 }
 
 function set_activation(afunc) {

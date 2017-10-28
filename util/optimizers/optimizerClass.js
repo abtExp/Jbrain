@@ -2,13 +2,17 @@
 
 /* :construction: Under Construction :construction: */
 
+const { Ndarray, math, core } = require('vecto');
+
+
 module.exports = class Optimizer {
     constructor(network) {
         this.feedForward = network.feedForward;
         this.layers = network.layers;
-        this.costFn = network.constFn;
+        this.costFn = network.costFn;
         this.lyrsCount = network.lyrs_count;
         this.features = network.features;
+        this.batch_size = this.features.length;
         this.labels = network.labels;
         this.variablesList = {};
     }
@@ -26,7 +30,6 @@ module.exports = class Optimizer {
      */
 
     backprop(labels) {
-        const { Ndarray, math } = require('vecto');
         let dw = [],
             db = [],
             delta = [];
@@ -35,12 +38,19 @@ module.exports = class Optimizer {
             db.push(Ndarray.zeroes(this.layers[i].biases.shape));
         }
 
-        let gradc = this.costFn.grad(labels, this.layers[this.layers.length - 1].activation),
+        let cost = this.costFn(this.layers[this.layers.length - 1].activation.array, labels, this.batch_size);
+        console.log('cost');
+        console.log(cost);
+        let gradc = this.costFn.grad(this.layers[this.layers.length - 1].activation, labels, this.batch_size),
             activ_dash = this.layers[this.layers.length - 1].activ_;
 
+        console.log('shapes of grad and activ_');
+        console.log(core.calc_shape(gradc));
+        console.log(core.calc_shape(activ_dash));
         delta[(this.layers.length - 1)] = math.product(gradc, activ_dash, 'dot');
 
         for (let i = this.layers.length - 2; i > 0; i--) {
+            console.log(delta);
             delta[i] = math.product(math.product(delta[i + 1],
                 this.layers[i + 1].weights.transpose()), this.layers[i].activ_, 'dot');
         }
@@ -57,7 +67,6 @@ module.exports = class Optimizer {
     /* Produces The Parameter Arrays For Updation */
 
     preProcecss(opt) {
-        const { Ndarray } = require('vecto');
         let vdw = [],
             vdb = [],
             sdw, sdb;
@@ -90,6 +99,7 @@ module.exports = class Optimizer {
     /* Form Mini Batches Of Size m */
 
     formBatches(m) {
+        this.batch_size = m;
         const { shuffle } = require('../net_util');
         let batches_x, btaches_y;
         return shuffle(this.features, this.labels, m);
@@ -103,8 +113,6 @@ module.exports = class Optimizer {
          * Makes more sense to keep just the vdw,vdb,sdw and sdb as the corr versions can be calculated
          * later at the time of the update.
          */
-
-        const { math } = require('vecto');
 
         let { vdw, vdb } = this.variablesList;
         if (this.variablesList.sdw && this.variablesList.sdb) {

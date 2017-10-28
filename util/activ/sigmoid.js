@@ -8,11 +8,8 @@ function sigmoid(z) {
 }
 
 sigmoid.dash = (z) => {
-    if (!Array.isArray(z)) {
-        return (sigmoid(z) * (1 - (sigmoid(z))));
-    } else {
-        return z.map((i) => (sigmoid(i) * (1 - (sigmoid(i)))));
-    }
+    let sigma = sigmoid(z);
+    return math.product(sigma, math.diff(1, sigma), 'dot');
 }
 
 module.exports = sigmoid;

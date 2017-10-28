@@ -117,6 +117,7 @@ class Network {
         this.costFn = getCostFn(costFn);
         // this.validate_dat = validate_dat || null;
         let opt = getOptimizer(optimizer.name);
+        console.log(opt);
         this.optimizer = new opt(this);
         this.optimizer.optimize(neta, epoch, m, optimizer);
         if (validate && validate_dat) {
@@ -171,9 +172,10 @@ class Network {
 
 function getOptimizer(optName) {
     const optimizer = require('../util/optimizer');
+    console.log(optimizer);
     if (optName === 'adam') return optimizer.AdamOptimizer
     else if (optName === 'rmsprop') return optimizer.RMSPropOptimizer;
-    else if (optName === 'gd' || optName === 'sgd' || optName === 'mbgd') return optimizer.GradientDescent;
+    else if (optName === 'gd' || optName === 'sgd' || optName === 'mbgd') return optimizer.GradientDescentOptimizer;
 }
 
 /** getCostFn : Returns the cost function for the given name
