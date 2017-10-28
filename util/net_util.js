@@ -13,6 +13,7 @@ const { math, core } = require('vecto');
  */
 
 function weighted_input(w, x, b) {
+    console.log(w, x, b);
     console.log(core.calc_shape(w), core.calc_shape(x), core.calc_shape(b));
     return math.sum(math.product(w, x, 'matrix'), b);
 }

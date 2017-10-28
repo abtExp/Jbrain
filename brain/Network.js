@@ -134,7 +134,7 @@ class Network {
      */
 
     feedForward(input) {
-        input = core.transpose(input);
+        input = core.transpose(input, 'float32');
         this.layers[0].activation.resize(core.calc_shape(input));
         this.layers[0].activation.arrange(input);
         for (let i = 1; i < this.layers.length; i++) {
