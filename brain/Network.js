@@ -113,7 +113,8 @@ class Network {
         }
     }) {
         this.features = train_features;
-        this.labels = core.transpose(train_labels);
+        this.labels = core.calc_shape(train_labels)[0] !== this.layers[this.layers.length - 1].activation.shape ?
+            core.transpose(train_labels) : train_labels;
         this.costFn = getCostFn(costFn);
         // this.validate_dat = validate_dat || null;
         let opt = getOptimizer(optimizer.name);
@@ -135,7 +136,7 @@ class Network {
      */
 
     feedForward(input) {
-        input = core.transpose(input, 'float32');
+        if (core.calc_shape(input)[0] !== this.layers[0].shape[0]) input = core.transpose(input, 'float32');
         this.layers[0].activation.resize(core.calc_shape(input));
         this.layers[0].activation.arrange(input);
         for (let i = 1; i < this.layers.length; i++) {
