@@ -113,7 +113,7 @@ class Network {
         }
     }) {
         this.features = train_features;
-        this.labels = train_labels;
+        this.labels = core.transpose(train_labels);
         this.costFn = getCostFn(costFn);
         // this.validate_dat = validate_dat || null;
         let opt = getOptimizer(optimizer.name);

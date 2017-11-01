@@ -41,22 +41,28 @@ module.exports = class Optimizer {
         let cost = this.costFn(this.layers[this.layers.length - 1].activation.array, labels, this.batch_size);
         console.log('cost');
         console.log(cost);
-        let gradc = this.costFn.grad(this.layers[this.layers.length - 1].activation, labels, this.batch_size),
+        let gradc = this.costFn.grad(this.layers[this.layers.length - 1].activation.array, labels, this.batch_size),
             activ_dash = this.layers[this.layers.length - 1].activ_;
 
         console.log('shapes of grad and activ_');
         console.log(core.calc_shape(gradc));
         console.log(core.calc_shape(activ_dash));
         delta[(this.layers.length - 1)] = math.product(gradc, activ_dash, 'dot');
+        console.log(gradc);
+        console.log(activ_dash);
 
         for (let i = this.layers.length - 2; i > 0; i--) {
             console.log(delta);
-            delta[i] = math.product(math.product(delta[i + 1],
-                this.layers[i + 1].weights.transpose()), this.layers[i].activ_, 'dot');
+            console.log(i);
+            console.log(core.calc_shape(delta[i + 1]));
+            console.log(core.calc_shape(this.layers[i + 1].weights.transpose()));
+            delta[i] = math.product(math.product(this.layers[i + 1].weights.transpose(), delta[i + 1]), this.layers[i].activ_, 'dot');
         }
 
         for (let i = 1; i < this.layers.length; i++) {
-            dw[i].arrange(math.sum(dw[i].array, math.product(delta[i], this.layers[i - 1].activation)));
+            console.log(core.calc_shape(delta[i]));
+            console.log(core.calc_shape(this.layers[i - 1].activation.array));
+            dw[i].arrange(math.sum(dw[i].array, math.product(delta[i], this.layers[i - 1].activation.array)));
             db[i].arrange(math.sum(db[i].array, delta[i]));
         }
         this.dw = dw;

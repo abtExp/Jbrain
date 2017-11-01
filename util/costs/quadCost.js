@@ -12,6 +12,10 @@ function quadCost(a, y, m) {
 }
 
 quadCost.grad = (a, y, m) => {
+    console.log('from inside quadCost.grad');
+    console.log(a);
+    console.log(y);
+    console.log(m);
     return math.product((1 / m), math.diff(a, y));
 }
 
