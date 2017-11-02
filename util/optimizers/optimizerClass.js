@@ -45,6 +45,7 @@ module.exports = class Optimizer {
             activ_dash = this.layers[this.layers.length - 1].activ_;
 
         console.log('shapes of grad and activ_');
+        console.log(gradc);
         console.log(core.calc_shape(gradc));
         console.log(core.calc_shape(activ_dash));
         delta[(this.layers.length - 1)] = math.product(gradc, activ_dash, 'dot');
@@ -54,9 +55,6 @@ module.exports = class Optimizer {
         }
 
         for (let i = 1; i < this.layers.length; i++) {
-            console.log(core.calc_shape(delta[i]));
-            console.log(core.calc_shape(this.layers[i - 1].activation.transpose()));
-            console.log(core.calc_shape(math.product(delta[i], this.layers[i - 1].activation.transpose())));
             dw[i - 1].arrange(math.sum(dw[i - 1].array, math.product(delta[i], this.layers[i - 1].activation.transpose())));
             db[i - 1].arrange(math.sum(db[i - 1].array, delta[i]));
         }
