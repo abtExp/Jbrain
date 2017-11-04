@@ -4,6 +4,8 @@ function sigmoid(z) {
     let shape = core.calc_shape(z),
         z_ = core.form_arr(core.flatten(z)).map(i => -i),
         activ = math.divide(1, math.sum(1, math.exp(z_)));
+    console.log('shape of activ');
+    console.log(shape);
     return core.arrange(shape, activ);
 }
 
