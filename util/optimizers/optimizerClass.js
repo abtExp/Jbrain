@@ -39,15 +39,9 @@ module.exports = class Optimizer {
         }
 
         let cost = this.costFn(this.layers[this.layers.length - 1].activation.array, labels, this.batch_size);
-        console.log('cost');
-        console.log(cost);
         let gradc = this.costFn.grad(this.layers[this.layers.length - 1].activation.array, labels, this.batch_size),
             activ_dash = this.layers[this.layers.length - 1].activ_;
 
-        console.log('shapes of grad and activ_');
-        console.log(gradc);
-        console.log(core.calc_shape(gradc));
-        console.log(core.calc_shape(activ_dash));
         delta[(this.layers.length - 1)] = math.product(gradc, activ_dash, 'dot');
 
         for (let i = this.layers.length - 2; i > 0; i--) {

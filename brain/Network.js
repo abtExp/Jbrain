@@ -111,7 +111,7 @@ class Network {
             name: 'adam',
             beta1: 0.9,
             beta2: 0.999,
-            epsilon: 1e-4,
+            epsilon: 1e-6,
         }
     }) {
         this.features = train_features;
