@@ -9,7 +9,7 @@ const Optimizer = require('./optimizerClass');
 class AdamOptimizer extends Optimizer {
 
     constructor(network) {
-            super(network);
+            super(network, 4);
         }
         // Didn't meant to work for batch, works with sgd
     optimize(neta, itrns, opt) {
@@ -18,13 +18,11 @@ class AdamOptimizer extends Optimizer {
         let beta1 = opt.beta1 || 0.9,
             beta2 = opt.beta2 || 0.999,
             epsilon = opt.epsilon || 1e-6;
-        this.preProcecss('adam');
+        this.initParams();
         for (let i = 0; i < itrns; i++) {
-            // let dw, db;
-            // [dw, db] = 
             this.Props(this.features, this.labels);
             this.updateProcess(beta1, beta2);
-            let { vdw, vdb, sdw, sdb } = this.variablesList;
+            let [vdw, vdb, sdw, sdb] = this.variablesList;
             for (let l = 0; l < this.layers.length; l++) {
                 let vdwcorr = new ndarray(this.layers[l].weights.shape),
                     vdbcorr = new ndarray(this.layers[l].biases.shape),

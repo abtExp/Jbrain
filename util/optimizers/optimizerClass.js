@@ -6,15 +6,15 @@ const { Ndarray, math, core } = require('vecto');
 
 
 module.exports = class Optimizer {
-    constructor(network) {
+    constructor(network, len) {
+        this.paramLen = len;
         this.feedForward = network.feedForward;
         this.layers = network.layers;
         this.costFn = network.costFn;
-        this.lyrsCount = network.lyrs_count;
         this.features = network.features;
         this.batch_size = this.features.length;
         this.labels = network.labels;
-        this.variablesList = {};
+        this.variablesList = [];
     }
 
     /** backpropagation : Calculates the error in activation of every layer 
@@ -50,6 +50,7 @@ module.exports = class Optimizer {
 
         for (let i = 1; i < this.layers.length; i++) {
             dw[i - 1].arrange(math.sum(dw[i - 1].array, math.product(delta[i], this.layers[i - 1].activation.transpose())));
+            /* Confusion with the delta shape */
             db[i - 1].arrange(math.sum(db[i - 1].array, delta[i]));
         }
         this.dw = dw;
@@ -58,27 +59,16 @@ module.exports = class Optimizer {
     }
 
     /* Produces The Parameter Arrays For Updation */
-
-    preProcecss(opt) {
-        let vdw = [],
-            vdb = [],
-            sdw, sdb;
-        for (let i = 1; i < this.layers.length; i++) {
-            vdw.push(Ndarray.zeroes(this.layers[i].weights.shape));
-            vdb.push(Ndarray.zeroes(this.layers[i].biases.shape));
-        }
-        this.variablesList.vdw = vdw;
-        this.variablesList.vdb = vdb;
-
-        if (opt === 'rmsprop' || opt === 'adam') {
-            sdw = [];
-            sdb = [];
-            for (let i = 1; i < this.layers.length; i++) {
-                sdw.push(Ndarray.zeroes(this.layers[i].weights.shape));
-                sdb.push(Ndarray.zeroes(this.layers[i].biases.shape));
+    initParams() {
+        for (let i = 0; i < this.paramLen/2; i++) {
+            let paramw = [];
+            let paramb = [];
+            for(let l=1; l<this.layers.length; l++){
+                paramw.push(Ndarray.zeroes(this.layers[l].weights.shape));
+                paramb.push(Ndarray.zeroes(this.layers[l].biases.shape));
             }
-            this.variablesList.sdw = sdw;
-            this.variablesList.sdb = sdb;
+            this.variablesList.push(paramw);
+            this.variablesList.push(paramb);
         }
     }
 
