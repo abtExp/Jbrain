@@ -10,7 +10,6 @@ const { Ndarray, math, core } = require('vecto'),
 
 class Layer {
     constructor(config, activationFunction, input) {
-        this.initializer = config.initializer || 'xavier';
         if (config.constructor.name === 'Object') constructLayer(this, config);
         else connectedProps(this, { shape: config, activationFunction: activationFunction, input: input });
     }
@@ -47,8 +46,8 @@ function set_activation(afunc) {
 
 function initialize(layer) {
     if (layer.initializer === 'xavier') {
-        if (layer.actvation === 'relu') factor = 2
-        else factor = 1
+        if (layer.actvation === 'relu') factor = 2;
+        else factor = 1;
         layer.weights.fill('custom', () => (Math.random() * Math.pow((factor / layer.weights.shape[1]), 0.5)));
     } else layer.weights.fill('linear');
 }
