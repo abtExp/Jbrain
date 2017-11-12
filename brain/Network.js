@@ -70,7 +70,7 @@ class Network {
      * 
      * @epoch : int , Number of learning cycles over which the optimisation takes place
      * 
-     * @cost_fn : 'String', The cost function to be used for optimisation of weights and biases ( learning )
+     * @costFn : 'String', The cost function to be used for optimisation of weights and biases ( learning )
      *             available values : 'cross_entropy','quadCost','logLike'
      * 
      * @evaluate : !Boolean!, whether to evaluate the learning of the network
