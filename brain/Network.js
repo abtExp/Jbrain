@@ -102,11 +102,11 @@ class Network {
         epoch = 100,
         m = 10,
         costFn = 'crossEntropy',
-        evaluate = true,
-        eval_epoch = 10,
-        validate = false,
-        validate_dat = null,
-        validate_epochs,
+        // evaluate = true,
+        // eval_epoch = 10,
+        // validate = false,
+        // validate_dat = null,
+        // validate_epochs,
         optimizer = {
             name: 'adam',
             beta1: 0.9,
@@ -120,12 +120,11 @@ class Network {
         this.costFn = getCostFn(costFn);
         // this.validate_dat = validate_dat || null;
         let opt = getOptimizer(optimizer.name);
-        console.log(opt);
         this.optimizer = new opt(this);
         this.optimizer.optimize(neta, epoch, m, optimizer);
-        if (validate && validate_dat) {
-            this.validate(validate_dat);
-        }
+        // if (validate && validate_dat) {
+        //     this.validate(validate_dat);
+        // }
     }
 
     /** feed_forward : Calculates the activation of each layer.

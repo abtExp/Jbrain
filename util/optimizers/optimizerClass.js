@@ -84,7 +84,6 @@ module.exports = class Optimizer {
     formBatches(m) {
         this.batch_size = m;
         const { shuffle } = require('../net_util');
-        let batches_x, batches_y;
         return shuffle(this.features, this.labels, m);
     }
 

@@ -9,9 +9,9 @@ const Optimizer = require('./optimizerClass');
 class AdamOptimizer extends Optimizer {
 
     constructor(network) {
-            super(network, 4);
-        }
-        // Didn't meant to work for batch, works with sgd
+        super(network, 4);
+    }
+
     optimize(neta, itrns, opt) {
         const { math } = require('vecto');
         opt = opt || {};
@@ -24,10 +24,10 @@ class AdamOptimizer extends Optimizer {
             this.updateProcess(beta1, beta2);
             let [vdw, vdb, sdw, sdb] = this.variablesList;
             for (let l = 0; l < this.layers.length; l++) {
-                let vdwcorr = new ndarray(this.layers[l].weights.shape),
-                    vdbcorr = new ndarray(this.layers[l].biases.shape),
-                    sdwcorr = new ndarray(this.layers[l].weights.shape),
-                    sdbcorr = new ndarray(this.layers[l].biases.shape);
+                let vdwcorr = Ndarray.zeroes(this.layers[l].weights.shape),
+                    vdbcorr = Ndarray.zeroes(this.layers[l].biases.shape),
+                    sdwcorr = Ndarray.zeroes(this.layers[l].weights.shape),
+                    sdbcorr = Ndarray.zeroes(this.layers[l].biases.shape);
                 vdwcorr.arrange(math.divide(vdw[l].array, (1 - (beta1 ^ (i + 1)))));
                 vdbcorr.arrange(math.divide(vdb[l].array, (1 - (beta1 ^ (i + 1)))));
                 sdwcorr.arrange(math.divide(sdw[l].array, (1 - (beta2 ^ (i + 1)))));

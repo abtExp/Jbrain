@@ -59,7 +59,7 @@ class GradientDescentOptimizer extends Optimizer {
 
     SGD(neta, epoch, m, opt) {
         if (opt.momentum) this.initParams();
-        for (let t = 0; t < itrns; t++) {
+        for (let t = 0; t < epoch; t++) {
             for (let i = 0; i < this.features.length; i++) {
                 let dw, db;
                 [dw, db] = this.Props(this.features[i], this.labels[i]);
