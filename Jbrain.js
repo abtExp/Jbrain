@@ -16,7 +16,8 @@ const util = require('./util/util');
 })()
 
 module.exports = {
-    Network
+    Network,
+    util
 }
 
 
