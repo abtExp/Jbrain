@@ -60,14 +60,14 @@ module.exports = class Optimizer {
 
     /* Produces The Parameter Arrays For Updation */
     initParams() {
-        for (let i = 0; i < this.paramLen/2; i++) {
+        for (let i = 0; i < this.paramLen / 2; i++) {
             let paramw = [];
             let paramb = [];
-            for(let l=1; l<this.layers.length; l++){
+            for (let l = 1; l < this.layers.length; l++) {
                 paramw.push(Ndarray.zeroes(this.layers[l].weights.shape));
                 paramb.push(Ndarray.zeroes(this.layers[l].biases.shape));
             }
-            this.variablesList.push(paramw);
+            this.variablesList.push(paramw)
             this.variablesList.push(paramb);
         }
     }
@@ -84,23 +84,14 @@ module.exports = class Optimizer {
     formBatches(m) {
         this.batch_size = m;
         const { shuffle } = require('../net_util');
-        let batches_x, btaches_y;
+        let batches_x, batches_y;
         return shuffle(this.features, this.labels, m);
     }
 
     /* Updates The Weights And Biases Of The Network */
 
     updateProcess(beta1, beta2) {
-        /* The Generic Code For Updation Of Both The Parameters Of The Network As Well As The 
-         * Update Parameters (vdw,vdb,sdw,sdb,vdwcorr,vdbcorr,sdwcorr,sdbcorr)
-         * Makes more sense to keep just the vdw,vdb,sdw and sdb as the corr versions can be calculated
-         * later at the time of the update.
-         */
-
-        let { vdw, vdb } = this.variablesList;
-        if (this.variablesList.sdw && this.variablesList.sdb) {
-            let { sdw, sdb } = this.variablesList;
-        }
+        let [vdw, vdb, sdw, sdb] = this.variablesList;
 
         for (let i = 1; i < this.layers.length; i++) {
             vdw[i].arrange(math.sum(math.product(beta1, vdw[i].array), math.product((1 - beta1), this.dw[i].array)));
@@ -109,12 +100,6 @@ module.exports = class Optimizer {
                 sdw[i].arrange(math.sum(math.product(beta2, sdw[i].array), math.sum((1 - beta2), math.pow(this.dw[i].array, 2))));
                 sdb[i].arrange(math.sum(math.product(beta2, sdb[i].array), math.sum((1 - beta2), math.pow(this.db[i].array, 2))));
             }
-        }
-        this.variablesList.vdw = vdw;
-        this.variablesList.vdb = vdb;
-        if (sdw && sdb) {
-            this.variableList.sdw = sdw;
-            this.variableList.sdb = sdb;
         }
     }
 }
