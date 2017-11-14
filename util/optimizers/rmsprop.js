@@ -19,8 +19,7 @@ class RMSPropOptimizer extends Optimizer {
             epsilon = opt.epsilon || 1e-8;
         this.initParams();
         for (let i = 0; i < itrns; i++) {
-            let dw, db;
-            [dw, db] = this.Props(this.features, this.labels);
+            let [dw, db] = this.Props(this.features, this.labels);
             this.updateProcess(beta);
             let [sdw, sdb] = this.variablesList;
             for (let l = 0; l < this.layers.length; l++) {
