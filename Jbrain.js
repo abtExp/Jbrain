@@ -7,6 +7,7 @@ const Network = require('./brain/Network');
 // svm = require('./brain/svm');
 // naive_bayes = require('./brain/nb');
 // conv_net = require('./brain/convnet');
+const util = require('./util/util');
 
 (() => {
     if (typeof window !== 'undefined') {

@@ -1,8 +1,10 @@
 /* Defining The Layers Of The Network
+ * 
  * Provides An Interface For Creating Every Type Of Neural Network
  * Like (Fully Connected, Convolutional, Convolutional With Pooling,
  *       Reccurent, LSTM etc.)
  * And Also Provides An Easy And Fast Way To Perform ML Tasks
+ * 
  */
 
 const { Ndarray, math, core } = require('vecto'),
