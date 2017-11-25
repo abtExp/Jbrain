@@ -55,15 +55,15 @@ function initialize(layer) {
 }
 
 function convProps(layer, config) {
-    // TODO
+    layer.message = 'Not Yet Implemented';
 }
 
 function poolProps(layer, config) {
-    // TODO
+    layer.message = 'Not Yet Implemented';
 }
 
 function convPoolProps(layer, config) {
-    // TODO
+    layer.message = 'Not Yet Implemented';
 }
 
 function connectedProps(layer, config) {
