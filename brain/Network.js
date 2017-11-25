@@ -38,7 +38,7 @@ class Network {
                     if (net_config[i].config) {
                         for (let j = 0; j < net_config[i].number; j++) {
                             net_config[i].config[j].input = net_config[i].config[j].input ||
-                                this.layers[this.layers.length - 1].activation;
+                                this.layers[this.layers.length - 1];
                             net_config[i].config[j].type = net_config[i].type;
                             this.layers.push(new Layer(net_config[i].config[j]));
                         }
@@ -47,16 +47,16 @@ class Network {
                     }
                 } else {
                     net_config[i].input = net_config[i].input ||
-                        this.layers[this.layers.length - 1].activation;
+                        this.layers[this.layers.length - 1];
                     this.layers.push(new Layer(net_config[i]));
                 }
             }
         } else {
             this.layers.push(new Layer({ type: 'input', shape: [net_config[0], null] }));
             for (let i = 1; i < this.net_config.length - 1; i++) {
-                this.layers.push(new Layer([this.net_config[i], this.net_config[i - 1]], lyr_type, this.layers[this.layers.length - 1].activation));
+                this.layers.push(new Layer([this.net_config[i], this.net_config[i - 1]], lyr_type, this.layers[this.layers.length - 1]));
             }
-            this.layers.push(new Layer([this.net_config[this.lyrs_count - 1], this.net_config[this.lyrs_count - 2]], op_type, this.layers[this.layers.length - 1].activation))
+            this.layers.push(new Layer([this.net_config[this.lyrs_count - 1], this.net_config[this.lyrs_count - 2]], op_type, this.layers[this.layers.length - 1]))
         }
     }
 
@@ -161,6 +161,10 @@ class Network {
      */
     predict(test_features) {
         return this.feedForward(test_features)[0][this.lyrs_count - 1];
+    }
+
+    formNet(layers) {
+        // synthesise net from layers.
     }
 }
 
