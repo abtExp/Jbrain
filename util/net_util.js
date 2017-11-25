@@ -1,37 +1,60 @@
-const { math, core } = require('../node_modules/vecto');
+const { math, core } = require('vecto');
 
-/* weighted_input : calculates sigma(w*x) + b */
+/** weighted_input : calculates sigma(w*x) + b
+ * 
+ * @w : [Number] , The weights array of a layer
+ * 
+ * @x : [Number] , The input to the layer
+ * 
+ * @b : [Number] , The biases array of a layer
+ * 
+ * Returns : Number/[Number] , The Linear activation
+ * 
+ */
 
 function weighted_input(w, x, b) {
+    console.log(w, x, b);
+    console.log(core.calc_shape(w), core.calc_shape(x), core.calc_shape(b));
     return math.sum(math.product(w, x, 'matrix'), b);
 }
 
-/* cost_grad : returns gradC wrt activ */
+/** shuffle : Shuffles the features and labels keeping them aligned and forms mini batches
+ * 
+ * @input : [Number] , The features array
+ * 
+ * @labels : [Number] , The labels array
+ * 
+ * @mini_batch_size : int , The size of a minibatch
+ * 
+ * Returns : [Number] , The array of minibatches formed with the shuffled data
+ * 
+ */
 
-function cost_grad(a, y) {
-    for (let i = 0; i < y.length; i++) {
-        y[i] = -y[i];
-    }
-    const gradC = math.sum(a, y);
-    return gradC;
-}
-
-function shuffle(input, mini_batch_size, labels) {
-    let batch = [],
+function shuffle(input, labels, mini_batch_size) {
+    let batches = [],
+        batch = [],
         y = [],
-        i;
-    while (batch.length < mini_batch_size) {
-        i = Math.floor(Math.random() * input.length);
-        batch.push(input[i]);
-        y.push(labels[i]);
+        y_ = [],
+        no_of_batches = Math.floor(input.length / mini_batch_size),
+        i, j;
+    console.log(no_of_batches);
+    for (i = 0; i < no_of_batches; i++) {
+        while (batch.length < mini_batch_size) {
+            j = Math.floor(Math.random() * input.length);
+            batch.push(input[j]);
+            y.push(labels[j]);
+        }
+        batches.push(batch);
+        y_.push(y);
+        batch = [];
+        y = [];
     }
-    return [batch, y];
+    return [batches, y_];
 }
 
 
 
 module.exports = {
     weighted_input: weighted_input,
-    shuffle: shuffle,
-    cost_grad: cost_grad
+    shuffle: shuffle
 }

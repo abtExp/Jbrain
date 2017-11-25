@@ -1,5 +1,5 @@
-const path = require('path');
-const dash = require('webpack-dashboard/plugin');
+const path = require('path'),
+    ujs = require('uglifyjs-webpack-plugin');
 module.exports = {
     entry: path.resolve(__dirname, 'Jbrain.js'),
     output: {
@@ -7,11 +7,13 @@ module.exports = {
         filename: 'build.js'
     },
     module: {
-        loaders: [{
+        rules: [{
             test: /\.js$/,
-            exclude: [/node_modules/, /build/],
-            loader: "babel-loader"
+            loader: 'babel-loader',
+            query: {
+                presets: ['es2015']
+            }
         }]
     },
-    plugins: [new dash()]
-};
+    plugins: [new ujs()]
+}

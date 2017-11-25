@@ -1,5 +1,5 @@
-function crossEntropy(y, a, m) {
-    const { core } = require('../../node_modules/vecto');
+function crossEntropy(a, y, m) {
+    const { core } = require('vecto');
     let cost = 0,
         y_ = y.map(i => 1 - i),
         a_ = a.map(i => 1 - i);

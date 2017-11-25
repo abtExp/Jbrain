@@ -1,209 +1,204 @@
 /* JBrain : A neural network implementation in Javascript.
- *
- *
  * Project Name : JBrain
- * Project Code Name : JSimpl
+ * Project Code Name : Jason
  * Author : Anubhav Tiwari <atworkstudios@gmail.com>
- *
  */
 
-/* Support not available , un-comment if using transpiler
- * import { ndarray, sum, product, core } from '../node_modules/vecto';
- * import { cost_grad, shuffle } from '../util/net_util';
- * import cost form '../util/cost';
- * import lyr from '../util/layers';
- */
-const { cost_grad, shuffle } = require('../util/net_util'),
+const { core } = require('../node_modules/vecto'), { cost_grad, shuffle } = require('../util/net_util'),
     cost = require('../util/cost'),
-    lyr = require('../util/layers'), { ndarray, math, core } = require('../node_modules/vecto');
+    Layer = require('../util/layers'),
+    optimizer = require('../util/optimizer');
 
 
-/* define a network with net_config representing each layer with the number of 
- * neurons in them : net_config is an array, the length of the array determines the 
- * number of layers and each ith element of net_config defines the number of neurons
- * in the ith layer.
+/* define a network with net_config representing each layer with the configuration object
+ * of the layer : net_config is an array of objects, the length of the array determines the 
+ * number of layers and each ith element of net_config defines the configuration of the ith 
+ * layer.
  */
 
 class Network {
-    /* Constructor
+    /** constructor : Creating The Network
      * 
-     * @net_config : [array ( int )], ( the layer wise representation of the network)
-     * @lyr_type : 'String' ( The type of neurons, the layer consists of )
-     * Possible types : sigmoid, softmax, relu, etc.
-     * @op_lyr : 'String' ( Type of neurons in the output layer )
+     * @net_config : [{Object}]/[int], ( the layer wise representation of the network)
+     * 
+     * Returns : { NetworkObject }
+     * 
      */
 
-    constructor(net_config, lyr_type = 'sigmoid', op_lyr = 'sigmoid') {
+    constructor(net_config, lyr_type = 'relu', op_type = 'softmax') {
         this.net_config = net_config;
-        this.lyrs_count = net_config.length;
-        this.lyrs = [];
-        this.activ_ = [];
-        /* Make Layers by providing input weights and the 
-        neuron count for lth layer and also the type of layer */
-        for (let i = 1; i < this.lyrs_count - 1; i++) {
-            this.lyrs.push(new lyr(this.net_config[i], this.net_config[i - 1], lyr_type));
+        // this.lyrs_count = net_config.length;
+        this.layers = [];
+        // this.activations = [];
+
+        if (this.net_config[0].constructor.name === 'Object') {
+            this.layers.push(new Layer(net_config[0]));
+            for (let i = 1; i < net_config.length; i++) {
+                if (net_config[i].number) {
+                    if (net_config[i].config) {
+                        for (let j = 0; j < net_config[i].number; j++) {
+                            net_config[i].config[j].input = net_config[i].config[j].input ||
+                                this.layers[this.layers.length - 1];
+                            net_config[i].config[j].type = net_config[i].type;
+                            this.layers.push(new Layer(net_config[i].config[j]));
+                        }
+                    } else {
+                        console.error('Please Provide The Configuration For Each Layer');
+                    }
+                } else {
+                    net_config[i].input = net_config[i].input ||
+                        this.layers[this.layers.length - 1];
+                    this.layers.push(new Layer(net_config[i]));
+                }
+            }
+        } else {
+            this.layers.push(new Layer({ type: 'input', shape: [net_config[0], null] }));
+            for (let i = 1; i < this.net_config.length - 1; i++) {
+                this.layers.push(new Layer([this.net_config[i], this.net_config[i - 1]], lyr_type, this.layers[this.layers.length - 1]));
+            }
+            this.layers.push(new Layer([this.net_config[this.lyrs_count - 1], this.net_config[this.lyrs_count - 2]], op_type, this.layers[this.layers.length - 1]))
         }
-        // output layer
-        this.lyrs.push(new lyr(this.net_config[this.lyrs_count - 1], this.net_config[this.lyrs_count - 2], op_lyr));
     }
 
-    /* Fit the Network (i.e., train) 
-     * @train_features : [array], of features for the network to learn on
-     * @train_labels : [array], of desired results
-     * @neta : fl.oat value, the learning rate
+    /** fit : Fit the Network (i.e., train) 
+     * 
+     * @train_features : [Number], of features for the network to learn on
+     * 
+     * @train_labels : [Number], of desired results
+     * 
+     * @neta : fl.oat , the learning rate
+     * 
      * @epoch : int , Number of learning cycles over which the optimisation takes place
-     * @cost_fn : 'String', The cost function to be used for optimisation of weights and biases ( learning )
+     * 
+     * @costFn : 'String', The cost function to be used for optimisation of weights and biases ( learning )
+     *             available values : 'cross_entropy','quadCost','logLike'
+     * 
      * @evaluate : !Boolean!, whether to evaluate the learning of the network
+     * 
      * @eval_epoch : int , of epochs(learning cycles) after which to evaluate the learning
+     * 
      * @validate : !Boolean!, whether validation data will be provided for better learning
-     * @validate_dat : [array], of validation features to learn better, @validate must be true
-     *
+     * 
+     * @validate_dat : [Number], of validation features to learn better, @validate must be true
+     * 
+     * @validate_epochs : int , Number of epochs after which to evaluate the performance on validation data
+     * 
+     * @optimizer : {Object} : props : @name : 'String' , The name of the optimizer to use
+     *                                          available values : 'adam','rmsprop','gd','sgd','mbgd'
+     * 
+     *                                 @beta/1/2 : fl.oat , The optimization parameter beta(for sgd,mbgd,gd and rmsprop)
+     *                                                      beta1 and beta2 for adam 
+     *                                 @epsilon : fl.oat , The optimization parameter
+     * 
      * Returns : Nothing, Just optimises the neurons's weights and biases.
+     * 
      */
+
 
     fit({
         train_features,
         train_labels,
         neta = 0.5,
-        epoch = 10,
-        m = 2,
-        cost_fn = cost.cross_entropy,
-        evaluate = true,
-        eval_epoch = 5,
-        validate = false,
-        validate_dat = null
+        epoch = 100,
+        m = 10,
+        costFn = 'crossEntropy',
+        // evaluate = true,
+        // eval_epoch = 10,
+        // validate = false,
+        // validate_dat = null,
+        // validate_epochs,
+        optimizer = {
+            name: 'adam',
+            beta1: 0.9,
+            beta2: 0.999,
+            epsilon: 1e-6,
+        }
     }) {
-        let n = 0;
-        this.input = train_features;
-        this.labels = train_labels;
-        // Training the network
-
-        while (n < epoch) {
-            //forming mini batches
-            let activation = [],
-                x = [],
-                y = [];
-            [x, y] = shuffle(this.input, m, this.labels);
-            //updating weights and biases
-            for (let i = 0; i < x.length; i++) {
-                let a = [],
-                    z = [],
-                    delw = [],
-                    delb = [];
-
-                [a, z] = this.feed_forward(x[i]);
-                // console.log(a);
-                this.z = z;
-                this.activations = a;
-                [delw, delb] = this.backprop(core.flatten(a[this.lyrs_count - 1]), y[i]);
-                this.SGD(neta, m, cost_fn, delw, delb);
-            }
-
-            //EVALUATE
-            // if (evaluate) {
-            //     if (n % eval_epoch === 0) {
-            //         this.eval(); //todo
-            //     }
-            // }
-            n++;
-        }
+        this.features = train_features;
+        this.labels = core.calc_shape(train_labels)[0] !== this.layers[this.layers.length - 1].activation.shape[0] ?
+            core.transpose(train_labels) : train_labels;
+        this.costFn = getCostFn(costFn);
+        // this.validate_dat = validate_dat || null;
+        let opt = getOptimizer(optimizer.name);
+        this.optimizer = new opt(this);
+        this.optimizer.optimize(neta, epoch, m, optimizer);
+        // if (validate && validate_dat) {
+        //     this.validate(validate_dat);
+        // }
     }
 
-    /* feed_forward : Calculates the activation of each layer.
-     * @input : [array] , the input to the input layer
-     * Returns : [a,z] ,  An array containing Activations of each layer
+    /** feed_forward : Calculates the activation of each layer.
+     *
+     * @input : [Number] , the input to the input layer
+     * 
+     * Returns : [[Number],[Number]] ,  An array containing Activations of each layer
      *           and also the weighted inputs for each layer.  
+     * 
      */
 
-    feed_forward(input) {
-        let activ = [],
-            z = [],
-            activ_ = [];
-
-        activ.push(core.transpose(input));
-        for (let i = 0; i < this.lyrs.length; i++) {
-            let res = this.lyrs[i].fire(activ[i]);
-            activ.push(core.transpose(res[0], 'float32'));
-            z.push(res[1]);
-            activ_.push(this.lyrs[i].activ_dash(z[i]));
-        }
-
-        this.activ_ = activ_;
-        return [activ, z];
-    }
-
-    /* SGD : Stochastic Gradient Descent, Stepwise learning 
-     * @neta : fl.oat value, the learning rate
-     * @m : int , the number of epochs
-     * @cost : 'String' , the name of the cost function,
-     *         currently only 'quad_cost' and 'cross_entropy' are 
-     *         supported
-     * @delw : [array[ndarrays]] , the dc/dw
-     * @delb : [array[ndarrays]] , the dc/db
-     * Returns : Nothing , just performs gradient descent and optimises weights
-     *           and biases
-     */
-    SGD(neta, m, cost, delw, delb) {
-        let factor = (-(neta / m));
-
-        //optimising weights and biases
-        for (let i = 0; i < this.lyrs.length - 1; i++) {
-            delw[i].arrange(math.product(delw[i].array, factor));
-            delb[i].arrange(math.product(delb[i].array, factor));
-            this.lyrs[i].weights.add(delw[i]);
-            this.lyrs[i].biases.add(delb[i]);
+    feedForward(input) {
+        if (core.calc_shape(input)[0] !== this.layers[0].shape[0]) input = core.transpose(input, 'float32');
+        this.layers[0].activation.resize(core.calc_shape(input));
+        this.layers[0].activation.arrange(input);
+        for (let i = 1; i < this.layers.length; i++) {
+            this.layers[i].fire();
         }
     }
 
-    /* backpropagation : Calculates the error in activation of every layer 
-     * @a : [array] , The activation of the output layer
-     * @y : [array] , The labels(desired output) for given input
-     * Returns : [delw,delb], delw is an array of ndarrays having error in weights
-     *           of every layer and delb is array of ndarrays having errors in biases
-     */
-    backprop(a, y) {
-        let delw = [],
-            delb = [],
-            grad_c = cost_grad(a, y),
-            delta = [];
-
-        for (let i = 0; i < this.lyrs.length; i++) {
-            delw.push(ndarray.zeroes(this.lyrs[i].weights.shape));
-            delb.push(ndarray.zeroes(this.lyrs[i].biases.shape));
-        }
-
-        delta[this.lyrs.length - 1] = core.transpose(grad_c, 'float32');
-        //backpropogation
-        for (let i = this.lyrs.length - 2; i >= 0; i--) {
-            let wt = this.lyrs[i + 1].weights.transpose();
-            let part_act = math.product(wt, delta[i + 1], 'matrix');
-            delta[i] = math.product(part_act, core.transpose(this.activ_[i], 'float32'), 'dot');
-        }
-
-        for (let i = 0; i < this.lyrs.length; i++) {
-            let activ = core.transpose(this.activations[i], 'float32');
-            let part = math.product(delta[i], activ, 'matrix');
-            delw[i].arrange(core.flatten(part));
-            delb[i].arrange(delta[i]);
-        }
-
-        return [delw, delb];
-
-    }
 
     /* eval : evaluates the learning of network by comparing the accuracy */
     eval() {
-        let cost = this.cost_function(this.labels, this.activations);
+        let cost = this.costFn(this.labels, this.activations);
     }
 
-    /* predict : Predicts the output for the given test feature 
-     * @test_features : [array] , The features for which the prediction is 
+    /** predict : Predicts the output for the given test feature
+     * 
+     * @test_features : [Number] , The features for which the prediction is 
      *                  to be made.
-     * Returns : [array] , The activation of the output layer.                       
+     * 
+     * Returns : [Number] , The activation of the output layer.                       
+     * 
      */
     predict(test_features) {
-        return this.feed_forward(test_features)[0][this.lyrs_count - 1];
+        return this.feedForward(test_features)[0][this.lyrs_count - 1];
+    }
+
+    static formNet(layers) {
+        return new Network(layers);
     }
 }
+
+/** getOptimizer : Returns the Optimizer Class to optimize the params
+ * 
+ * @optName : 'String' , the name of the optimizer   
+ *
+ * Returns : { OptimizerClassObject }
+ * 
+ */
+
+function getOptimizer(optName) {
+    const optimizer = require('../util/optimizer');
+    console.log(optimizer);
+    if (optName === 'adam') return optimizer.AdamOptimizer
+    else if (optName === 'rmsprop') return optimizer.RMSPropOptimizer;
+    else if (optName === 'gd' || optName === 'sgd' || optName === 'mbgd') return optimizer.GradientDescentOptimizer;
+}
+
+/** getCostFn : Returns the cost function for the given name
+ *  
+ * @name : 'String', The cost function to be used for optimisation of weights and biases ( learning )
+ *          available values : 'cross_entropy','quadCost','logLike'
+ *  
+ */
+
+function getCostFn(name) {
+    if (name === 'crossEntropy') return cost.cross_entropy;
+    else if (name === 'logLike') return cost.log_like;
+    else if (name === 'quadCost') return cost.quadCost;
+    else throw new Error('Undefined Cost Function');
+}
+
+
+
 
 module.exports = Network;

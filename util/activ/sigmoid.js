@@ -1,17 +1,15 @@
+const { math, core } = require('vecto');
+
 function sigmoid(z) {
-    if (!Array.isArray(z)) {
-        return (1 / 1 + (Math.exp(-z)));
-    } else {
-        return z.map((i) => (1 / (1 + (Math.exp(-i)))));
-    }
+    let shape = core.calc_shape(z),
+        z_ = core.form_arr(core.flatten(z)).map(i => -i),
+        activ = math.divide(1, math.sum(1, math.exp(z_)));
+    return core.arrange(shape, activ);
 }
 
 sigmoid.dash = (z) => {
-    if (!Array.isArray(z)) {
-        return (sigmoid(z) * (1 - (sigmoid(z))));
-    } else {
-        return z.map((i) => (sigmoid(i) * (1 - (sigmoid(i)))));
-    }
+    let sigma = sigmoid(z);
+    return math.product(sigma, math.diff(1, sigma), 'dot');
 }
 
 module.exports = sigmoid;
