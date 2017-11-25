@@ -27,9 +27,9 @@ class Network {
 
     constructor(net_config, lyr_type = 'relu', op_type = 'softmax') {
         this.net_config = net_config;
-        this.lyrs_count = net_config.length;
+        // this.lyrs_count = net_config.length;
         this.layers = [];
-        this.activations = [];
+        // this.activations = [];
 
         if (this.net_config[0].constructor.name === 'Object') {
             this.layers.push(new Layer(net_config[0]));
@@ -163,8 +163,8 @@ class Network {
         return this.feedForward(test_features)[0][this.lyrs_count - 1];
     }
 
-    formNet(layers) {
-        // synthesise net from layers.
+    static formNet(layers) {
+        return new Network(layers);
     }
 }
 
