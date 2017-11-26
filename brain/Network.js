@@ -27,7 +27,7 @@ class Network {
 
     constructor(net_config, lyr_type = 'relu', op_type = 'softmax') {
         this.net_config = net_config;
-        // this.lyrs_count = net_config.length;
+        // this.layers.length = net_config.length;
         this.layers = [];
         // this.activations = [];
 
@@ -56,7 +56,7 @@ class Network {
             for (let i = 1; i < this.net_config.length - 1; i++) {
                 this.layers.push(new Layer([this.net_config[i], this.net_config[i - 1]], lyr_type, this.layers[this.layers.length - 1]));
             }
-            this.layers.push(new Layer([this.net_config[this.lyrs_count - 1], this.net_config[this.lyrs_count - 2]], op_type, this.layers[this.layers.length - 1]))
+            this.layers.push(new Layer([this.net_config[this.layers.length - 1], this.net_config[this.layers.length - 2]], op_type, this.layers[this.layers.length - 1]))
         }
     }
 
@@ -160,7 +160,7 @@ class Network {
      * 
      */
     predict(test_features) {
-        return this.feedForward(test_features)[0][this.lyrs_count - 1];
+        return this.feedForward(test_features)[0][this.layers.length - 1];
     }
 
     static formNet(layers) {
@@ -197,8 +197,5 @@ function getCostFn(name) {
     else if (name === 'quadCost') return cost.quadCost;
     else throw new Error('Undefined Cost Function');
 }
-
-
-
 
 module.exports = Network;

@@ -4,7 +4,7 @@
  * 
  * Author : AbT <atworkstudios@gmail.com>
  * Project : Jbrain
- * CodeName : JSimpl
+ * CodeName : JSImpl
  *  
  */
 
