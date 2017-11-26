@@ -10,7 +10,8 @@
 
 /* Importing The Library */
 
-const { Network } = require('./Jbrain');
+const { Network, util } = require('./Jbrain');
+const Layer = util.Layer;
 
 
 /* Tests For Creation Of The Network */
@@ -32,5 +33,35 @@ test('Creating A Network Method 2', () => {
 
 /* Method 3 : Simple FeedForward Network Object Creation */
 test('Creating A Network Method 3', () => {
-    // ToDo
+    let net = new Network([{
+        type: 'input',
+        shape: [25, null]
+    }, {
+        type: 'connected',
+        shape: [10, 25],
+        activationFunction: 'relu'
+    }, {
+        type: 'connected',
+        number: 2,
+        config: [{
+            shape: [10, 10],
+            activationFunction: 'tanh'
+        }, {
+            shape: [5, 10],
+            activationFunction: 'tanh'
+        }]
+    }, {
+        type: 'connected',
+        shape: [2, 5],
+        activationFunction: 'softmax'
+    }])
+});
+
+/* Method 4 : Composing a Network from Layers */
+test('Creating a Network Method 4', () => {
+    let inpL = new Layer({ type: 'input', shape: [25, null] });
+    let h1 = new Layer({ type: 'connected', input: inpL, shape: [10, 25], activationFunction: 'relu' });
+    let h2 = new Layer({ type: 'connected', input: h1, shape: [10, 10], activationFunction: 'relu' });
+    let opL = new Layer({ type: 'connected', input: h2, shape: [5, 10], activationFunction: 'softmax' });
+    let net = Network.formNet([inpL, h1, h2, opL]);
 })
