@@ -3,7 +3,6 @@ const { math, core } = require('vecto');
 function crossEntropy(a, y, m) {
     let cost = math.sum(math.product((-1 / m), math.sum(math.product(y, math.log(a), 'dot'),
         math.product(math.diff(1, y), math.log(math.diff(1, a)), 'dot')), 'dot'), null, 1);
-    console.log(cost);
     return cost;
 }
 
