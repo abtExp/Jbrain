@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">Jbrain/brain/Network.js | jbrain</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Machine Learning library in JavaScript"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="jbrain"><meta property="twitter:description" content="Machine Learning library in JavaScript"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/abt10/Jbrain"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  </ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">Jbrain/brain/Network.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/* JBrain : A neural network implementation in Javascript.
+ * Project Name : JBrain
+ * Project Code Name : Jason
+ * Author : Anubhav Tiwari &lt;atworkstudios@gmail.com&gt;
+ */
+
+const { core } = require(&apos;../node_modules/vecto&apos;), { cost_grad, shuffle } = require(&apos;../util/net_util&apos;),
+    cost = require(&apos;../util/cost&apos;),
+    Layer = require(&apos;../util/layers&apos;),
+    optimizer = require(&apos;../util/optimizer&apos;);
+
+
+/* define a network with net_config representing each layer with the configuration object
+ * of the layer : net_config is an array of objects, the length of the array determines the 
+ * number of layers and each ith element of net_config defines the configuration of the ith 
+ * layer.
+ */
+
+class Network {
+    /** constructor : Creating The Network
+     * 
+     * @net_config : [{Object}]/[int], ( the layer wise representation of the network)
+     * 
+     * Returns : { NetworkObject }
+     * 
+     */
+
+    constructor(net_config, lyr_type = &apos;relu&apos;, op_type = &apos;softmax&apos;) {
+        this.net_config = net_config;
+        // this.layers.length = net_config.length;
+        this.layers = [];
+        // this.activations = [];
+
+        if (this.net_config[0].constructor.name === &apos;Object&apos;) {
+            this.layers.push(new Layer(net_config[0]));
+            for (let i = 1; i &lt; net_config.length; i++) {
+                if (net_config[i].number) {
+                    if (net_config[i].config) {
+                        for (let j = 0; j &lt; net_config[i].number; j++) {
+                            net_config[i].config[j].input = net_config[i].config[j].input ||
+                                this.layers[this.layers.length - 1];
+                            net_config[i].config[j].type = net_config[i].type;
+                            this.layers.push(new Layer(net_config[i].config[j]));
+                        }
+                    } else {
+                        console.error(&apos;Please Provide The Configuration For Each Layer&apos;);
+                    }
+                } else {
+                    net_config[i].input = net_config[i].input ||
+                        this.layers[this.layers.length - 1];
+                    this.layers.push(new Layer(net_config[i]));
+                }
+            }
+        } else {
+            this.layers.push(new Layer({ type: &apos;input&apos;, shape: [net_config[0], null] }));
+            for (let i = 1; i &lt; this.net_config.length - 1; i++) {
+                this.layers.push(new Layer([this.net_config[i], this.net_config[i - 1]], lyr_type, this.layers[this.layers.length - 1]));
+            }
+            this.layers.push(new Layer([this.net_config[this.layers.length - 1], this.net_config[this.layers.length - 2]], op_type, this.layers[this.layers.length - 1]))
+        }
+    }
+
+    /** fit : Fit the Network (i.e., train) 
+     * 
+     * @train_features : [Number], of features for the network to learn on
+     * 
+     * @train_labels : [Number], of desired results
+     * 
+     * @neta : fl.oat , the learning rate
+     * 
+     * @epoch : int , Number of learning cycles over which the optimisation takes place
+     * 
+     * @costFn : &apos;String&apos;, The cost function to be used for optimisation of weights and biases ( learning )
+     *             available values : &apos;cross_entropy&apos;,&apos;quadCost&apos;,&apos;logLike&apos;
+     * 
+     * @evaluate : !Boolean!, whether to evaluate the learning of the network
+     * 
+     * @eval_epoch : int , of epochs(learning cycles) after which to evaluate the learning
+     * 
+     * @validate : !Boolean!, whether validation data will be provided for better learning
+     * 
+     * @validate_dat : [Number], of validation features to learn better, @validate must be true
+     * 
+     * @validate_epochs : int , Number of epochs after which to evaluate the performance on validation data
+     * 
+     * @optimizer : {Object} : props : @name : &apos;String&apos; , The name of the optimizer to use
+     *                                          available values : &apos;adam&apos;,&apos;rmsprop&apos;,&apos;gd&apos;,&apos;sgd&apos;,&apos;mbgd&apos;
+     * 
+     *                                 @beta/1/2 : fl.oat , The optimization parameter beta(for sgd,mbgd,gd and rmsprop)
+     *                                                      beta1 and beta2 for adam 
+     *                                 @epsilon : fl.oat , The optimization parameter
+     * 
+     * Returns : Nothing, Just optimises the neurons&apos;s weights and biases.
+     * 
+     */
+
+
+    fit({
+        train_features,
+        train_labels,
+        neta = 0.5,
+        epoch = 100,
+        m = 10,
+        costFn = &apos;crossEntropy&apos;,
+        // evaluate = true,
+        // eval_epoch = 10,
+        // validate = false,
+        // validate_dat = null,
+        // validate_epochs,
+        optimizer = {
+            name: &apos;adam&apos;,
+            beta1: 0.9,
+            beta2: 0.999,
+            epsilon: 1e-6,
+        }
+    }) {
+        this.features = train_features;
+        this.labels = core.calc_shape(train_labels)[0] !== this.layers[this.layers.length - 1].activation.shape[0] ?
+            core.transpose(train_labels) : train_labels;
+        this.costFn = getCostFn(costFn);
+        // this.validate_dat = validate_dat || null;
+        let opt = getOptimizer(optimizer.name);
+        this.optimizer = new opt(this);
+        this.optimizer.optimize(neta, epoch, m, optimizer);
+        // if (validate &amp;&amp; validate_dat) {
+        //     this.validate(validate_dat);
+        // }
+    }
+
+    /** feed_forward : Calculates the activation of each layer.
+     *
+     * @input : [Number] , the input to the input layer
+     * 
+     * Returns : [[Number],[Number]] ,  An array containing Activations of each layer
+     *           and also the weighted inputs for each layer.  
+     * 
+     */
+
+    feedForward(input) {
+        if (core.calc_shape(input)[0] !== this.layers[0].shape[0]) input = core.transpose(input, &apos;float32&apos;);
+        this.layers[0].activation.resize(core.calc_shape(input));
+        this.layers[0].activation.arrange(input);
+        for (let i = 1; i &lt; this.layers.length; i++) {
+            this.layers[i].fire();
+        }
+    }
+
+
+    /* eval : evaluates the learning of network by comparing the accuracy */
+    eval() {
+        let cost = this.costFn(this.labels, this.activations);
+    }
+
+    /** predict : Predicts the output for the given test feature
+     * 
+     * @test_features : [Number] , The features for which the prediction is 
+     *                  to be made.
+     * 
+     * Returns : [Number] , The activation of the output layer.                       
+     * 
+     */
+    predict(test_features) {
+        return this.feedForward(test_features)[0][this.layers.length - 1];
+    }
+
+    static formNet(layers) {
+        return new Network(layers);
+    }
+}
+
+/** getOptimizer : Returns the Optimizer Class to optimize the params
+ * 
+ * @optName : &apos;String&apos; , the name of the optimizer   
+ *
+ * Returns : { OptimizerClassObject }
+ * 
+ */
+
+function getOptimizer(optName) {
+    const optimizer = require(&apos;../util/optimizer&apos;);
+    console.log(optimizer);
+    if (optName === &apos;adam&apos;) return optimizer.AdamOptimizer
+    else if (optName === &apos;rmsprop&apos;) return optimizer.RMSPropOptimizer;
+    else if (optName === &apos;gd&apos; || optName === &apos;sgd&apos; || optName === &apos;mbgd&apos;) return optimizer.GradientDescentOptimizer;
+}
+
+/** getCostFn : Returns the cost function for the given name
+ *  
+ * @name : &apos;String&apos;, The cost function to be used for optimisation of weights and biases ( learning )
+ *          available values : &apos;cross_entropy&apos;,&apos;quadCost&apos;,&apos;logLike&apos;
+ *  
+ */
+
+function getCostFn(name) {
+    if (name === &apos;crossEntropy&apos;) return cost.cross_entropy;
+    else if (name === &apos;logLike&apos;) return cost.log_like;
+    else if (name === &apos;quadCost&apos;) return cost.quadCost;
+    else throw new Error(&apos;Undefined Cost Function&apos;);
+}
+
+module.exports = Network;</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
