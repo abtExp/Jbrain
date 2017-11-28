@@ -6,7 +6,7 @@
 
 const { core } = require('../node_modules/vecto'), { cost_grad, shuffle } = require('../util/net_util'),
     cost = require('../util/cost'),
-    Layer = require('../util/layers'),
+    Layer = require('../util/layers/Layer'),
     optimizer = require('../util/optimizer');
 
 
