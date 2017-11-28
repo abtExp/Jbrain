@@ -52,6 +52,10 @@ function shuffle(input, labels, mini_batch_size) {
     return [batches, y_];
 }
 
+function pooling(arr, type = 'max') {
+
+}
+
 
 
 module.exports = {

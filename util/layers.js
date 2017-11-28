@@ -74,6 +74,8 @@ function connectedProps(layer, config) {
     layer.biases = Ndarray.zeroes([config.shape[0], 1], 'float32');
     layer.input = config.input.activation;
     layer.inputLayer = config.input;
+    layer.batch_norm = config.batch_norm;
+    layer.dropout = config.dropout;
     layer.activation = new Ndarray([config.shape[0], null], 'float32', 'zeros');
     initialize(layer);
 }
@@ -87,6 +89,8 @@ function calc_layer_shape(config) {
 function inputLayer(layer, config) {
     layer.type = 'input';
     layer.shape = config.shape;
+    layer.feature_scaling = config.feature_scaling;
+    layer.mean_norm = config.mean_norm;
     layer.activation = new Ndarray(config.shape, 'float32', 'zeros');
 }
 
