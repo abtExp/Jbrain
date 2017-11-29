@@ -8,7 +8,7 @@
  */
 
 const { Ndarray, math, core } = require('vecto'),
-    activ = require('./activ'), { weighted_input } = require('../util/net_util');
+    activ = require('../activ'), { weighted_input } = require('../net_util');
 
 class Layer {
     constructor(config, activationFunction, input) {
@@ -55,7 +55,16 @@ function initialize(layer) {
 }
 
 function convProps(layer, config) {
-    layer.message = 'Not Yet Implemented';
+    // layer.message = 'Not Yet Implemented';
+    layer.type = 'convLayer';
+    layer.name = config.name || 'convLayer';
+    layer.activationFunction = set_activation(config.activationFunction) || set_activation('tanh');
+    layer.input = config.input.activation;
+    layer.kernel = config.kernel;
+    layer.filters = config.filters || 1;
+    layer.inputLayer = config.input;
+    layer.padding = config.padding || 0;
+    layer.stride = config.stride || 1;
 }
 
 function poolProps(layer, config) {
@@ -68,6 +77,7 @@ function convPoolProps(layer, config) {
 
 function connectedProps(layer, config) {
     layer.type = 'connected';
+    layer.name = config.name || 'connectedLayer';
     layer.activationFunction = set_activation(config.activationFunction) || set_activation('tanh');
     config.shape = calc_layer_shape(config);
     layer.weights = new Ndarray(config.shape, 'float32');
