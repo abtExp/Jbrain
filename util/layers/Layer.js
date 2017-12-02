@@ -55,7 +55,7 @@ function initialize(layer) {
 }
 
 function convProps(layer, config) {
-    // layer.message = 'Not Yet Implemented';
+    // layer.message = 'Under Construction';
     layer.type = 'convLayer';
     layer.name = config.name || 'convLayer';
     layer.activationFunction = set_activation(config.activationFunction) || set_activation('tanh');
@@ -68,11 +68,11 @@ function convProps(layer, config) {
 }
 
 function poolProps(layer, config) {
-    layer.message = 'Not Yet Implemented';
+    layer.message = 'Under Construction';
 }
 
 function convPoolProps(layer, config) {
-    layer.message = 'Not Yet Implemented';
+    layer.message = 'Under Construction';
 }
 
 function connectedProps(layer, config) {
