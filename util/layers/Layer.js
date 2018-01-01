@@ -19,7 +19,7 @@ class Layer {
     // Calculates activation for this layer
     fire() {
         let z = weighted_input(this.weights.array, this.input.array, this.biases.array),
-            a = this.activationFunction(z);
+            a = this.activationFunction ? this.activationFunction(z) : z;
         this.activation.resize(core.calc_shape(a));
         this.activation.arrange(a);
         this.z = z;
@@ -78,7 +78,7 @@ function convPoolProps(layer, config) {
 function connectedProps(layer, config) {
     layer.type = 'connected';
     layer.name = config.name || 'connectedLayer';
-    layer.activationFunction = set_activation(config.activationFunction) || set_activation('tanh');
+    layer.activationFunction = set_activation(config.activationFunction) || set_activation('linear');
     config.shape = calc_layer_shape(config);
     layer.weights = new Ndarray(config.shape, 'float32');
     layer.biases = Ndarray.zeroes([config.shape[0], 1], 'float32');

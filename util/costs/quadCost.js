@@ -3,9 +3,11 @@ const { math, core } = require('vecto');
 function quadCost(a, y, m) {
     let cost = math.diff(a, y);
     cost = math.pow(cost, 2);
+    console.log(cost);
     cost = math.sum(cost, null, 1);
+    console.log(cost);
     cost = math.product((1 / (2 * m)), cost);
-    cost = math.sum(cost);
+    return cost;
 }
 
 quadCost.grad = (a, y, m) => {

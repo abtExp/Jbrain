@@ -25,7 +25,7 @@ class Network {
      * 
      */
 
-    constructor(net_config, lyr_type = 'relu', op_type = 'softmax') {
+    constructor(net_config, lyr_type = 'linear', op_type = 'linear') {
         this.net_config = net_config;
         // this.layers.length = net_config.length;
         this.layers = [];
