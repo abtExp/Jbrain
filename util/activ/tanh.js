@@ -7,7 +7,8 @@ function tanh(z) {
 }
 
 tanh.dash = (z) => {
-
+    let a = tanh(z);
+    return math.diff(1, math.pow(a, 2));
 }
 
 module.exports = tanh;

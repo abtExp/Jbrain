@@ -1,5 +1,5 @@
-function binaryCrossEntropy(a, y, m) {
-    // max(a, 0) - a * y + log(1 + exp(-abs(a)))
+function binaryCrossEntropy(z, y, m) {
+    // max(z, 0) - z * y + log(1 + exp(-abs(z)))
 
 }
 
