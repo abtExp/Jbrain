@@ -1,28 +1,7 @@
 {
     "source": ".",
-    "destination": "./docs",
     "includes": ["^brain", "^util"],
     "excludes": ["^node_modules"],
-    "plugins": [{
-        "name": "esdoc-standard-plugin",
-        "option": {
-            "lint": { "enable": true },
-            "coverage": { "enable": true },
-            "accessor": { "access": ["public", "protected", "private"], "autoPrivate": true },
-            "undocumentIdentifier": { "enable": true },
-            "unexportedIdentifier": { "enable": false },
-            "typeInference": { "enable": true },
-            "brand": {
-                "title": "Jbrain",
-                "description": "Neural Networks in JavaScript",
-                "repository": "https://github.com/abtExp/Jbrain",
-                "site": "http://abtExp.github.io/Jbrain",
-                "author": "https://abtExp.github.io/mySite"
-            },
-            "manual": {
-                "index": "^README.md",
-                "globalIndex": true
-            }
-        }
-    }]
+    "destination": "./docs",
+    "plugins": [{ "name": "esdoc-standard-plugin" }]
 }

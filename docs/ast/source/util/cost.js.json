@@ -1,28 +1,28 @@
 {
   "type": "File",
   "start": 0,
-  "end": 266,
+  "end": 194,
   "loc": {
     "start": {
       "line": 1,
       "column": 0
     },
     "end": {
-      "line": 11,
+      "line": 9,
       "column": 22
     }
   },
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 266,
+    "end": 194,
     "loc": {
       "start": {
         "line": 1,
         "column": 0
       },
       "end": {
-        "line": 11,
+        "line": 9,
         "column": 22
       }
     },
@@ -31,15 +31,15 @@
       {
         "type": "VariableDeclaration",
         "start": 0,
-        "end": 143,
+        "end": 97,
         "loc": {
           "start": {
             "line": 1,
             "column": 0
           },
           "end": {
-            "line": 3,
-            "column": 43
+            "line": 2,
+            "column": 51
           }
         },
         "declarations": [
@@ -132,7 +132,7 @@
           {
             "type": "VariableDeclarator",
             "start": 50,
-            "end": 98,
+            "end": 96,
             "loc": {
               "start": {
                 "line": 2,
@@ -140,13 +140,13 @@
               },
               "end": {
                 "line": 2,
-                "column": 52
+                "column": 50
               }
             },
             "id": {
               "type": "Identifier",
               "start": 50,
-              "end": 63,
+              "end": 62,
               "loc": {
                 "start": {
                   "line": 2,
@@ -154,38 +154,38 @@
                 },
                 "end": {
                   "line": 2,
-                  "column": 17
+                  "column": 16
                 },
-                "identifierName": "cross_entropy"
+                "identifierName": "crossEntropy"
               },
-              "name": "cross_entropy"
+              "name": "crossEntropy"
             },
             "init": {
               "type": "CallExpression",
-              "start": 66,
-              "end": 98,
+              "start": 65,
+              "end": 96,
               "loc": {
                 "start": {
                   "line": 2,
-                  "column": 20
+                  "column": 19
                 },
                 "end": {
                   "line": 2,
-                  "column": 52
+                  "column": 50
                 }
               },
               "callee": {
                 "type": "Identifier",
-                "start": 66,
-                "end": 73,
+                "start": 65,
+                "end": 72,
                 "loc": {
                   "start": {
                     "line": 2,
-                    "column": 20
+                    "column": 19
                   },
                   "end": {
                     "line": 2,
-                    "column": 27
+                    "column": 26
                   },
                   "identifierName": "require"
                 },
@@ -194,109 +194,23 @@
               "arguments": [
                 {
                   "type": "StringLiteral",
-                  "start": 74,
-                  "end": 97,
+                  "start": 73,
+                  "end": 95,
                   "loc": {
                     "start": {
                       "line": 2,
-                      "column": 28
+                      "column": 27
                     },
                     "end": {
                       "line": 2,
-                      "column": 51
+                      "column": 49
                     }
                   },
                   "extra": {
-                    "rawValue": "./costs/cross_entropy",
-                    "raw": "'./costs/cross_entropy'"
+                    "rawValue": "./costs/crossEntropy",
+                    "raw": "'./costs/crossEntropy'"
                   },
-                  "value": "./costs/cross_entropy"
-                }
-              ]
-            }
-          },
-          {
-            "type": "VariableDeclarator",
-            "start": 104,
-            "end": 142,
-            "loc": {
-              "start": {
-                "line": 3,
-                "column": 4
-              },
-              "end": {
-                "line": 3,
-                "column": 42
-              }
-            },
-            "id": {
-              "type": "Identifier",
-              "start": 104,
-              "end": 112,
-              "loc": {
-                "start": {
-                  "line": 3,
-                  "column": 4
-                },
-                "end": {
-                  "line": 3,
-                  "column": 12
-                },
-                "identifierName": "log_like"
-              },
-              "name": "log_like"
-            },
-            "init": {
-              "type": "CallExpression",
-              "start": 115,
-              "end": 142,
-              "loc": {
-                "start": {
-                  "line": 3,
-                  "column": 15
-                },
-                "end": {
-                  "line": 3,
-                  "column": 42
-                }
-              },
-              "callee": {
-                "type": "Identifier",
-                "start": 115,
-                "end": 122,
-                "loc": {
-                  "start": {
-                    "line": 3,
-                    "column": 15
-                  },
-                  "end": {
-                    "line": 3,
-                    "column": 22
-                  },
-                  "identifierName": "require"
-                },
-                "name": "require"
-              },
-              "arguments": [
-                {
-                  "type": "StringLiteral",
-                  "start": 123,
-                  "end": 141,
-                  "loc": {
-                    "start": {
-                      "line": 3,
-                      "column": 23
-                    },
-                    "end": {
-                      "line": 3,
-                      "column": 41
-                    }
-                  },
-                  "extra": {
-                    "rawValue": "./costs/log_like",
-                    "raw": "'./costs/log_like'"
-                  },
-                  "value": "./costs/log_like"
+                  "value": "./costs/crossEntropy"
                 }
               ]
             }
@@ -306,44 +220,44 @@
       },
       {
         "type": "VariableDeclaration",
-        "start": 145,
-        "end": 242,
+        "start": 99,
+        "end": 170,
         "loc": {
           "start": {
-            "line": 5,
+            "line": 4,
             "column": 0
           },
           "end": {
-            "line": 9,
+            "line": 7,
             "column": 1
           }
         },
         "declarations": [
           {
             "type": "VariableDeclarator",
-            "start": 151,
-            "end": 242,
+            "start": 105,
+            "end": 170,
             "loc": {
               "start": {
-                "line": 5,
+                "line": 4,
                 "column": 6
               },
               "end": {
-                "line": 9,
+                "line": 7,
                 "column": 1
               }
             },
             "id": {
               "type": "Identifier",
-              "start": 151,
-              "end": 155,
+              "start": 105,
+              "end": 109,
               "loc": {
                 "start": {
-                  "line": 5,
+                  "line": 4,
                   "column": 6
                 },
                 "end": {
-                  "line": 5,
+                  "line": 4,
                   "column": 10
                 },
                 "identifierName": "cost"
@@ -352,30 +266,30 @@
             },
             "init": {
               "type": "ObjectExpression",
-              "start": 158,
-              "end": 242,
+              "start": 112,
+              "end": 170,
               "loc": {
                 "start": {
-                  "line": 5,
+                  "line": 4,
                   "column": 13
                 },
                 "end": {
-                  "line": 9,
+                  "line": 7,
                   "column": 1
                 }
               },
               "properties": [
                 {
                   "type": "ObjectProperty",
-                  "start": 164,
-                  "end": 182,
+                  "start": 118,
+                  "end": 136,
                   "loc": {
                     "start": {
-                      "line": 6,
+                      "line": 5,
                       "column": 4
                     },
                     "end": {
-                      "line": 6,
+                      "line": 5,
                       "column": 22
                     }
                   },
@@ -384,15 +298,15 @@
                   "computed": false,
                   "key": {
                     "type": "Identifier",
-                    "start": 164,
-                    "end": 172,
+                    "start": 118,
+                    "end": 126,
                     "loc": {
                       "start": {
-                        "line": 6,
+                        "line": 5,
                         "column": 4
                       },
                       "end": {
-                        "line": 6,
+                        "line": 5,
                         "column": 12
                       },
                       "identifierName": "quadCost"
@@ -401,15 +315,15 @@
                   },
                   "value": {
                     "type": "Identifier",
-                    "start": 174,
-                    "end": 182,
+                    "start": 128,
+                    "end": 136,
                     "loc": {
                       "start": {
-                        "line": 6,
+                        "line": 5,
                         "column": 14
                       },
                       "end": {
-                        "line": 6,
+                        "line": 5,
                         "column": 22
                       },
                       "identifierName": "quadCost"
@@ -419,16 +333,16 @@
                 },
                 {
                   "type": "ObjectProperty",
-                  "start": 188,
-                  "end": 216,
+                  "start": 142,
+                  "end": 168,
                   "loc": {
                     "start": {
-                      "line": 7,
+                      "line": 6,
                       "column": 4
                     },
                     "end": {
-                      "line": 7,
-                      "column": 32
+                      "line": 6,
+                      "column": 30
                     }
                   },
                   "method": false,
@@ -436,89 +350,37 @@
                   "computed": false,
                   "key": {
                     "type": "Identifier",
-                    "start": 188,
-                    "end": 201,
+                    "start": 142,
+                    "end": 154,
                     "loc": {
                       "start": {
-                        "line": 7,
+                        "line": 6,
                         "column": 4
                       },
                       "end": {
-                        "line": 7,
-                        "column": 17
+                        "line": 6,
+                        "column": 16
                       },
-                      "identifierName": "cross_entropy"
+                      "identifierName": "crossEntropy"
                     },
-                    "name": "cross_entropy"
+                    "name": "crossEntropy"
                   },
                   "value": {
                     "type": "Identifier",
-                    "start": 203,
-                    "end": 216,
+                    "start": 156,
+                    "end": 168,
                     "loc": {
                       "start": {
-                        "line": 7,
-                        "column": 19
+                        "line": 6,
+                        "column": 18
                       },
                       "end": {
-                        "line": 7,
-                        "column": 32
+                        "line": 6,
+                        "column": 30
                       },
-                      "identifierName": "cross_entropy"
+                      "identifierName": "crossEntropy"
                     },
-                    "name": "cross_entropy"
-                  }
-                },
-                {
-                  "type": "ObjectProperty",
-                  "start": 222,
-                  "end": 240,
-                  "loc": {
-                    "start": {
-                      "line": 8,
-                      "column": 4
-                    },
-                    "end": {
-                      "line": 8,
-                      "column": 22
-                    }
-                  },
-                  "method": false,
-                  "shorthand": false,
-                  "computed": false,
-                  "key": {
-                    "type": "Identifier",
-                    "start": 222,
-                    "end": 230,
-                    "loc": {
-                      "start": {
-                        "line": 8,
-                        "column": 4
-                      },
-                      "end": {
-                        "line": 8,
-                        "column": 12
-                      },
-                      "identifierName": "log_like"
-                    },
-                    "name": "log_like"
-                  },
-                  "value": {
-                    "type": "Identifier",
-                    "start": 232,
-                    "end": 240,
-                    "loc": {
-                      "start": {
-                        "line": 8,
-                        "column": 14
-                      },
-                      "end": {
-                        "line": 8,
-                        "column": 22
-                      },
-                      "identifierName": "log_like"
-                    },
-                    "name": "log_like"
+                    "name": "crossEntropy"
                   }
                 }
               ]
@@ -529,58 +391,58 @@
       },
       {
         "type": "ExpressionStatement",
-        "start": 244,
-        "end": 266,
+        "start": 172,
+        "end": 194,
         "loc": {
           "start": {
-            "line": 11,
+            "line": 9,
             "column": 0
           },
           "end": {
-            "line": 11,
+            "line": 9,
             "column": 22
           }
         },
         "expression": {
           "type": "AssignmentExpression",
-          "start": 244,
-          "end": 265,
+          "start": 172,
+          "end": 193,
           "loc": {
             "start": {
-              "line": 11,
+              "line": 9,
               "column": 0
             },
             "end": {
-              "line": 11,
+              "line": 9,
               "column": 21
             }
           },
           "operator": "=",
           "left": {
             "type": "MemberExpression",
-            "start": 244,
-            "end": 258,
+            "start": 172,
+            "end": 186,
             "loc": {
               "start": {
-                "line": 11,
+                "line": 9,
                 "column": 0
               },
               "end": {
-                "line": 11,
+                "line": 9,
                 "column": 14
               }
             },
             "object": {
               "type": "Identifier",
-              "start": 244,
-              "end": 250,
+              "start": 172,
+              "end": 178,
               "loc": {
                 "start": {
-                  "line": 11,
+                  "line": 9,
                   "column": 0
                 },
                 "end": {
-                  "line": 11,
+                  "line": 9,
                   "column": 6
                 },
                 "identifierName": "module"
@@ -589,15 +451,15 @@
             },
             "property": {
               "type": "Identifier",
-              "start": 251,
-              "end": 258,
+              "start": 179,
+              "end": 186,
               "loc": {
                 "start": {
-                  "line": 11,
+                  "line": 9,
                   "column": 7
                 },
                 "end": {
-                  "line": 11,
+                  "line": 9,
                   "column": 14
                 },
                 "identifierName": "exports"
@@ -608,15 +470,15 @@
           },
           "right": {
             "type": "Identifier",
-            "start": 261,
-            "end": 265,
+            "start": 189,
+            "end": 193,
             "loc": {
               "start": {
-                "line": 11,
+                "line": 9,
                 "column": 17
               },
               "end": {
-                "line": 11,
+                "line": 9,
                 "column": 21
               },
               "identifierName": "cost"
@@ -852,9 +714,9 @@
         "postfix": false,
         "binop": null
       },
-      "value": "cross_entropy",
+      "value": "crossEntropy",
       "start": 50,
-      "end": 63,
+      "end": 62,
       "loc": {
         "start": {
           "line": 2,
@@ -862,7 +724,7 @@
         },
         "end": {
           "line": 2,
-          "column": 17
+          "column": 16
         }
       }
     },
@@ -880,16 +742,16 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 64,
-      "end": 65,
+      "start": 63,
+      "end": 64,
       "loc": {
         "start": {
           "line": 2,
-          "column": 18
+          "column": 17
         },
         "end": {
           "line": 2,
-          "column": 19
+          "column": 18
         }
       }
     },
@@ -906,12 +768,37 @@
         "binop": null
       },
       "value": "require",
-      "start": 66,
+      "start": 65,
+      "end": 72,
+      "loc": {
+        "start": {
+          "line": 2,
+          "column": 19
+        },
+        "end": {
+          "line": 2,
+          "column": 26
+        }
+      }
+    },
+    {
+      "type": {
+        "label": "(",
+        "beforeExpr": true,
+        "startsExpr": true,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null
+      },
+      "start": 72,
       "end": 73,
       "loc": {
         "start": {
           "line": 2,
-          "column": 20
+          "column": 26
         },
         "end": {
           "line": 2,
@@ -921,18 +808,20 @@
     },
     {
       "type": {
-        "label": "(",
-        "beforeExpr": true,
+        "label": "string",
+        "beforeExpr": false,
         "startsExpr": true,
         "rightAssociative": false,
         "isLoop": false,
         "isAssign": false,
         "prefix": false,
         "postfix": false,
-        "binop": null
+        "binop": null,
+        "updateContext": null
       },
+      "value": "./costs/crossEntropy",
       "start": 73,
-      "end": 74,
+      "end": 95,
       "loc": {
         "start": {
           "line": 2,
@@ -940,34 +829,7 @@
         },
         "end": {
           "line": 2,
-          "column": 28
-        }
-      }
-    },
-    {
-      "type": {
-        "label": "string",
-        "beforeExpr": false,
-        "startsExpr": true,
-        "rightAssociative": false,
-        "isLoop": false,
-        "isAssign": false,
-        "prefix": false,
-        "postfix": false,
-        "binop": null,
-        "updateContext": null
-      },
-      "value": "./costs/cross_entropy",
-      "start": 74,
-      "end": 97,
-      "loc": {
-        "start": {
-          "line": 2,
-          "column": 28
-        },
-        "end": {
-          "line": 2,
-          "column": 51
+          "column": 49
         }
       }
     },
@@ -983,198 +845,16 @@
         "postfix": false,
         "binop": null
       },
-      "start": 97,
-      "end": 98,
+      "start": 95,
+      "end": 96,
       "loc": {
         "start": {
           "line": 2,
-          "column": 51
+          "column": 49
         },
         "end": {
           "line": 2,
-          "column": 52
-        }
-      }
-    },
-    {
-      "type": {
-        "label": ",",
-        "beforeExpr": true,
-        "startsExpr": false,
-        "rightAssociative": false,
-        "isLoop": false,
-        "isAssign": false,
-        "prefix": false,
-        "postfix": false,
-        "binop": null,
-        "updateContext": null
-      },
-      "start": 98,
-      "end": 99,
-      "loc": {
-        "start": {
-          "line": 2,
-          "column": 52
-        },
-        "end": {
-          "line": 2,
-          "column": 53
-        }
-      }
-    },
-    {
-      "type": {
-        "label": "name",
-        "beforeExpr": false,
-        "startsExpr": true,
-        "rightAssociative": false,
-        "isLoop": false,
-        "isAssign": false,
-        "prefix": false,
-        "postfix": false,
-        "binop": null
-      },
-      "value": "log_like",
-      "start": 104,
-      "end": 112,
-      "loc": {
-        "start": {
-          "line": 3,
-          "column": 4
-        },
-        "end": {
-          "line": 3,
-          "column": 12
-        }
-      }
-    },
-    {
-      "type": {
-        "label": "=",
-        "beforeExpr": true,
-        "startsExpr": false,
-        "rightAssociative": false,
-        "isLoop": false,
-        "isAssign": true,
-        "prefix": false,
-        "postfix": false,
-        "binop": null,
-        "updateContext": null
-      },
-      "value": "=",
-      "start": 113,
-      "end": 114,
-      "loc": {
-        "start": {
-          "line": 3,
-          "column": 13
-        },
-        "end": {
-          "line": 3,
-          "column": 14
-        }
-      }
-    },
-    {
-      "type": {
-        "label": "name",
-        "beforeExpr": false,
-        "startsExpr": true,
-        "rightAssociative": false,
-        "isLoop": false,
-        "isAssign": false,
-        "prefix": false,
-        "postfix": false,
-        "binop": null
-      },
-      "value": "require",
-      "start": 115,
-      "end": 122,
-      "loc": {
-        "start": {
-          "line": 3,
-          "column": 15
-        },
-        "end": {
-          "line": 3,
-          "column": 22
-        }
-      }
-    },
-    {
-      "type": {
-        "label": "(",
-        "beforeExpr": true,
-        "startsExpr": true,
-        "rightAssociative": false,
-        "isLoop": false,
-        "isAssign": false,
-        "prefix": false,
-        "postfix": false,
-        "binop": null
-      },
-      "start": 122,
-      "end": 123,
-      "loc": {
-        "start": {
-          "line": 3,
-          "column": 22
-        },
-        "end": {
-          "line": 3,
-          "column": 23
-        }
-      }
-    },
-    {
-      "type": {
-        "label": "string",
-        "beforeExpr": false,
-        "startsExpr": true,
-        "rightAssociative": false,
-        "isLoop": false,
-        "isAssign": false,
-        "prefix": false,
-        "postfix": false,
-        "binop": null,
-        "updateContext": null
-      },
-      "value": "./costs/log_like",
-      "start": 123,
-      "end": 141,
-      "loc": {
-        "start": {
-          "line": 3,
-          "column": 23
-        },
-        "end": {
-          "line": 3,
-          "column": 41
-        }
-      }
-    },
-    {
-      "type": {
-        "label": ")",
-        "beforeExpr": false,
-        "startsExpr": false,
-        "rightAssociative": false,
-        "isLoop": false,
-        "isAssign": false,
-        "prefix": false,
-        "postfix": false,
-        "binop": null
-      },
-      "start": 141,
-      "end": 142,
-      "loc": {
-        "start": {
-          "line": 3,
-          "column": 41
-        },
-        "end": {
-          "line": 3,
-          "column": 42
+          "column": 50
         }
       }
     },
@@ -1191,16 +871,16 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 142,
-      "end": 143,
+      "start": 96,
+      "end": 97,
       "loc": {
         "start": {
-          "line": 3,
-          "column": 42
+          "line": 2,
+          "column": 50
         },
         "end": {
-          "line": 3,
-          "column": 43
+          "line": 2,
+          "column": 51
         }
       }
     },
@@ -1219,15 +899,15 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 145,
-      "end": 150,
+      "start": 99,
+      "end": 104,
       "loc": {
         "start": {
-          "line": 5,
+          "line": 4,
           "column": 0
         },
         "end": {
-          "line": 5,
+          "line": 4,
           "column": 5
         }
       }
@@ -1245,15 +925,15 @@
         "binop": null
       },
       "value": "cost",
-      "start": 151,
-      "end": 155,
+      "start": 105,
+      "end": 109,
       "loc": {
         "start": {
-          "line": 5,
+          "line": 4,
           "column": 6
         },
         "end": {
-          "line": 5,
+          "line": 4,
           "column": 10
         }
       }
@@ -1272,15 +952,15 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 156,
-      "end": 157,
+      "start": 110,
+      "end": 111,
       "loc": {
         "start": {
-          "line": 5,
+          "line": 4,
           "column": 11
         },
         "end": {
-          "line": 5,
+          "line": 4,
           "column": 12
         }
       }
@@ -1297,15 +977,15 @@
         "postfix": false,
         "binop": null
       },
-      "start": 158,
-      "end": 159,
+      "start": 112,
+      "end": 113,
       "loc": {
         "start": {
-          "line": 5,
+          "line": 4,
           "column": 13
         },
         "end": {
-          "line": 5,
+          "line": 4,
           "column": 14
         }
       }
@@ -1323,15 +1003,15 @@
         "binop": null
       },
       "value": "quadCost",
-      "start": 164,
-      "end": 172,
+      "start": 118,
+      "end": 126,
       "loc": {
         "start": {
-          "line": 6,
+          "line": 5,
           "column": 4
         },
         "end": {
-          "line": 6,
+          "line": 5,
           "column": 12
         }
       }
@@ -1349,15 +1029,15 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 172,
-      "end": 173,
+      "start": 126,
+      "end": 127,
       "loc": {
         "start": {
-          "line": 6,
+          "line": 5,
           "column": 12
         },
         "end": {
-          "line": 6,
+          "line": 5,
           "column": 13
         }
       }
@@ -1375,15 +1055,15 @@
         "binop": null
       },
       "value": "quadCost",
-      "start": 174,
-      "end": 182,
+      "start": 128,
+      "end": 136,
       "loc": {
         "start": {
-          "line": 6,
+          "line": 5,
           "column": 14
         },
         "end": {
-          "line": 6,
+          "line": 5,
           "column": 22
         }
       }
@@ -1401,15 +1081,15 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 182,
-      "end": 183,
+      "start": 136,
+      "end": 137,
       "loc": {
         "start": {
-          "line": 6,
+          "line": 5,
           "column": 22
         },
         "end": {
-          "line": 6,
+          "line": 5,
           "column": 23
         }
       }
@@ -1426,17 +1106,17 @@
         "postfix": false,
         "binop": null
       },
-      "value": "cross_entropy",
-      "start": 188,
-      "end": 201,
+      "value": "crossEntropy",
+      "start": 142,
+      "end": 154,
       "loc": {
         "start": {
-          "line": 7,
+          "line": 6,
           "column": 4
         },
         "end": {
-          "line": 7,
-          "column": 17
+          "line": 6,
+          "column": 16
         }
       }
     },
@@ -1453,146 +1133,42 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 201,
-      "end": 202,
+      "start": 154,
+      "end": 155,
       "loc": {
         "start": {
-          "line": 7,
-          "column": 17
+          "line": 6,
+          "column": 16
         },
         "end": {
-          "line": 7,
+          "line": 6,
+          "column": 17
+        }
+      }
+    },
+    {
+      "type": {
+        "label": "name",
+        "beforeExpr": false,
+        "startsExpr": true,
+        "rightAssociative": false,
+        "isLoop": false,
+        "isAssign": false,
+        "prefix": false,
+        "postfix": false,
+        "binop": null
+      },
+      "value": "crossEntropy",
+      "start": 156,
+      "end": 168,
+      "loc": {
+        "start": {
+          "line": 6,
           "column": 18
-        }
-      }
-    },
-    {
-      "type": {
-        "label": "name",
-        "beforeExpr": false,
-        "startsExpr": true,
-        "rightAssociative": false,
-        "isLoop": false,
-        "isAssign": false,
-        "prefix": false,
-        "postfix": false,
-        "binop": null
-      },
-      "value": "cross_entropy",
-      "start": 203,
-      "end": 216,
-      "loc": {
-        "start": {
-          "line": 7,
-          "column": 19
         },
         "end": {
-          "line": 7,
-          "column": 32
-        }
-      }
-    },
-    {
-      "type": {
-        "label": ",",
-        "beforeExpr": true,
-        "startsExpr": false,
-        "rightAssociative": false,
-        "isLoop": false,
-        "isAssign": false,
-        "prefix": false,
-        "postfix": false,
-        "binop": null,
-        "updateContext": null
-      },
-      "start": 216,
-      "end": 217,
-      "loc": {
-        "start": {
-          "line": 7,
-          "column": 32
-        },
-        "end": {
-          "line": 7,
-          "column": 33
-        }
-      }
-    },
-    {
-      "type": {
-        "label": "name",
-        "beforeExpr": false,
-        "startsExpr": true,
-        "rightAssociative": false,
-        "isLoop": false,
-        "isAssign": false,
-        "prefix": false,
-        "postfix": false,
-        "binop": null
-      },
-      "value": "log_like",
-      "start": 222,
-      "end": 230,
-      "loc": {
-        "start": {
-          "line": 8,
-          "column": 4
-        },
-        "end": {
-          "line": 8,
-          "column": 12
-        }
-      }
-    },
-    {
-      "type": {
-        "label": ":",
-        "beforeExpr": true,
-        "startsExpr": false,
-        "rightAssociative": false,
-        "isLoop": false,
-        "isAssign": false,
-        "prefix": false,
-        "postfix": false,
-        "binop": null,
-        "updateContext": null
-      },
-      "start": 230,
-      "end": 231,
-      "loc": {
-        "start": {
-          "line": 8,
-          "column": 12
-        },
-        "end": {
-          "line": 8,
-          "column": 13
-        }
-      }
-    },
-    {
-      "type": {
-        "label": "name",
-        "beforeExpr": false,
-        "startsExpr": true,
-        "rightAssociative": false,
-        "isLoop": false,
-        "isAssign": false,
-        "prefix": false,
-        "postfix": false,
-        "binop": null
-      },
-      "value": "log_like",
-      "start": 232,
-      "end": 240,
-      "loc": {
-        "start": {
-          "line": 8,
-          "column": 14
-        },
-        "end": {
-          "line": 8,
-          "column": 22
+          "line": 6,
+          "column": 30
         }
       }
     },
@@ -1608,15 +1184,15 @@
         "postfix": false,
         "binop": null
       },
-      "start": 241,
-      "end": 242,
+      "start": 169,
+      "end": 170,
       "loc": {
         "start": {
-          "line": 9,
+          "line": 7,
           "column": 0
         },
         "end": {
-          "line": 9,
+          "line": 7,
           "column": 1
         }
       }
@@ -1634,15 +1210,15 @@
         "binop": null
       },
       "value": "module",
-      "start": 244,
-      "end": 250,
+      "start": 172,
+      "end": 178,
       "loc": {
         "start": {
-          "line": 11,
+          "line": 9,
           "column": 0
         },
         "end": {
-          "line": 11,
+          "line": 9,
           "column": 6
         }
       }
@@ -1660,15 +1236,15 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 250,
-      "end": 251,
+      "start": 178,
+      "end": 179,
       "loc": {
         "start": {
-          "line": 11,
+          "line": 9,
           "column": 6
         },
         "end": {
-          "line": 11,
+          "line": 9,
           "column": 7
         }
       }
@@ -1686,15 +1262,15 @@
         "binop": null
       },
       "value": "exports",
-      "start": 251,
-      "end": 258,
+      "start": 179,
+      "end": 186,
       "loc": {
         "start": {
-          "line": 11,
+          "line": 9,
           "column": 7
         },
         "end": {
-          "line": 11,
+          "line": 9,
           "column": 14
         }
       }
@@ -1713,15 +1289,15 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 259,
-      "end": 260,
+      "start": 187,
+      "end": 188,
       "loc": {
         "start": {
-          "line": 11,
+          "line": 9,
           "column": 15
         },
         "end": {
-          "line": 11,
+          "line": 9,
           "column": 16
         }
       }
@@ -1739,15 +1315,15 @@
         "binop": null
       },
       "value": "cost",
-      "start": 261,
-      "end": 265,
+      "start": 189,
+      "end": 193,
       "loc": {
         "start": {
-          "line": 11,
+          "line": 9,
           "column": 17
         },
         "end": {
-          "line": 11,
+          "line": 9,
           "column": 21
         }
       }
@@ -1765,15 +1341,15 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 265,
-      "end": 266,
+      "start": 193,
+      "end": 194,
       "loc": {
         "start": {
-          "line": 11,
+          "line": 9,
           "column": 21
         },
         "end": {
-          "line": 11,
+          "line": 9,
           "column": 22
         }
       }
@@ -1791,15 +1367,15 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 266,
-      "end": 266,
+      "start": 194,
+      "end": 194,
       "loc": {
         "start": {
-          "line": 11,
+          "line": 9,
           "column": 22
         },
         "end": {
-          "line": 11,
+          "line": 9,
           "column": 22
         }
       }

@@ -37,8 +37,8 @@
 <pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const { math, core } = require(&apos;vecto&apos;);
 
 function sigmoid(z) {
-    let shape = core.calc_shape(z),
-        z_ = core.form_arr(core.flatten(z)).map(i =&gt; -i),
+    let shape = core.calcShape(z),
+        z_ = core.formArr(core.flatten(z)).map(i =&gt; -i),
         activ = math.divide(1, math.sum(1, math.exp(z_)));
     return core.arrange(shape, activ);
 }

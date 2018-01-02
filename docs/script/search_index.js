@@ -54,15 +54,15 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
-    "jbrain/util/costs/cross_entropy.js",
-    "file/Jbrain/util/costs/cross_entropy.js.html",
-    "Jbrain/util/costs/cross_entropy.js",
+    "jbrain/util/costs/categoricalcrossentropy.js",
+    "file/Jbrain/util/costs/categoricalCrossEntropy.js.html",
+    "Jbrain/util/costs/categoricalCrossEntropy.js",
     "file"
   ],
   [
-    "jbrain/util/costs/log_like.js",
-    "file/Jbrain/util/costs/log_like.js.html",
-    "Jbrain/util/costs/log_like.js",
+    "jbrain/util/costs/crossentropy.js",
+    "file/Jbrain/util/costs/crossEntropy.js.html",
+    "Jbrain/util/costs/crossEntropy.js",
     "file"
   ],
   [
@@ -72,9 +72,27 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
-    "jbrain/util/layers.js",
-    "file/Jbrain/util/layers.js.html",
-    "Jbrain/util/layers.js",
+    "jbrain/util/layers/conv.js",
+    "file/Jbrain/util/layers/Conv.js.html",
+    "Jbrain/util/layers/Conv.js",
+    "file"
+  ],
+  [
+    "jbrain/util/layers/layer.js",
+    "file/Jbrain/util/layers/Layer.js.html",
+    "Jbrain/util/layers/Layer.js",
+    "file"
+  ],
+  [
+    "jbrain/util/layers/pool.js",
+    "file/Jbrain/util/layers/Pool.js.html",
+    "Jbrain/util/layers/Pool.js",
+    "file"
+  ],
+  [
+    "jbrain/util/layers/reccurrent.js",
+    "file/Jbrain/util/layers/Reccurrent.js.html",
+    "Jbrain/util/layers/Reccurrent.js",
     "file"
   ],
   [
