@@ -5,8 +5,7 @@
  */
 
 const { core } = require('vecto'), { cost_grad, shuffle } = require('../util/net_util'),
-    cost = require('../util/cost'),
-    Layer = require('../util/layers/Layer'),
+    cost = require('../util/cost'), { InputLayer, ConnectedLayer } = require('../util/layers'),
     optimizer = require('../util/optimizer');
 
 
@@ -38,36 +37,29 @@ class Network {
 
     constructor(net_config, lyr_type = 'linear', op_type = 'linear') {
         this.net_config = net_config;
-        // this.layers.length = net_config.length;
         this.layers = [];
-        // this.activations = [];
-
-        if (this.net_config[0].constructor.name === 'Object') {
-            this.layers.push(new Layer(net_config[0]));
-            for (let i = 1; i < net_config.length; i++) {
-                if (net_config[i].number) {
-                    if (net_config[i].config) {
-                        for (let j = 0; j < net_config[i].number; j++) {
-                            net_config[i].config[j].input = net_config[i].config[j].input ||
-                                this.layers[this.layers.length - 1];
-                            net_config[i].config[j].type = net_config[i].type;
-                            this.layers.push(new Layer(net_config[i].config[j]));
-                        }
-                    } else {
-                        console.error('Please Provide The Configuration For Each Layer');
-                    }
-                } else {
-                    net_config[i].input = net_config[i].input ||
-                        this.layers[this.layers.length - 1];
-                    this.layers.push(new Layer(net_config[i]));
-                }
+        if (typeof net_config[0] === 'object') {
+            this.layers.push(net_config[0]);
+            for (let i = 1; i < this.net_config.length; i++) {
+                net_config[i].input = net_config[i].input || this.layers[this.layers.length - 1];
+                this.layers.push(net_config[i]);
             }
         } else {
-            this.layers.push(new Layer({ type: 'input', shape: [net_config[0], null] }));
+            this.layers.push(new InputLayer({ shape: [net_config[0], null] }));
             for (let i = 1; i < this.net_config.length - 1; i++) {
-                this.layers.push(new Layer([this.net_config[i], this.net_config[i - 1]], lyr_type, this.layers[this.layers.length - 1]));
+                this.layers.push(new Layer({
+                    shape: [this.net_config[i], this.net_config[i - 1]],
+                    activationFunction: lyr_type,
+                    input: this.layers[this.layers.length - 1]
+                }));
             }
-            this.layers.push(new Layer([this.net_config[this.layers.length - 1], this.net_config[this.layers.length - 2]], op_type, this.layers[this.layers.length - 1]))
+            this.layers.push(new Layer({
+                shape: [this.net_config[this.layers.length - 1],
+                    this.net_config[this.layers.length - 2]
+                ],
+                activationFunction: op_type,
+                input: this.layers[this.layers.length - 1]
+            }))
         }
     }
 
@@ -130,7 +122,7 @@ class Network {
         }
     }) {
         this.features = train_features;
-        this.labels = core.calc_shape(train_labels)[0] !== this.layers[this.layers.length - 1].activation.shape[0] ?
+        this.labels = core.calcShape(train_labels)[0] !== this.layers[this.layers.length - 1].activation.shape[0] ?
             core.transpose(train_labels) : train_labels;
         this.costFn = getCostFn(costFn);
         // this.validate_dat = validate_dat || null;
@@ -179,7 +171,7 @@ class Network {
         return this.feedForward(test_features)[0][this.layers.length - 1];
     }
 
-    static formNet(layers) {
+    static Create(layers) {
         return new Network(layers);
     }
 }
