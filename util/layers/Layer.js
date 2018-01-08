@@ -18,16 +18,17 @@ class Layer {
             this.input = config.input.activation;
             this.weightsInit = config.weightsInit || 'xavier';
             this.activationFunction = this.setActivation(config.activationFunction);
-            this.regularizer = config.regularizer.name; // Placeholder, 've to implement regularization
+            this.regularizer = config.regularizer ? config.regularizer : null; // Placeholder, 've to implement regularization
         } else this.shape = config.shape;
         this.type = config.type;
         this.name = config.name || config.type;
-        this.activation = new Ndarray({ shape: [this.shape[0], null], dtype: 'float32', initializer: 'zeros' });
     }
 
     fire() {
+        console.log(`firing ${this.name}`);
         let z = weighted_input(this.weights.array, this.input.array, this.biases.array),
             a = this.activationFunction ? this.activationFunction(z) : z;
+        console.log(a);
         this.activation.resize(core.calcShape(a));
         this.activation.arrange(a);
         this.z = z;

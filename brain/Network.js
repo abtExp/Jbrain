@@ -45,20 +45,22 @@ class Network {
                 this.layers.push(net_config[i]);
             }
         } else {
-            this.layers.push(new InputLayer({ shape: [net_config[0], null] }));
+            this.layers.push(new InputLayer({ shape: [net_config[0], null], name: `input${this.layers.length}` }));
             for (let i = 1; i < this.net_config.length - 1; i++) {
-                this.layers.push(new Layer({
+                this.layers.push(new ConnectedLayer({
                     shape: [this.net_config[i], this.net_config[i - 1]],
                     activationFunction: lyr_type,
-                    input: this.layers[this.layers.length - 1]
+                    input: this.layers[this.layers.length - 1],
+                    name: `fc${this.layers.length}`
                 }));
             }
-            this.layers.push(new Layer({
+            this.layers.push(new ConnectedLayer({
                 shape: [this.net_config[this.layers.length - 1],
                     this.net_config[this.layers.length - 2]
                 ],
                 activationFunction: op_type,
-                input: this.layers[this.layers.length - 1]
+                input: this.layers[this.layers.length - 1],
+                name: `output${this.layers.length}`
             }))
         }
     }
@@ -145,8 +147,8 @@ class Network {
      */
 
     feedForward(input) {
-        if (core.calc_shape(input)[0] !== this.layers[0].shape[0]) input = core.transpose(input, 'float32');
-        this.layers[0].activation.resize(core.calc_shape(input));
+        if (core.calcShape(input)[0] !== this.layers[0].shape[0]) input = core.transpose(input, 'float32');
+        this.layers[0].activation.resize(core.calcShape(input));
         this.layers[0].activation.arrange(input);
         for (let i = 1; i < this.layers.length; i++) {
             this.layers[i].fire();
