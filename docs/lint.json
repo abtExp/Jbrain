@@ -1,0 +1,197 @@
+[
+  {
+    "name": "Network#fit",
+    "filePath": "Jbrain/brain/Network.js",
+    "lines": [
+      {
+        "lineNumber": 73,
+        "line": "    /** "
+      },
+      {
+        "lineNumber": 74,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 75,
+        "line": "     * fit : Fit the Network (i.e., train) "
+      },
+      {
+        "lineNumber": 76,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 77,
+        "line": "     * @param {Array} train_features - features for the network to learn. The shape for @train_features could"
+      },
+      {
+        "lineNumber": 78,
+        "line": "     *                                 be either [#examples,#features] or [#features, #examples] "
+      },
+      {
+        "lineNumber": 79,
+        "line": "     *"
+      },
+      {
+        "lineNumber": 80,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 81,
+        "line": "     * @param {Array} train_labels - labels for the training set. The shape for @train_labels could"
+      },
+      {
+        "lineNumber": 82,
+        "line": "     *                               be either [#examples,#outputNeurons] or [#outputNeurons, #examples] "
+      },
+      {
+        "lineNumber": 83,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 84,
+        "line": "     * @param {float} neta - the learning rate"
+      },
+      {
+        "lineNumber": 85,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 86,
+        "line": "     * @param {int} epoch - Number of epochs"
+      },
+      {
+        "lineNumber": 87,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 88,
+        "line": "     * @param {string} costFn - The cost function to be used for optimisation"
+      },
+      {
+        "lineNumber": 89,
+        "line": "     *                          available values : 'crossEntropy','quadCost','categoricalCrossEntropy'"
+      },
+      {
+        "lineNumber": 90,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 91,
+        "line": "     * @param {boolean} evaluate - whether to evaluate the learning of the network"
+      },
+      {
+        "lineNumber": 92,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 93,
+        "line": "     * @param {int} eval_epoch - epochs after which to evaluate the learning"
+      },
+      {
+        "lineNumber": 94,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 95,
+        "line": "     * @param {boolean} validate - whether validation data will be provided"
+      },
+      {
+        "lineNumber": 96,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 97,
+        "line": "     * @param {Array} validate_dat - validation features to learn better, @validate must be true"
+      },
+      {
+        "lineNumber": 98,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 99,
+        "line": "     * @param {object/string} optimizer - the optimizer for training."
+      },
+      {
+        "lineNumber": 100,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 101,
+        "line": "     * properties of the optimizer if @optimizer is object  "
+      },
+      {
+        "lineNumber": 102,
+        "line": "     *                                    name {string} : The name of the optimizer to use"
+      },
+      {
+        "lineNumber": 103,
+        "line": "     *                                    available values : 'adam','rmsprop','gd','sgd','mbgd'"
+      },
+      {
+        "lineNumber": 104,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 105,
+        "line": "     *                                    beta/1/2 {float} : The optimization parameter beta(for sgd,mbgd,gd and rmsprop)"
+      },
+      {
+        "lineNumber": 106,
+        "line": "     *                                                       beta1 and beta2 for adam "
+      },
+      {
+        "lineNumber": 107,
+        "line": "     *                                    epsilon {float} :  The optimization parameter"
+      },
+      {
+        "lineNumber": 108,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 109,
+        "line": "     * "
+      },
+      {
+        "lineNumber": 110,
+        "line": "     */"
+      },
+      {
+        "lineNumber": 111,
+        "line": ""
+      },
+      {
+        "lineNumber": 112,
+        "line": ""
+      },
+      {
+        "lineNumber": 113,
+        "line": "    fit(train_features, train_labels, neta = 0.5, epoch = 100, m = 10, costFn = 'crossEntropy', evaluate = true, eval_epoch = 10, validate = false, validate_dat = null, optimizer = { name: 'adam', beta1: 0.9, beta2: 0.999, epsilon: 1e-6 }) {"
+      }
+    ],
+    "codeParams": [
+      "train_features",
+      "train_labels",
+      "neta",
+      "epoch",
+      "m",
+      "costFn",
+      "evaluate",
+      "eval_epoch",
+      "validate",
+      "validate_dat",
+      "optimizer"
+    ],
+    "docParams": [
+      "train_features",
+      "train_labels",
+      "neta",
+      "epoch",
+      "costFn",
+      "evaluate",
+      "eval_epoch",
+      "validate",
+      "validate_dat",
+      "optimizer"
+    ]
+  }
+]

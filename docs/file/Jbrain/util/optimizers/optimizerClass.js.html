@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../../">
+  <title data-ice="title">Jbrain/util/optimizers/optimizerClass.js | jbrain</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Machine Learning library in JavaScript"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="jbrain"><meta property="twitter:description" content="Machine Learning library in JavaScript"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/abt10/Jbrain"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  </ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">Jbrain/util/optimizers/optimizerClass.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">&apos;use strict&apos;;
+
+/* :construction: Under Construction :construction: */
+
+const { Ndarray, math, core } = require(&apos;vecto&apos;);
+
+
+module.exports = class Optimizer {
+    constructor(network, len) {
+        this.paramLen = len;
+        this.feedForward = network.feedForward;
+        this.layers = network.layers;
+        this.costFn = network.costFn;
+        this.features = network.features;
+        this.batch_size = this.features.length;
+        this.labels = network.labels;
+        this.variablesList = [];
+    }
+
+    /** backpropagation : Calculates the error in activation of every layer 
+     * 
+     * @activations : [Number] , The activation of the output layer
+     * 
+     * @labels      : [Number] , The labels(desired output) for given input
+     * 
+     * @activ_      : [Number] , The g&apos;(z) for current batch
+     * 
+     * Returns      : [[Number],[Number]], delw is an array of Ndarrays having error in weights
+     *                of every layer and delb is array of Ndarrays having errors in biases
+     */
+
+    backprop(labels) {
+        let dw = [],
+            db = [],
+            delta = [];
+        for (let i = 1; i &lt; this.layers.length; i++) {
+            dw.push(Ndarray.zeroes(this.layers[i].weights.shape));
+            db.push(Ndarray.zeroes(this.layers[i].biases.shape));
+        }
+
+        let cost = this.costFn(this.layers[this.layers.length - 1].activation.array, labels, this.batch_size);
+        let gradc = this.costFn.grad(this.layers[this.layers.length - 1].activation.array, labels, this.batch_size),
+            activ_dash = this.layers[this.layers.length - 1].activ_;
+
+        delta[(this.layers.length - 1)] = math.product(gradc, activ_dash, &apos;dot&apos;);
+
+        for (let i = this.layers.length - 2; i &gt; 0; i--) {
+            delta[i] = math.product(math.product(this.layers[i + 1].weights.transpose(), delta[i + 1]), this.layers[i].activ_, &apos;dot&apos;);
+        }
+
+        for (let i = 1; i &lt; this.layers.length; i++) {
+            dw[i - 1].arrange(math.sum(dw[i - 1].array, math.product(delta[i], this.layers[i - 1].activation.transpose())));
+            /* Confusion with the delta shape */
+            db[i - 1].arrange(math.sum(db[i - 1].array, delta[i]));
+        }
+        this.dw = dw;
+        this.db = db;
+        return [dw, db];
+    }
+
+    /* Produces The Parameter Arrays For Updation */
+    initParams() {
+        for (let i = 0; i &lt; this.paramLen / 2; i++) {
+            let paramw = [];
+            let paramb = [];
+            for (let l = 1; l &lt; this.layers.length; l++) {
+                paramw.push(Ndarray.zeroes(this.layers[l].weights.shape));
+                paramb.push(Ndarray.zeroes(this.layers[l].biases.shape));
+            }
+            this.variablesList.push(paramw)
+            this.variablesList.push(paramb);
+        }
+    }
+
+    /* Performs Forward And Backward Propagation And Returns The Gradients */
+
+    Props(batch_x, batch_y) {
+        this.feedForward(batch_x);
+        return this.backprop(batch_y);
+    }
+
+    /* Form Mini Batches Of Size m */
+
+    formBatches(m) {
+        this.batch_size = m;
+        const { shuffle } = require(&apos;../net_util&apos;);
+        return shuffle(this.features, this.labels, m);
+    }
+
+    /* Updates The Weights And Biases Of The Network */
+
+    updateProcess(beta1, beta2) {
+        let [vdw, vdb, sdw, sdb] = this.variablesList;
+
+        for (let i = 1; i &lt; this.layers.length; i++) {
+            vdw[i].arrange(math.sum(math.product(beta1, vdw[i].array), math.product((1 - beta1), this.dw[i].array)));
+            vdb[i].arrange(math.sum(math.product(beta1, vdb[i].array), math.product((1 - beta1), this.db[i].array)));
+            if (sdw &amp;&amp; sdb) {
+                sdw[i].arrange(math.sum(math.product(beta2, sdw[i].array), math.sum((1 - beta2), math.pow(this.dw[i].array, 2))));
+                sdb[i].arrange(math.sum(math.product(beta2, sdb[i].array), math.sum((1 - beta2), math.pow(this.db[i].array, 2))));
+            }
+        }
+    }
+}</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

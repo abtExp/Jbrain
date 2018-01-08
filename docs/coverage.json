@@ -1,0 +1,212 @@
+{
+  "coverage": "9.9%",
+  "expectCount": 101,
+  "actualCount": 10,
+  "files": {
+    "Jbrain/brain/Network.js": {
+      "expectCount": 16,
+      "actualCount": 7,
+      "undocumentLines": [
+        7,
+        40,
+        42,
+        115,
+        116,
+        118,
+        121,
+        149,
+        165
+      ]
+    },
+    "Jbrain/util/activ/relu.js": {
+      "expectCount": 1,
+      "actualCount": 0,
+      "undocumentLines": [
+        1
+      ]
+    },
+    "Jbrain/util/activ/sigmoid.js": {
+      "expectCount": 2,
+      "actualCount": 0,
+      "undocumentLines": [
+        1,
+        3
+      ]
+    },
+    "Jbrain/util/activ/softmax.js": {
+      "expectCount": 1,
+      "actualCount": 0,
+      "undocumentLines": [
+        1
+      ]
+    },
+    "Jbrain/util/activ/tanh.js": {
+      "expectCount": 1,
+      "actualCount": 0,
+      "undocumentLines": [
+        1
+      ]
+    },
+    "Jbrain/util/activ.js": {
+      "expectCount": 2,
+      "actualCount": 0,
+      "undocumentLines": [
+        1,
+        7
+      ]
+    },
+    "Jbrain/util/cost.js": {
+      "expectCount": 2,
+      "actualCount": 0,
+      "undocumentLines": [
+        1,
+        4
+      ]
+    },
+    "Jbrain/util/costs/crossEntropy.js": {
+      "expectCount": 2,
+      "actualCount": 0,
+      "undocumentLines": [
+        1,
+        6
+      ]
+    },
+    "Jbrain/util/costs/quadCost.js": {
+      "expectCount": 2,
+      "actualCount": 0,
+      "undocumentLines": [
+        1,
+        3
+      ]
+    },
+    "Jbrain/util/layers/Conv.js": {
+      "expectCount": 9,
+      "actualCount": 0,
+      "undocumentLines": [
+        1,
+        2,
+        4,
+        5,
+        12,
+        15,
+        16,
+        19,
+        23
+      ]
+    },
+    "Jbrain/util/layers/Layer.js": {
+      "expectCount": 15,
+      "actualCount": 0,
+      "undocumentLines": [
+        10,
+        13,
+        14,
+        20,
+        25,
+        26,
+        30,
+        49,
+        57,
+        70,
+        74,
+        78,
+        93,
+        99,
+        108
+      ]
+    },
+    "Jbrain/util/layers/Pool.js": {
+      "expectCount": 8,
+      "actualCount": 0,
+      "undocumentLines": [
+        1,
+        3,
+        4,
+        11,
+        14,
+        15,
+        18,
+        22
+      ]
+    },
+    "Jbrain/util/net_util.js": {
+      "expectCount": 4,
+      "actualCount": 2,
+      "undocumentLines": [
+        1,
+        55
+      ]
+    },
+    "Jbrain/util/optimizer.js": {
+      "expectCount": 1,
+      "actualCount": 0,
+      "undocumentLines": [
+        1
+      ]
+    },
+    "Jbrain/util/optimizers/adam.js": {
+      "expectCount": 4,
+      "actualCount": 0,
+      "undocumentLines": [
+        7,
+        9,
+        11,
+        15
+      ]
+    },
+    "Jbrain/util/optimizers/gradientDescent.js": {
+      "expectCount": 8,
+      "actualCount": 0,
+      "undocumentLines": [
+        3,
+        9,
+        10,
+        14,
+        24,
+        41,
+        60,
+        77
+      ]
+    },
+    "Jbrain/util/optimizers/optimizerClass.js": {
+      "expectCount": 18,
+      "actualCount": 1,
+      "undocumentLines": [
+        5,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        56,
+        57,
+        62,
+        77,
+        84,
+        92
+      ]
+    },
+    "Jbrain/util/optimizers/rmsprop.js": {
+      "expectCount": 4,
+      "actualCount": 0,
+      "undocumentLines": [
+        9,
+        11,
+        12,
+        16
+      ]
+    },
+    "Jbrain/util/util.js": {
+      "expectCount": 1,
+      "actualCount": 0,
+      "undocumentLines": [
+        1
+      ]
+    }
+  }
+}

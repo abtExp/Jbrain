@@ -5,7 +5,7 @@ function quadCost(a, y, m) {
     cost = math.pow(cost, 2);
     cost = math.sum(cost, null, 1);
     cost = math.product((1 / (2 * m)), cost);
-    cost = math.sum(cost);
+    return cost;
 }
 
 quadCost.grad = (a, y, m) => {
