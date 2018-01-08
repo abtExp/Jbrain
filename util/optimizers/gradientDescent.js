@@ -8,7 +8,7 @@ const Optimizer = require('./optimizerClass');
 
 class GradientDescentOptimizer extends Optimizer {
     constructor(network) {
-        super(network);
+        super(network, 2);
     }
 
     optimize(neta, epoch, m, opt) {
@@ -23,13 +23,13 @@ class GradientDescentOptimizer extends Optimizer {
 
     GD(neta, itrns, opt) {
         let beta = opt.beta || 0.9;
-        if (opt.momentum) this.preProcecss('gd');
+        if (opt.momentum) this.initParams();
         for (let t = 0; t < itrns; t++) {
             let dw, db;
             [dw, db] = this.Props(this.features, this.labels);
             if (opt.momentum) {
                 this.updateProcess(beta);
-                let { vdw, vdb } = this.variablesList;
+                let [vdw, vdb] = this.variablesList;
                 dw = vdw;
                 db = vdb;
             }
@@ -39,7 +39,7 @@ class GradientDescentOptimizer extends Optimizer {
 
 
     MBGD(neta, epoch, m, opt) {
-        if (opt.momentum) this.preProcess('mbgd');
+        if (opt.momentum) this.initParams();
         for (let i = 0; i < epoch; i++) {
             let batches_x, batches_y;
             [batches_x, batches_y] = this.formBatches(m);
@@ -48,7 +48,7 @@ class GradientDescentOptimizer extends Optimizer {
                 [dw, db] = this.Props(batches_x[b], batches_y[b]);
                 if (opt.momentum) {
                     this.updateProcess(beta);
-                    let { vdw, vdb } = this.variablesList;
+                    let [vdw, vdb] = this.variablesList;
                     dw = vdw;
                     db = vdb;
                 }
@@ -58,14 +58,14 @@ class GradientDescentOptimizer extends Optimizer {
     }
 
     SGD(neta, epoch, m, opt) {
-        if (opt.momentum) this.preProcess('sgd');
-        for (let t = 0; t < itrns; t++) {
+        if (opt.momentum) this.initParams();
+        for (let t = 0; t < epoch; t++) {
             for (let i = 0; i < this.features.length; i++) {
                 let dw, db;
                 [dw, db] = this.Props(this.features[i], this.labels[i]);
                 if (opt.momentum) {
                     this.updateProcess(beta);
-                    let { vdw, vdb } = this.variablesList;
+                    let [vdw, vdb] = this.variablesList;
                     dw = vdw;
                     db = vdb;
                 }

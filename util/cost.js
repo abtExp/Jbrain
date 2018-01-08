@@ -1,11 +1,9 @@
 const quadCost = require('./costs/quadCost'),
-    cross_entropy = require('./costs/cross_entropy'),
-    log_like = require('./costs/log_like');
+    crossEntropy = require('./costs/crossEntropy');
 
 const cost = {
     quadCost: quadCost,
-    cross_entropy: cross_entropy,
-    log_like: log_like
+    crossEntropy: crossEntropy
 }
 
 module.exports = cost;

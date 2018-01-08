@@ -2,48 +2,56 @@
 
 /* :construction: Under Construction :construction: */
 
+const { Ndarray, math, core } = require('vecto');
+
+
 module.exports = class Optimizer {
-    constructor(network) {
+    constructor(network, len) {
+        this.paramLen = len;
         this.feedForward = network.feedForward;
         this.layers = network.layers;
-        this.costFn = network.constFn;
-        this.lyrsCount = network.lyrs_count;
+        this.costFn = network.costFn;
         this.features = network.features;
+        this.batch_size = this.features.length;
         this.labels = network.labels;
-        this.variablesList = {};
+        this.variablesList = [];
     }
 
-    /* backpropagation : Calculates the error in activation of every layer 
-     * @activations : [array] , The activation of the output layer
-     * @labels      : [array] , The labels(desired output) for given input
-     * @activ_      : [array] , The g'(z) for current batch
-     * Returns      : [delw,delb], delw is an array of Ndarrays having error in weights
+    /** backpropagation : Calculates the error in activation of every layer 
+     * 
+     * @activations : [Number] , The activation of the output layer
+     * 
+     * @labels      : [Number] , The labels(desired output) for given input
+     * 
+     * @activ_      : [Number] , The g'(z) for current batch
+     * 
+     * Returns      : [[Number],[Number]], delw is an array of Ndarrays having error in weights
      *                of every layer and delb is array of Ndarrays having errors in biases
      */
 
-    backprop(activations, labels, activ_) {
-        const { Ndarray, math } = require('vecto');
+    backprop(labels) {
         let dw = [],
             db = [],
             delta = [];
-        for (let i = o; i < this.layers.length; i++) {
+        for (let i = 1; i < this.layers.length; i++) {
             dw.push(Ndarray.zeroes(this.layers[i].weights.shape));
             db.push(Ndarray.zeroes(this.layers[i].biases.shape));
         }
 
-        let gradc = this.costFn.grad(labels[this.layers.length - 1], activations[this.layers.length - 1]),
-            activ_dash = activ_[this.layers.length - 1];
+        let cost = this.costFn(this.layers[this.layers.length - 1].activation.array, labels, this.batch_size);
+        let gradc = this.costFn.grad(this.layers[this.layers.length - 1].activation.array, labels, this.batch_size),
+            activ_dash = this.layers[this.layers.length - 1].activ_;
 
         delta[(this.layers.length - 1)] = math.product(gradc, activ_dash, 'dot');
 
-        for (let i = this.layers.length - 2; i >= 0; i--) {
-            delta[i] = math.product(math.product(delta[i + 1],
-                this.layers[i + 1].weights.transpose()), this.layers[i].activ_, 'dot');
+        for (let i = this.layers.length - 2; i > 0; i--) {
+            delta[i] = math.product(math.product(this.layers[i + 1].weights.transpose(), delta[i + 1]), this.layers[i].activ_, 'dot');
         }
 
-        for (let i = 0; i < this.layers.length; i++) {
-            dw[i].arrange(math.sum(dw[i].array, math.product(delta[i], activations[i])));
-            db[i].arrange(math.sum(db[i].array, delta[i]));
+        for (let i = 1; i < this.layers.length; i++) {
+            dw[i - 1].arrange(math.sum(dw[i - 1].array, math.product(delta[i], this.layers[i - 1].activation.transpose())));
+            /* Confusion with the delta shape */
+            db[i - 1].arrange(math.sum(db[i - 1].array, delta[i]));
         }
         this.dw = dw;
         this.db = db;
@@ -51,78 +59,46 @@ module.exports = class Optimizer {
     }
 
     /* Produces The Parameter Arrays For Updation */
-
-    preProcecss(opt) {
-        const { Ndarray } = require('vecto');
-        let vdw = [],
-            vdb = [],
-            sdw, sdb;
-        for (let i = 0; i < this.layers.length; i++) {
-            vdw.push(Ndarray.zeroes(this.layers[i].weights.shape));
-            vdb.push(Ndarray.zeroes(this.layers[i].biases.shape));
-        }
-        this.variablesList.vdw = vdw;
-        this.variablesList.vdb = vdb;
-
-        if (opt === 'rmsprop' || opt === 'adam') {
-            sdw = [];
-            sdb = [];
-            for (let i = 0; i < this.layers.length; i++) {
-                sdw.push(Ndarray.zeroes(this.layers[i].weights.shape));
-                sdb.push(Ndarray.zeroes(this.layers[i].biases.shape));
+    initParams() {
+        for (let i = 0; i < this.paramLen / 2; i++) {
+            let paramw = [];
+            let paramb = [];
+            for (let l = 1; l < this.layers.length; l++) {
+                paramw.push(Ndarray.zeroes(this.layers[l].weights.shape));
+                paramb.push(Ndarray.zeroes(this.layers[l].biases.shape));
             }
-            this.variablesList.sdw = sdw;
-            this.variablesList.sdb = sdb;
+            this.variablesList.push(paramw)
+            this.variablesList.push(paramb);
         }
     }
 
     /* Performs Forward And Backward Propagation And Returns The Gradients */
 
     Props(batch_x, batch_y) {
-        let activations = [],
-            z = [];
-        activ_ = [];
-        [activations, z, activ_] = this.feedForward(batch_x);
-        return this.backprop(activations, batch_y, activ_);
+        this.feedForward(batch_x);
+        return this.backprop(batch_y);
     }
 
     /* Form Mini Batches Of Size m */
 
     formBatches(m) {
+        this.batch_size = m;
         const { shuffle } = require('../net_util');
-        let batches_x, btaches_y;
         return shuffle(this.features, this.labels, m);
     }
 
     /* Updates The Weights And Biases Of The Network */
 
     updateProcess(beta1, beta2) {
-        /* The Generic Code For Updation Of Both The Parameters Of The Network As Well As The 
-         * Update Parameters (vdw,vdb,sdw,sdb,vdwcorr,vdbcorr,sdwcorr,sdbcorr)
-         * Makes more sense to keep just the vdw,vdb,sdw and sdb as the corr versions can be calculated
-         * later at the time of the update.
-         */
+        let [vdw, vdb, sdw, sdb] = this.variablesList;
 
-        const { math } = require('vecto');
-
-        let { vdw, vdb } = this.variablesList;
-        if (this.variablesList.sdw && this.variablesList.sdb) {
-            let { sdw, sdb } = this.variablesList;
-        }
-
-        for (let i = 0; i < this.layers.length; i++) {
+        for (let i = 1; i < this.layers.length; i++) {
             vdw[i].arrange(math.sum(math.product(beta1, vdw[i].array), math.product((1 - beta1), this.dw[i].array)));
             vdb[i].arrange(math.sum(math.product(beta1, vdb[i].array), math.product((1 - beta1), this.db[i].array)));
             if (sdw && sdb) {
-                sdw[i].arrange(math.sum(math.product(beta2, sdw[i].array), math.sum((1 - beta2), this.dw[i].array)));
-                sdb[i].arrange(math.sum(math.product(beta2, sdb[i].array), math.sum((1 - beta2), this.db[i].array)));
+                sdw[i].arrange(math.sum(math.product(beta2, sdw[i].array), math.sum((1 - beta2), math.pow(this.dw[i].array, 2))));
+                sdb[i].arrange(math.sum(math.product(beta2, sdb[i].array), math.sum((1 - beta2), math.pow(this.db[i].array, 2))));
             }
-        }
-        this.variablesList.vdw = vdw;
-        this.variablesList.vdb = vdb;
-        if (sdw && sdb) {
-            this.variableList.sdw = sdw;
-            this.variableList.sdb = sdb;
         }
     }
 }

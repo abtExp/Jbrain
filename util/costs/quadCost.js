@@ -1,13 +1,15 @@
+const { math, core } = require('vecto');
+
 function quadCost(a, y, m) {
-    const { math } = require('vecto');
-    y_ = y.map(i => -i);
-    return math.product((1 / (2 * m)), math.pow(math.sum(a, y_), 2));
+    let cost = math.diff(a, y);
+    cost = math.pow(cost, 2);
+    cost = math.sum(cost, null, 1);
+    cost = math.product((1 / (2 * m)), cost);
+    return cost;
 }
 
 quadCost.grad = (a, y, m) => {
-    const { math } = require('vecto');
-    y_ = y.map(i => -i);
-    return math.product((1 / m), math.sum(a, y_));
+    return math.product((1 / m), math.sum(math.diff(a, y), null, 1));
 }
 
 module.exports = quadCost;

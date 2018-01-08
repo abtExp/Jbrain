@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../../">
+  <title data-ice="title">Jbrain/util/layers/Layer.js | jbrain</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Machine Learning library in JavaScript"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="jbrain"><meta property="twitter:description" content="Machine Learning library in JavaScript"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/abt10/Jbrain"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  </ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">Jbrain/util/layers/Layer.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/* Defining The Layers Of The Network
+ * 
+ * Provides An Interface For Creating Every Type Of Neural Network
+ * Like (Fully Connected, Convolutional, Convolutional With Pooling,
+ *       Reccurent, LSTM etc.)
+ * And Also Provides An Easy And Fast Way To Perform ML Tasks
+ * 
+ */
+
+const { Ndarray, math, core } = require(&apos;vecto&apos;),
+    activ = require(&apos;../activ&apos;), { weighted_input } = require(&apos;../net_util&apos;);
+
+class Layer {
+    constructor(config, activationFunction, input) {
+        if (config.constructor.name === &apos;Object&apos;) constructLayer(this, config);
+        else connectedProps(this, { shape: config, activationFunction: activationFunction, input: input });
+    }
+
+    // Calculates activation for this layer
+    fire() {
+        let z = weighted_input(this.weights.array, this.input.array, this.biases.array),
+            a = this.activationFunction ? this.activationFunction(z) : z;
+        this.activation.resize(core.calc_shape(a));
+        this.activation.arrange(a);
+        this.z = z;
+        this.activ_ = this.activationFunction.dash(z);
+    }
+}
+
+function set_activation(afunc) {
+    switch (afunc) {
+        case &apos;sigmoid&apos;:
+            return activ.sigmoid;
+
+        case &apos;softmax&apos;:
+            return activ.softmax;
+
+        case &apos;relu&apos;:
+            return activ.relu;
+
+        case &apos;tanh&apos;:
+            return activ.tanh;
+
+        default:
+            return null;
+    }
+}
+
+function initialize(layer) {
+    if (layer.initializer === &apos;xavier&apos;) {
+        if (layer.actvation === &apos;relu&apos;) factor = 2;
+        else factor = 1;
+        layer.weights.fill(&apos;custom&apos;, () =&gt; (Math.random() * Math.pow((factor / layer.weights.shape[1]), 0.5)));
+    } else layer.weights.fill(&apos;linear&apos;);
+}
+
+function convProps(layer, config) {
+    // layer.message = &apos;Under Construction&apos;;
+    layer.type = &apos;convLayer&apos;;
+    layer.name = config.name || &apos;convLayer&apos;;
+    layer.activationFunction = set_activation(config.activationFunction) || set_activation(&apos;tanh&apos;);
+    layer.input = config.input.activation;
+    layer.kernel = config.kernel;
+    layer.filters = config.filters || 1;
+    layer.inputLayer = config.input;
+    layer.padding = config.padding || 0;
+    layer.stride = config.stride || 1;
+}
+
+function poolProps(layer, config) {
+    layer.message = &apos;Under Construction&apos;;
+}
+
+function convPoolProps(layer, config) {
+    layer.message = &apos;Under Construction&apos;;
+}
+
+function connectedProps(layer, config) {
+    layer.type = &apos;connected&apos;;
+    layer.name = config.name || &apos;connectedLayer&apos;;
+    layer.activationFunction = set_activation(config.activationFunction) || set_activation(&apos;linear&apos;);
+    config.shape = calc_layer_shape(config);
+    layer.weights = new Ndarray(config.shape, &apos;float32&apos;);
+    layer.biases = Ndarray.zeroes([config.shape[0], 1], &apos;float32&apos;);
+    layer.input = config.input.activation;
+    layer.inputLayer = config.input;
+    layer.batch_norm = config.batch_norm;
+    layer.dropout = config.dropout;
+    layer.activation = new Ndarray([config.shape[0], null], &apos;float32&apos;, &apos;zeros&apos;);
+    initialize(layer);
+}
+
+function calc_layer_shape(config) {
+    if (config.shape[config.shape.length - 1] === config.input.activation.shape[0]) return config.shape;
+    config.shape[config.shape.length - 1] = config.input.activation.shape[0];
+    return config.shape;
+}
+
+function inputLayer(layer, config) {
+    layer.type = &apos;input&apos;;
+    layer.shape = config.shape;
+    layer.feature_scaling = config.feature_scaling;
+    layer.mean_norm = config.mean_norm;
+    layer.activation = new Ndarray(config.shape, &apos;float32&apos;, &apos;zeros&apos;);
+}
+
+
+function constructLayer(layer, config) {
+    if (config.type === &apos;input&apos;) inputLayer(layer, config);
+    else if (config.type === &apos;conv&apos;) convProps(layer, config);
+    else if (config.type === &apos;pool&apos;) poolProps(layer, config);
+    else if (config.type === &apos;conv2pool&apos;) convPoolProps(layer, config);
+    else if (config.type === &apos;connected&apos;) connectedProps(layer, config);
+}
+
+module.exports = Layer;</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

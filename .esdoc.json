@@ -1,0 +1,7 @@
+{
+    "source": ".",
+    "includes": ["^brain", "^util"],
+    "excludes": ["^node_modules"],
+    "destination": "./docs",
+    "plugins": [{ "name": "esdoc-standard-plugin" }]
+}
