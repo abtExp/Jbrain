@@ -34,119 +34,76 @@
 </nav>
 
 <div class="content" data-ice="content"><h1 data-ice="title">Jbrain/util/layers/Layer.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/* Defining The Layers Of The Network
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">/** 
+ * Defining The Layers Of The Network
  * 
- * Provides An Interface For Creating Every Type Of Neural Network
- * Like (Fully Connected, Convolutional, Convolutional With Pooling,
- *       Reccurent, LSTM etc.)
- * And Also Provides An Easy And Fast Way To Perform ML Tasks
+ * Provides An Interface For Creating Different Layers
+ * Like (Connected, Convolutional, Pooling, Reccurent)
  * 
  */
 
 const { Ndarray, math, core } = require(&apos;vecto&apos;),
     activ = require(&apos;../activ&apos;), { weighted_input } = require(&apos;../net_util&apos;);
 
+
 class Layer {
-    constructor(config, activationFunction, input) {
-        if (config.constructor.name === &apos;Object&apos;) constructLayer(this, config);
-        else connectedProps(this, { shape: config, activationFunction: activationFunction, input: input });
+    constructor(config) {
+        if (config.type !== &apos;input&apos;) {
+            this.trainable = config.trainable || true;
+            this.shape = this.calcLayerShape(config.shape, config.input.activation.shape);
+            this.input = config.input.activation;
+            this.weightsInit = config.weightsInit || &apos;xavier&apos;;
+            this.activationFunction = this.setActivation(config.activationFunction);
+            this.regularizer = config.regularizer ? config.regularizer : null; // Placeholder, &apos;ve to implement regularization
+        } else this.shape = config.shape;
+        this.type = config.type;
+        this.name = config.name || config.type;
     }
 
-    // Calculates activation for this layer
     fire() {
+        console.log(`firing ${this.name}`);
         let z = weighted_input(this.weights.array, this.input.array, this.biases.array),
             a = this.activationFunction ? this.activationFunction(z) : z;
-        this.activation.resize(core.calc_shape(a));
+        console.log(a);
+        this.activation.resize(core.calcShape(a));
         this.activation.arrange(a);
         this.z = z;
         this.activ_ = this.activationFunction.dash(z);
     }
-}
 
-function set_activation(afunc) {
-    switch (afunc) {
-        case &apos;sigmoid&apos;:
-            return activ.sigmoid;
-
-        case &apos;softmax&apos;:
-            return activ.softmax;
-
-        case &apos;relu&apos;:
-            return activ.relu;
-
-        case &apos;tanh&apos;:
-            return activ.tanh;
-
-        default:
-            return null;
+    initialize(activ) {
+        let factor;
+        if (this.weightsInit === &apos;xavier&apos;) {
+            if (activ === &apos;relu&apos;) factor = 2;
+            else factor = 1;
+            this.weights.fill(&apos;custom&apos;, () =&gt; (Math.random() * Math.pow((factor / this.weights.shape[1]), 0.5)));
+        } else this.weights.fill(&apos;linear&apos;);
     }
-}
 
-function initialize(layer) {
-    if (layer.initializer === &apos;xavier&apos;) {
-        if (layer.actvation === &apos;relu&apos;) factor = 2;
-        else factor = 1;
-        layer.weights.fill(&apos;custom&apos;, () =&gt; (Math.random() * Math.pow((factor / layer.weights.shape[1]), 0.5)));
-    } else layer.weights.fill(&apos;linear&apos;);
-}
+    calcLayerShape(configShape, activationShape) {
+        if (configShape[configShape.length - 1] === activationShape[0]) return configShape;
+        configShape[configShape.length - 1] = activationShape[0];
+        return configShape;
+    }
 
-function convProps(layer, config) {
-    // layer.message = &apos;Under Construction&apos;;
-    layer.type = &apos;convLayer&apos;;
-    layer.name = config.name || &apos;convLayer&apos;;
-    layer.activationFunction = set_activation(config.activationFunction) || set_activation(&apos;tanh&apos;);
-    layer.input = config.input.activation;
-    layer.kernel = config.kernel;
-    layer.filters = config.filters || 1;
-    layer.inputLayer = config.input;
-    layer.padding = config.padding || 0;
-    layer.stride = config.stride || 1;
-}
+    setActivation(afunc) {
+        switch (afunc) {
+            case &apos;sigmoid&apos;:
+                return activ.sigmoid;
 
-function poolProps(layer, config) {
-    layer.message = &apos;Under Construction&apos;;
-}
+            case &apos;softmax&apos;:
+                return activ.softmax;
 
-function convPoolProps(layer, config) {
-    layer.message = &apos;Under Construction&apos;;
-}
+            case &apos;relu&apos;:
+                return activ.relu;
 
-function connectedProps(layer, config) {
-    layer.type = &apos;connected&apos;;
-    layer.name = config.name || &apos;connectedLayer&apos;;
-    layer.activationFunction = set_activation(config.activationFunction) || set_activation(&apos;linear&apos;);
-    config.shape = calc_layer_shape(config);
-    layer.weights = new Ndarray(config.shape, &apos;float32&apos;);
-    layer.biases = Ndarray.zeroes([config.shape[0], 1], &apos;float32&apos;);
-    layer.input = config.input.activation;
-    layer.inputLayer = config.input;
-    layer.batch_norm = config.batch_norm;
-    layer.dropout = config.dropout;
-    layer.activation = new Ndarray([config.shape[0], null], &apos;float32&apos;, &apos;zeros&apos;);
-    initialize(layer);
-}
+            case &apos;tanh&apos;:
+                return activ.tanh;
 
-function calc_layer_shape(config) {
-    if (config.shape[config.shape.length - 1] === config.input.activation.shape[0]) return config.shape;
-    config.shape[config.shape.length - 1] = config.input.activation.shape[0];
-    return config.shape;
-}
-
-function inputLayer(layer, config) {
-    layer.type = &apos;input&apos;;
-    layer.shape = config.shape;
-    layer.feature_scaling = config.feature_scaling;
-    layer.mean_norm = config.mean_norm;
-    layer.activation = new Ndarray(config.shape, &apos;float32&apos;, &apos;zeros&apos;);
-}
-
-
-function constructLayer(layer, config) {
-    if (config.type === &apos;input&apos;) inputLayer(layer, config);
-    else if (config.type === &apos;conv&apos;) convProps(layer, config);
-    else if (config.type === &apos;pool&apos;) poolProps(layer, config);
-    else if (config.type === &apos;conv2pool&apos;) convPoolProps(layer, config);
-    else if (config.type === &apos;connected&apos;) connectedProps(layer, config);
+            default:
+                return null;
+        }
+    }
 }
 
 module.exports = Layer;</code></pre>

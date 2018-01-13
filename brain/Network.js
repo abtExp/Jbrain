@@ -1,23 +1,27 @@
-/* JBrain : A neural network implementation in Javascript.
+/**
+ * JBrain : A neural network implementation in Javascript.
  * Project Name : JBrain
  * Project Code Name : Jason
  * Author : Anubhav Tiwari <atworkstudios@gmail.com>
+ * 
  */
+
+// Currently it's very slow, have to make it faster.
 
 const { core } = require('vecto'), { cost_grad, shuffle } = require('../util/net_util'),
     cost = require('../util/cost'), { InputLayer, ConnectedLayer } = require('../util/layers'),
     optimizer = require('../util/optimizer');
 
 
-/* define a network with net_config representing each layer with the configuration object
+/**
+ * define a network with net_config representing each layer with the configuration object
  * of the layer : net_config is an array of objects, the length of the array determines the 
  * number of layers and each ith element of net_config defines the configuration of the ith 
  * layer.
  */
 
 /**
- * 
- * The Network class for generating a neural network
+ * @class Network -  The Network class for generating a neural network
  *
  */
 
@@ -123,7 +127,9 @@ class Network {
             epsilon: 1e-6,
         }
     }) {
-        this.features = train_features;
+        this.features = core.calcShape(train_features)[0] !== this.layers[0].shape[0] ?
+            core.transpose(train_features, 'float32') : train_features;
+
         this.labels = core.calcShape(train_labels)[0] !== this.layers[this.layers.length - 1].activation.shape[0] ?
             core.transpose(train_labels) : train_labels;
         this.costFn = getCostFn(costFn);
@@ -147,7 +153,6 @@ class Network {
      */
 
     feedForward(input) {
-        if (core.calcShape(input)[0] !== this.layers[0].shape[0]) input = core.transpose(input, 'float32');
         this.layers[0].activation.resize(core.calcShape(input));
         this.layers[0].activation.arrange(input);
         for (let i = 1; i < this.layers.length; i++) {
@@ -173,9 +178,6 @@ class Network {
         return this.feedForward(test_features)[0][this.layers.length - 1];
     }
 
-    static Create(layers) {
-        return new Network(layers);
-    }
 }
 
 /** getOptimizer : Returns the Optimizer Class to optimize the params

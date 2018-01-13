@@ -1,21 +1,21 @@
 {
-  "coverage": "9.9%",
-  "expectCount": 101,
-  "actualCount": 10,
+  "coverage": "9.48%",
+  "expectCount": 116,
+  "actualCount": 11,
   "files": {
     "Jbrain/brain/Network.js": {
       "expectCount": 16,
       "actualCount": 7,
       "undocumentLines": [
         7,
+        39,
         40,
-        42,
-        115,
-        116,
-        118,
-        121,
-        149,
-        165
+        126,
+        127,
+        129,
+        132,
+        160,
+        176
       ]
     },
     "Jbrain/util/activ/relu.js": {
@@ -79,7 +79,20 @@
         3
       ]
     },
-    "Jbrain/util/layers/Conv.js": {
+    "Jbrain/util/layers/ConnectedLayer.js": {
+      "expectCount": 7,
+      "actualCount": 0,
+      "undocumentLines": [
+        1,
+        2,
+        4,
+        5,
+        10,
+        11,
+        13
+      ]
+    },
+    "Jbrain/util/layers/ConvLayer.js": {
       "expectCount": 9,
       "actualCount": 0,
       "undocumentLines": [
@@ -94,28 +107,40 @@
         23
       ]
     },
-    "Jbrain/util/layers/Layer.js": {
-      "expectCount": 15,
+    "Jbrain/util/layers/InputLayer.js": {
+      "expectCount": 5,
       "actualCount": 0,
       "undocumentLines": [
-        10,
-        13,
-        14,
-        20,
-        25,
-        26,
-        30,
-        49,
-        57,
-        70,
-        74,
-        78,
-        93,
-        99,
-        108
+        1,
+        2,
+        4,
+        5,
+        8
       ]
     },
-    "Jbrain/util/layers/Pool.js": {
+    "Jbrain/util/layers/Layer.js": {
+      "expectCount": 17,
+      "actualCount": 1,
+      "undocumentLines": [
+        13,
+        14,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        23,
+        24,
+        27,
+        34,
+        35,
+        38,
+        47,
+        53
+      ]
+    },
+    "Jbrain/util/layers/PoolLayer.js": {
       "expectCount": 8,
       "actualCount": 0,
       "undocumentLines": [
@@ -127,6 +152,13 @@
         15,
         18,
         22
+      ]
+    },
+    "Jbrain/util/layers.js": {
+      "expectCount": 1,
+      "actualCount": 0,
+      "undocumentLines": [
+        1
       ]
     },
     "Jbrain/util/net_util.js": {

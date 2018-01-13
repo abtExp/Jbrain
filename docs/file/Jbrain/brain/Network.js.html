@@ -41,8 +41,7 @@
  */
 
 const { core } = require(&apos;vecto&apos;), { cost_grad, shuffle } = require(&apos;../util/net_util&apos;),
-    cost = require(&apos;../util/cost&apos;),
-    Layer = require(&apos;../util/layers/Layer&apos;),
+    cost = require(&apos;../util/cost&apos;), { InputLayer, ConnectedLayer } = require(&apos;../util/layers&apos;),
     optimizer = require(&apos;../util/optimizer&apos;);
 
 
@@ -74,36 +73,31 @@ class Network {
 
     constructor(net_config, lyr_type = &apos;linear&apos;, op_type = &apos;linear&apos;) {
         this.net_config = net_config;
-        // this.layers.length = net_config.length;
         this.layers = [];
-        // this.activations = [];
-
-        if (this.net_config[0].constructor.name === &apos;Object&apos;) {
-            this.layers.push(new Layer(net_config[0]));
-            for (let i = 1; i &lt; net_config.length; i++) {
-                if (net_config[i].number) {
-                    if (net_config[i].config) {
-                        for (let j = 0; j &lt; net_config[i].number; j++) {
-                            net_config[i].config[j].input = net_config[i].config[j].input ||
-                                this.layers[this.layers.length - 1];
-                            net_config[i].config[j].type = net_config[i].type;
-                            this.layers.push(new Layer(net_config[i].config[j]));
-                        }
-                    } else {
-                        console.error(&apos;Please Provide The Configuration For Each Layer&apos;);
-                    }
-                } else {
-                    net_config[i].input = net_config[i].input ||
-                        this.layers[this.layers.length - 1];
-                    this.layers.push(new Layer(net_config[i]));
-                }
+        if (typeof net_config[0] === &apos;object&apos;) {
+            this.layers.push(net_config[0]);
+            for (let i = 1; i &lt; this.net_config.length; i++) {
+                net_config[i].input = net_config[i].input || this.layers[this.layers.length - 1];
+                this.layers.push(net_config[i]);
             }
         } else {
-            this.layers.push(new Layer({ type: &apos;input&apos;, shape: [net_config[0], null] }));
+            this.layers.push(new InputLayer({ shape: [net_config[0], null], name: `input${this.layers.length}` }));
             for (let i = 1; i &lt; this.net_config.length - 1; i++) {
-                this.layers.push(new Layer([this.net_config[i], this.net_config[i - 1]], lyr_type, this.layers[this.layers.length - 1]));
+                this.layers.push(new ConnectedLayer({
+                    shape: [this.net_config[i], this.net_config[i - 1]],
+                    activationFunction: lyr_type,
+                    input: this.layers[this.layers.length - 1],
+                    name: `fc${this.layers.length}`
+                }));
             }
-            this.layers.push(new Layer([this.net_config[this.layers.length - 1], this.net_config[this.layers.length - 2]], op_type, this.layers[this.layers.length - 1]))
+            this.layers.push(new ConnectedLayer({
+                shape: [this.net_config[this.layers.length - 1],
+                    this.net_config[this.layers.length - 2]
+                ],
+                activationFunction: op_type,
+                input: this.layers[this.layers.length - 1],
+                name: `output${this.layers.length}`
+            }))
         }
     }
 
@@ -147,9 +141,26 @@ class Network {
      */
 
 
-    fit(train_features, train_labels, neta = 0.5, epoch = 100, m = 10, costFn = &apos;crossEntropy&apos;, evaluate = true, eval_epoch = 10, validate = false, validate_dat = null, optimizer = { name: &apos;adam&apos;, beta1: 0.9, beta2: 0.999, epsilon: 1e-6 }) {
+    fit({
+        train_features,
+        train_labels,
+        neta = 0.5,
+        epoch = 100,
+        m = 10,
+        costFn = &apos;crossEntropy&apos;,
+        // evaluate = true,
+        // eval_epoch = 10,
+        // validate = false,
+        // validate_dat = null,
+        optimizer = {
+            name: &apos;adam&apos;,
+            beta1: 0.9,
+            beta2: 0.999,
+            epsilon: 1e-6,
+        }
+    }) {
         this.features = train_features;
-        this.labels = core.calc_shape(train_labels)[0] !== this.layers[this.layers.length - 1].activation.shape[0] ?
+        this.labels = core.calcShape(train_labels)[0] !== this.layers[this.layers.length - 1].activation.shape[0] ?
             core.transpose(train_labels) : train_labels;
         this.costFn = getCostFn(costFn);
         // this.validate_dat = validate_dat || null;
@@ -172,8 +183,8 @@ class Network {
      */
 
     feedForward(input) {
-        if (core.calc_shape(input)[0] !== this.layers[0].shape[0]) input = core.transpose(input, &apos;float32&apos;);
-        this.layers[0].activation.resize(core.calc_shape(input));
+        if (core.calcShape(input)[0] !== this.layers[0].shape[0]) input = core.transpose(input, &apos;float32&apos;);
+        this.layers[0].activation.resize(core.calcShape(input));
         this.layers[0].activation.arrange(input);
         for (let i = 1; i &lt; this.layers.length; i++) {
             this.layers[i].fire();
@@ -198,7 +209,7 @@ class Network {
         return this.feedForward(test_features)[0][this.layers.length - 1];
     }
 
-    static formNet(layers) {
+    static Create(layers) {
         return new Network(layers);
     }
 }

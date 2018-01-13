@@ -2,8 +2,8 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <base data-ice="baseUrl" href="../../../">
-  <title data-ice="title">Jbrain/util/layers.js | jbrain</title>
+  <base data-ice="baseUrl" href="../../../../">
+  <title data-ice="title">Jbrain/util/layers/PoolLayer.js | jbrain</title>
   <link type="text/css" rel="stylesheet" href="css/style.css">
   <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
   <script src="script/prettify/prettify.js"></script>
@@ -33,21 +33,31 @@
 </div>
 </nav>
 
-<div class="content" data-ice="content"><h1 data-ice="title">Jbrain/util/layers.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const InputLayer = require(&apos;./layers/InputLayer&apos;),
-    ConnectedLayer = require(&apos;./layers/ConnectedLayer&apos;),
-    ConvLayer = require(&apos;./layers/ConvLayer&apos;),
-    PoolLayer = require(&apos;./layers/PoolLayer&apos;),
-    DropoutLayer = require(&apos;./layers/DropoutLayer&apos;),
-    RecurrentLayer = require(&apos;./layers/RecurrentLayer&apos;);
+<div class="content" data-ice="content"><h1 data-ice="title">Jbrain/util/layers/PoolLayer.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const Layer = require(&apos;./Layer&apos;);
 
-module.exports = {
-    ConnectedLayer,
-    InputLayer,
-    ConvLayer,
-    PoolLayer,
-    DropoutLayer,
-    RecurrentLayer
+class Pool extends Layer {
+    constructor(config) {
+        config = config || {};
+        config.type = &apos;pool&apos;;
+        super(config);
+        this.init();
+    }
+
+    init() {
+        const opshape = [this.filters, ...this.kernel, this.input.shape[this.input.shape.length - 1]];
+        console.log(opshape);
+        this.weights = new Ndarray(opshape, &apos;float32&apos;);
+        this.biases = new Ndarray([this.filters, 1], &apos;float32&apos;);
+        let opw = Math.floor((this.input.shape[1] + (2 * this.padding) - this.kernel[0]) / this.stride) + 1,
+            oph = Math.floor((this.input.shape[2] + (2 * this.padding) - this.kernel[1]) / this.stride) + 1;
+        this.activation = new Ndarray([this.input.shape[0], opw, oph, this.filters], &apos;float32&apos;);
+    }
+
+    // @Override Methods
+    fire() {
+
+    }
 }</code></pre>
 
 </div>

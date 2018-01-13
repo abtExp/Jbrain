@@ -14,7 +14,7 @@
     "__docId__": 1,
     "kind": "file",
     "name": "Jbrain/brain/Network.js",
-    "content": "/* JBrain : A neural network implementation in Javascript.\n * Project Name : JBrain\n * Project Code Name : Jason\n * Author : Anubhav Tiwari <atworkstudios@gmail.com>\n */\n\nconst { core } = require('vecto'), { cost_grad, shuffle } = require('../util/net_util'),\n    cost = require('../util/cost'),\n    Layer = require('../util/layers/Layer'),\n    optimizer = require('../util/optimizer');\n\n\n/* define a network with net_config representing each layer with the configuration object\n * of the layer : net_config is an array of objects, the length of the array determines the \n * number of layers and each ith element of net_config defines the configuration of the ith \n * layer.\n */\n\n/**\n * \n * The Network class for generating a neural network\n *\n */\n\nclass Network {\n    /** \n     * constructor : Creating The Network\n     * \n     * @param {object/Array} net_config - the layerwise configuration of the neural network\n     * \n     * @param {string} lyr_type - defines the activation function for hidden layers if @net_config is array\n     * \n     * @param {string} op_type - defines the activation function for output layer if @net_config is array\n     * \n     * @returns {NetworkObject}\n     * \n     */\n\n    constructor(net_config, lyr_type = 'linear', op_type = 'linear') {\n        this.net_config = net_config;\n        // this.layers.length = net_config.length;\n        this.layers = [];\n        // this.activations = [];\n\n        if (this.net_config[0].constructor.name === 'Object') {\n            this.layers.push(new Layer(net_config[0]));\n            for (let i = 1; i < net_config.length; i++) {\n                if (net_config[i].number) {\n                    if (net_config[i].config) {\n                        for (let j = 0; j < net_config[i].number; j++) {\n                            net_config[i].config[j].input = net_config[i].config[j].input ||\n                                this.layers[this.layers.length - 1];\n                            net_config[i].config[j].type = net_config[i].type;\n                            this.layers.push(new Layer(net_config[i].config[j]));\n                        }\n                    } else {\n                        console.error('Please Provide The Configuration For Each Layer');\n                    }\n                } else {\n                    net_config[i].input = net_config[i].input ||\n                        this.layers[this.layers.length - 1];\n                    this.layers.push(new Layer(net_config[i]));\n                }\n            }\n        } else {\n            this.layers.push(new Layer({ type: 'input', shape: [net_config[0], null] }));\n            for (let i = 1; i < this.net_config.length - 1; i++) {\n                this.layers.push(new Layer([this.net_config[i], this.net_config[i - 1]], lyr_type, this.layers[this.layers.length - 1]));\n            }\n            this.layers.push(new Layer([this.net_config[this.layers.length - 1], this.net_config[this.layers.length - 2]], op_type, this.layers[this.layers.length - 1]))\n        }\n    }\n\n    /** \n     * \n     * fit : Fit the Network (i.e., train) \n     * \n     * @param {Array} train_features - features for the network to learn. The shape for @train_features could\n     *                                 be either [#examples,#features] or [#features, #examples] \n     *\n     * \n     * @param {Array} train_labels - labels for the training set. The shape for @train_labels could\n     *                               be either [#examples,#outputNeurons] or [#outputNeurons, #examples] \n     * \n     * @param {float} neta - the learning rate\n     * \n     * @param {int} epoch - Number of epochs\n     * \n     * @param {string} costFn - The cost function to be used for optimisation\n     *                          available values : 'crossEntropy','quadCost','categoricalCrossEntropy'\n     * \n     * @param {boolean} evaluate - whether to evaluate the learning of the network\n     * \n     * @param {int} eval_epoch - epochs after which to evaluate the learning\n     * \n     * @param {boolean} validate - whether validation data will be provided\n     * \n     * @param {Array} validate_dat - validation features to learn better, @validate must be true\n     * \n     * @param {object/string} optimizer - the optimizer for training.\n     * \n     * properties of the optimizer if @optimizer is object  \n     *                                    name {string} : The name of the optimizer to use\n     *                                    available values : 'adam','rmsprop','gd','sgd','mbgd'\n     * \n     *                                    beta/1/2 {float} : The optimization parameter beta(for sgd,mbgd,gd and rmsprop)\n     *                                                       beta1 and beta2 for adam \n     *                                    epsilon {float} :  The optimization parameter\n     * \n     * \n     */\n\n\n    fit(train_features, train_labels, neta = 0.5, epoch = 100, m = 10, costFn = 'crossEntropy', evaluate = true, eval_epoch = 10, validate = false, validate_dat = null, optimizer = { name: 'adam', beta1: 0.9, beta2: 0.999, epsilon: 1e-6 }) {\n        this.features = train_features;\n        this.labels = core.calc_shape(train_labels)[0] !== this.layers[this.layers.length - 1].activation.shape[0] ?\n            core.transpose(train_labels) : train_labels;\n        this.costFn = getCostFn(costFn);\n        // this.validate_dat = validate_dat || null;\n        let opt = getOptimizer(optimizer.name);\n        this.optimizer = new opt(this);\n        this.optimizer.optimize(neta, epoch, m, optimizer);\n        // if (validate && validate_dat) {\n        //     this.validate(validate_dat);\n        // }\n    }\n\n    /** \n     * feed_forward : Calculates the activation of each layer.\n     *\n     * @param {Array} input - the input to the input layer\n     * \n     * @return {Array} - An array containing Activations of each layer\n     *                   and also the weighted inputs for each layer.  \n     * \n     */\n\n    feedForward(input) {\n        if (core.calc_shape(input)[0] !== this.layers[0].shape[0]) input = core.transpose(input, 'float32');\n        this.layers[0].activation.resize(core.calc_shape(input));\n        this.layers[0].activation.arrange(input);\n        for (let i = 1; i < this.layers.length; i++) {\n            this.layers[i].fire();\n        }\n    }\n\n\n    /* eval : evaluates the learning of network by comparing the accuracy */\n    eval() {\n        let cost = this.costFn(this.labels, this.activations);\n    }\n\n    /** predict : Predicts the output for the given test feature\n     * \n     * @param {Array} test_features - The features for which the prediction is \n     *                                to be made.\n     * \n     * @returns {Array} - The activation of the output layer.                       \n     * \n     */\n    predict(test_features) {\n        return this.feedForward(test_features)[0][this.layers.length - 1];\n    }\n\n    static formNet(layers) {\n        return new Network(layers);\n    }\n}\n\n/** getOptimizer : Returns the Optimizer Class to optimize the params\n * \n * @param {string} optName - The name of the optimizer   \n *\n * @returns { OptimizerClassObject }\n * \n */\n\nfunction getOptimizer(optName) {\n    const optimizer = require('../util/optimizer');\n    console.log(optimizer);\n    if (optName === 'adam') return optimizer.AdamOptimizer\n    else if (optName === 'rmsprop') return optimizer.RMSPropOptimizer;\n    else if (optName === 'gd' || optName === 'sgd' || optName === 'mbgd') return optimizer.GradientDescentOptimizer;\n}\n\n/** getCostFn : Returns the cost function for the given name\n *  \n * @param {string} name -  The cost function to be used for optimisation of weights and biases ( learning )\n *                         available values : 'crossEntropy','quadCost','categoricalCrossEntropy'\n * @returns {CostFunction}\n * \n */\n\nfunction getCostFn(name) {\n    if (name === 'crossEntropy') return cost.cross_entropy;\n    else if (name === 'logLike') return cost.log_like;\n    else if (name === 'quadCost') return cost.quadCost;\n    else throw new Error('Undefined Cost Function');\n}\n\nmodule.exports = Network;",
+    "content": "/* JBrain : A neural network implementation in Javascript.\n * Project Name : JBrain\n * Project Code Name : Jason\n * Author : Anubhav Tiwari <atworkstudios@gmail.com>\n */\n\nconst { core } = require('vecto'), { cost_grad, shuffle } = require('../util/net_util'),\n    cost = require('../util/cost'), { InputLayer, ConnectedLayer } = require('../util/layers'),\n    optimizer = require('../util/optimizer');\n\n\n/* define a network with net_config representing each layer with the configuration object\n * of the layer : net_config is an array of objects, the length of the array determines the \n * number of layers and each ith element of net_config defines the configuration of the ith \n * layer.\n */\n\n/**\n * \n * The Network class for generating a neural network\n *\n */\n\nclass Network {\n    /** \n     * constructor : Creating The Network\n     * \n     * @param {object/Array} net_config - the layerwise configuration of the neural network\n     * \n     * @param {string} lyr_type - defines the activation function for hidden layers if @net_config is array\n     * \n     * @param {string} op_type - defines the activation function for output layer if @net_config is array\n     * \n     * @returns {NetworkObject}\n     * \n     */\n\n    constructor(net_config, lyr_type = 'linear', op_type = 'linear') {\n        this.net_config = net_config;\n        this.layers = [];\n        if (typeof net_config[0] === 'object') {\n            this.layers.push(net_config[0]);\n            for (let i = 1; i < this.net_config.length; i++) {\n                net_config[i].input = net_config[i].input || this.layers[this.layers.length - 1];\n                this.layers.push(net_config[i]);\n            }\n        } else {\n            this.layers.push(new InputLayer({ shape: [net_config[0], null], name: `input${this.layers.length}` }));\n            for (let i = 1; i < this.net_config.length - 1; i++) {\n                this.layers.push(new ConnectedLayer({\n                    shape: [this.net_config[i], this.net_config[i - 1]],\n                    activationFunction: lyr_type,\n                    input: this.layers[this.layers.length - 1],\n                    name: `fc${this.layers.length}`\n                }));\n            }\n            this.layers.push(new ConnectedLayer({\n                shape: [this.net_config[this.layers.length - 1],\n                    this.net_config[this.layers.length - 2]\n                ],\n                activationFunction: op_type,\n                input: this.layers[this.layers.length - 1],\n                name: `output${this.layers.length}`\n            }))\n        }\n    }\n\n    /** \n     * \n     * fit : Fit the Network (i.e., train) \n     * \n     * @param {Array} train_features - features for the network to learn. The shape for @train_features could\n     *                                 be either [#examples,#features] or [#features, #examples] \n     *\n     * \n     * @param {Array} train_labels - labels for the training set. The shape for @train_labels could\n     *                               be either [#examples,#outputNeurons] or [#outputNeurons, #examples] \n     * \n     * @param {float} neta - the learning rate\n     * \n     * @param {int} epoch - Number of epochs\n     * \n     * @param {string} costFn - The cost function to be used for optimisation\n     *                          available values : 'crossEntropy','quadCost','categoricalCrossEntropy'\n     * \n     * @param {boolean} evaluate - whether to evaluate the learning of the network\n     * \n     * @param {int} eval_epoch - epochs after which to evaluate the learning\n     * \n     * @param {boolean} validate - whether validation data will be provided\n     * \n     * @param {Array} validate_dat - validation features to learn better, @validate must be true\n     * \n     * @param {object/string} optimizer - the optimizer for training.\n     * \n     * properties of the optimizer if @optimizer is object  \n     *                                    name {string} : The name of the optimizer to use\n     *                                    available values : 'adam','rmsprop','gd','sgd','mbgd'\n     * \n     *                                    beta/1/2 {float} : The optimization parameter beta(for sgd,mbgd,gd and rmsprop)\n     *                                                       beta1 and beta2 for adam \n     *                                    epsilon {float} :  The optimization parameter\n     * \n     * \n     */\n\n\n    fit({\n        train_features,\n        train_labels,\n        neta = 0.5,\n        epoch = 100,\n        m = 10,\n        costFn = 'crossEntropy',\n        // evaluate = true,\n        // eval_epoch = 10,\n        // validate = false,\n        // validate_dat = null,\n        optimizer = {\n            name: 'adam',\n            beta1: 0.9,\n            beta2: 0.999,\n            epsilon: 1e-6,\n        }\n    }) {\n        this.features = train_features;\n        this.labels = core.calcShape(train_labels)[0] !== this.layers[this.layers.length - 1].activation.shape[0] ?\n            core.transpose(train_labels) : train_labels;\n        this.costFn = getCostFn(costFn);\n        // this.validate_dat = validate_dat || null;\n        let opt = getOptimizer(optimizer.name);\n        this.optimizer = new opt(this);\n        this.optimizer.optimize(neta, epoch, m, optimizer);\n        // if (validate && validate_dat) {\n        //     this.validate(validate_dat);\n        // }\n    }\n\n    /** \n     * feed_forward : Calculates the activation of each layer.\n     *\n     * @param {Array} input - the input to the input layer\n     * \n     * @return {Array} - An array containing Activations of each layer\n     *                   and also the weighted inputs for each layer.  \n     * \n     */\n\n    feedForward(input) {\n        if (core.calcShape(input)[0] !== this.layers[0].shape[0]) input = core.transpose(input, 'float32');\n        this.layers[0].activation.resize(core.calcShape(input));\n        this.layers[0].activation.arrange(input);\n        for (let i = 1; i < this.layers.length; i++) {\n            this.layers[i].fire();\n        }\n    }\n\n\n    /* eval : evaluates the learning of network by comparing the accuracy */\n    eval() {\n        let cost = this.costFn(this.labels, this.activations);\n    }\n\n    /** predict : Predicts the output for the given test feature\n     * \n     * @param {Array} test_features - The features for which the prediction is \n     *                                to be made.\n     * \n     * @returns {Array} - The activation of the output layer.                       \n     * \n     */\n    predict(test_features) {\n        return this.feedForward(test_features)[0][this.layers.length - 1];\n    }\n\n    static Create(layers) {\n        return new Network(layers);\n    }\n}\n\n/** getOptimizer : Returns the Optimizer Class to optimize the params\n * \n * @param {string} optName - The name of the optimizer   \n *\n * @returns { OptimizerClassObject }\n * \n */\n\nfunction getOptimizer(optName) {\n    const optimizer = require('../util/optimizer');\n    console.log(optimizer);\n    if (optName === 'adam') return optimizer.AdamOptimizer\n    else if (optName === 'rmsprop') return optimizer.RMSPropOptimizer;\n    else if (optName === 'gd' || optName === 'sgd' || optName === 'mbgd') return optimizer.GradientDescentOptimizer;\n}\n\n/** getCostFn : Returns the cost function for the given name\n *  \n * @param {string} name -  The cost function to be used for optimisation of weights and biases ( learning )\n *                         available values : 'crossEntropy','quadCost','categoricalCrossEntropy'\n * @returns {CostFunction}\n * \n */\n\nfunction getCostFn(name) {\n    if (name === 'crossEntropy') return cost.cross_entropy;\n    else if (name === 'logLike') return cost.log_like;\n    else if (name === 'quadCost') return cost.quadCost;\n    else throw new Error('Undefined Cost Function');\n}\n\nmodule.exports = Network;",
     "static": true,
     "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/brain/Network.js",
     "access": "public",
@@ -54,7 +54,7 @@
     "importPath": "jbrain/Jbrain/brain/Network.js",
     "importStyle": null,
     "description": "\nThe Network class for generating a neural network",
-    "lineNumber": 25,
+    "lineNumber": 24,
     "interface": false,
     "ignore": true
   },
@@ -69,7 +69,7 @@
     "longname": "Jbrain/brain/Network.js~Network#constructor",
     "access": "public",
     "description": "constructor : Creating The Network",
-    "lineNumber": 39,
+    "lineNumber": 38,
     "unknown": [
       {
         "tagName": "@returns",
@@ -126,7 +126,7 @@
     "longname": "Jbrain/brain/Network.js~Network#net_config",
     "access": "public",
     "description": null,
-    "lineNumber": 40,
+    "lineNumber": 39,
     "undocument": true,
     "type": {
       "types": [
@@ -143,7 +143,7 @@
     "longname": "Jbrain/brain/Network.js~Network#layers",
     "access": "public",
     "description": null,
-    "lineNumber": 42,
+    "lineNumber": 40,
     "undocument": true,
     "type": {
       "types": [
@@ -162,7 +162,7 @@
     "longname": "Jbrain/brain/Network.js~Network#fit",
     "access": "public",
     "description": "\nfit : Fit the Network (i.e., train) ",
-    "lineNumber": 114,
+    "lineNumber": 108,
     "params": [
       {
         "nullable": null,
@@ -276,7 +276,7 @@
     "longname": "Jbrain/brain/Network.js~Network#features",
     "access": "public",
     "description": null,
-    "lineNumber": 115,
+    "lineNumber": 126,
     "undocument": true,
     "type": {
       "types": [
@@ -293,7 +293,7 @@
     "longname": "Jbrain/brain/Network.js~Network#labels",
     "access": "public",
     "description": null,
-    "lineNumber": 116,
+    "lineNumber": 127,
     "undocument": true,
     "type": {
       "types": [
@@ -310,7 +310,7 @@
     "longname": "Jbrain/brain/Network.js~Network#costFn",
     "access": "public",
     "description": null,
-    "lineNumber": 118,
+    "lineNumber": 129,
     "undocument": true,
     "type": {
       "types": [
@@ -327,7 +327,7 @@
     "longname": "Jbrain/brain/Network.js~Network#optimizer",
     "access": "public",
     "description": null,
-    "lineNumber": 121,
+    "lineNumber": 132,
     "undocument": true,
     "type": {
       "types": [
@@ -346,7 +346,7 @@
     "longname": "Jbrain/brain/Network.js~Network#feedForward",
     "access": "public",
     "description": "feed_forward : Calculates the activation of each layer.",
-    "lineNumber": 138,
+    "lineNumber": 149,
     "params": [
       {
         "nullable": null,
@@ -379,7 +379,7 @@
     "longname": "Jbrain/brain/Network.js~Network#eval",
     "access": "public",
     "description": null,
-    "lineNumber": 149,
+    "lineNumber": 160,
     "undocument": true,
     "params": [],
     "return": null
@@ -395,7 +395,7 @@
     "longname": "Jbrain/brain/Network.js~Network#predict",
     "access": "public",
     "description": "predict : Predicts the output for the given test feature",
-    "lineNumber": 161,
+    "lineNumber": 172,
     "unknown": [
       {
         "tagName": "@returns",
@@ -426,15 +426,15 @@
   {
     "__docId__": 15,
     "kind": "method",
-    "name": "formNet",
+    "name": "Create",
     "memberof": "Jbrain/brain/Network.js~Network",
     "generator": false,
     "async": false,
     "static": true,
-    "longname": "Jbrain/brain/Network.js~Network.formNet",
+    "longname": "Jbrain/brain/Network.js~Network.Create",
     "access": "public",
     "description": null,
-    "lineNumber": 165,
+    "lineNumber": 176,
     "undocument": true,
     "params": [
       {
@@ -464,7 +464,7 @@
     "importPath": "jbrain/Jbrain/brain/Network.js",
     "importStyle": null,
     "description": "getOptimizer : Returns the Optimizer Class to optimize the params",
-    "lineNumber": 178,
+    "lineNumber": 189,
     "unknown": [
       {
         "tagName": "@returns",
@@ -507,7 +507,7 @@
     "importPath": "jbrain/Jbrain/brain/Network.js",
     "importStyle": null,
     "description": "getCostFn : Returns the cost function for the given name\n ",
-    "lineNumber": 194,
+    "lineNumber": 205,
     "unknown": [
       {
         "tagName": "@returns",
@@ -1020,10 +1020,10 @@
   {
     "__docId__": 41,
     "kind": "file",
-    "name": "Jbrain/util/layers/Conv.js",
-    "content": "const Layer = require('./Layer');\nconst { Ndarray } = require('vecto');\n\nclass ConvLayer extends Layer {\n    constructor(config) {\n        config = config || {};\n        config.type = 'conv';\n        super(config);\n        this.init();\n    }\n\n    init() {\n        const opshape = [this.filters, ...this.kernel, this.input.shape[this.input.shape.length - 1]];\n        console.log(opshape);\n        this.weights = new Ndarray(opshape, 'float32');\n        this.biases = new Ndarray([this.filters, 1], 'float32');\n        let opw = Math.floor((this.input.shape[1] + (2 * this.padding) - this.kernel[0]) / this.stride) + 1,\n            oph = Math.floor((this.input.shape[2] + (2 * this.padding) - this.kernel[1]) / this.stride) + 1;\n        this.activation = new Ndarray([this.input.shape[0], opw, oph, this.filters], 'float32');\n    }\n\n    // @Override Methods\n    fire() {\n\n    }\n}\n\nmodule.exports = ConvLayer;",
+    "name": "Jbrain/util/layers/ConnectedLayer.js",
+    "content": "const Layer = require('./Layer');\nconst { Ndarray } = require('vecto');\n\nclass ConnectedLayer extends Layer {\n    constructor(config) {\n        config.type = 'connected';\n        config.regularizer = null;\n\n        super(config);\n        this.weights = new Ndarray({ shape: this.shape, dtype: 'float32' });\n        this.biases = new Ndarray({ shape: [this.shape[0], 1], dtype: 'float32', initializer: 'zeros' });\n        this.initialize('relu');\n        this.activation = new Ndarray({ shape: [this.shape[0], null], dtype: 'float32', initializer: 'zeros' });\n    }\n}\n\nmodule.exports = ConnectedLayer;",
     "static": true,
-    "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/util/layers/Conv.js",
+    "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/util/layers/ConnectedLayer.js",
     "access": "public",
     "description": null,
     "lineNumber": 1
@@ -1032,12 +1032,12 @@
     "__docId__": 42,
     "kind": "variable",
     "name": "Layer",
-    "memberof": "Jbrain/util/layers/Conv.js",
+    "memberof": "Jbrain/util/layers/ConnectedLayer.js",
     "static": true,
-    "longname": "Jbrain/util/layers/Conv.js~Layer",
+    "longname": "Jbrain/util/layers/ConnectedLayer.js~Layer",
     "access": "public",
     "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Conv.js",
+    "importPath": "jbrain/Jbrain/util/layers/ConnectedLayer.js",
     "importStyle": null,
     "description": null,
     "lineNumber": 1,
@@ -1053,12 +1053,12 @@
     "__docId__": 43,
     "kind": "variable",
     "name": "Ndarray",
-    "memberof": "Jbrain/util/layers/Conv.js",
+    "memberof": "Jbrain/util/layers/ConnectedLayer.js",
     "static": true,
-    "longname": "Jbrain/util/layers/Conv.js~Ndarray",
+    "longname": "Jbrain/util/layers/ConnectedLayer.js~Ndarray",
     "access": "public",
     "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Conv.js",
+    "importPath": "jbrain/Jbrain/util/layers/ConnectedLayer.js",
     "importStyle": null,
     "description": null,
     "lineNumber": 2,
@@ -1073,13 +1073,13 @@
   {
     "__docId__": 44,
     "kind": "class",
-    "name": "ConvLayer",
-    "memberof": "Jbrain/util/layers/Conv.js",
+    "name": "ConnectedLayer",
+    "memberof": "Jbrain/util/layers/ConnectedLayer.js",
     "static": true,
-    "longname": "Jbrain/util/layers/Conv.js~ConvLayer",
+    "longname": "Jbrain/util/layers/ConnectedLayer.js~ConnectedLayer",
     "access": "public",
     "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Conv.js",
+    "importPath": "jbrain/Jbrain/util/layers/ConnectedLayer.js",
     "importStyle": null,
     "description": null,
     "lineNumber": 4,
@@ -1094,11 +1094,11 @@
     "__docId__": 45,
     "kind": "constructor",
     "name": "constructor",
-    "memberof": "Jbrain/util/layers/Conv.js~ConvLayer",
+    "memberof": "Jbrain/util/layers/ConnectedLayer.js~ConnectedLayer",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "Jbrain/util/layers/Conv.js~ConvLayer#constructor",
+    "longname": "Jbrain/util/layers/ConnectedLayer.js~ConnectedLayer#constructor",
     "access": "public",
     "description": null,
     "lineNumber": 5,
@@ -1106,13 +1106,151 @@
   },
   {
     "__docId__": 46,
-    "kind": "method",
-    "name": "init",
-    "memberof": "Jbrain/util/layers/Conv.js~ConvLayer",
+    "kind": "member",
+    "name": "weights",
+    "memberof": "Jbrain/util/layers/ConnectedLayer.js~ConnectedLayer",
+    "static": false,
+    "longname": "Jbrain/util/layers/ConnectedLayer.js~ConnectedLayer#weights",
+    "access": "public",
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 47,
+    "kind": "member",
+    "name": "biases",
+    "memberof": "Jbrain/util/layers/ConnectedLayer.js~ConnectedLayer",
+    "static": false,
+    "longname": "Jbrain/util/layers/ConnectedLayer.js~ConnectedLayer#biases",
+    "access": "public",
+    "description": null,
+    "lineNumber": 11,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 48,
+    "kind": "member",
+    "name": "activation",
+    "memberof": "Jbrain/util/layers/ConnectedLayer.js~ConnectedLayer",
+    "static": false,
+    "longname": "Jbrain/util/layers/ConnectedLayer.js~ConnectedLayer#activation",
+    "access": "public",
+    "description": null,
+    "lineNumber": 13,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 49,
+    "kind": "file",
+    "name": "Jbrain/util/layers/ConvLayer.js",
+    "content": "const Layer = require('./Layer');\nconst { Ndarray } = require('vecto');\n\nclass ConvLayer extends Layer {\n    constructor(config) {\n        config = config || {};\n        config.type = 'conv';\n        super(config);\n        this.init();\n    }\n\n    init() {\n        const opshape = [this.filters, ...this.kernel, this.input.shape[this.input.shape.length - 1]];\n        console.log(opshape);\n        this.weights = new Ndarray(opshape, 'float32');\n        this.biases = new Ndarray([this.filters, 1], 'float32');\n        let opw = Math.floor((this.input.shape[1] + (2 * this.padding) - this.kernel[0]) / this.stride) + 1,\n            oph = Math.floor((this.input.shape[2] + (2 * this.padding) - this.kernel[1]) / this.stride) + 1;\n        this.activation = new Ndarray([this.input.shape[0], opw, oph, this.filters], 'float32');\n    }\n\n    // @Override Methods\n    fire() {\n\n    }\n}\n\nmodule.exports = ConvLayer;",
+    "static": true,
+    "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/util/layers/ConvLayer.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 50,
+    "kind": "variable",
+    "name": "Layer",
+    "memberof": "Jbrain/util/layers/ConvLayer.js",
+    "static": true,
+    "longname": "Jbrain/util/layers/ConvLayer.js~Layer",
+    "access": "public",
+    "export": false,
+    "importPath": "jbrain/Jbrain/util/layers/ConvLayer.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 51,
+    "kind": "variable",
+    "name": "Ndarray",
+    "memberof": "Jbrain/util/layers/ConvLayer.js",
+    "static": true,
+    "longname": "Jbrain/util/layers/ConvLayer.js~Ndarray",
+    "access": "public",
+    "export": false,
+    "importPath": "jbrain/Jbrain/util/layers/ConvLayer.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 2,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 52,
+    "kind": "class",
+    "name": "ConvLayer",
+    "memberof": "Jbrain/util/layers/ConvLayer.js",
+    "static": true,
+    "longname": "Jbrain/util/layers/ConvLayer.js~ConvLayer",
+    "access": "public",
+    "export": false,
+    "importPath": "jbrain/Jbrain/util/layers/ConvLayer.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 4,
+    "undocument": true,
+    "interface": false,
+    "extends": [
+      "Layer"
+    ],
+    "ignore": true
+  },
+  {
+    "__docId__": 53,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "Jbrain/util/layers/ConvLayer.js~ConvLayer",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "Jbrain/util/layers/Conv.js~ConvLayer#init",
+    "longname": "Jbrain/util/layers/ConvLayer.js~ConvLayer#constructor",
+    "access": "public",
+    "description": null,
+    "lineNumber": 5,
+    "undocument": true
+  },
+  {
+    "__docId__": 54,
+    "kind": "method",
+    "name": "init",
+    "memberof": "Jbrain/util/layers/ConvLayer.js~ConvLayer",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "Jbrain/util/layers/ConvLayer.js~ConvLayer#init",
     "access": "public",
     "description": null,
     "lineNumber": 12,
@@ -1121,12 +1259,12 @@
     "return": null
   },
   {
-    "__docId__": 47,
+    "__docId__": 55,
     "kind": "member",
     "name": "weights",
-    "memberof": "Jbrain/util/layers/Conv.js~ConvLayer",
+    "memberof": "Jbrain/util/layers/ConvLayer.js~ConvLayer",
     "static": false,
-    "longname": "Jbrain/util/layers/Conv.js~ConvLayer#weights",
+    "longname": "Jbrain/util/layers/ConvLayer.js~ConvLayer#weights",
     "access": "public",
     "description": null,
     "lineNumber": 15,
@@ -1138,12 +1276,12 @@
     }
   },
   {
-    "__docId__": 48,
+    "__docId__": 56,
     "kind": "member",
     "name": "biases",
-    "memberof": "Jbrain/util/layers/Conv.js~ConvLayer",
+    "memberof": "Jbrain/util/layers/ConvLayer.js~ConvLayer",
     "static": false,
-    "longname": "Jbrain/util/layers/Conv.js~ConvLayer#biases",
+    "longname": "Jbrain/util/layers/ConvLayer.js~ConvLayer#biases",
     "access": "public",
     "description": null,
     "lineNumber": 16,
@@ -1155,12 +1293,12 @@
     }
   },
   {
-    "__docId__": 49,
+    "__docId__": 57,
     "kind": "member",
     "name": "activation",
-    "memberof": "Jbrain/util/layers/Conv.js~ConvLayer",
+    "memberof": "Jbrain/util/layers/ConvLayer.js~ConvLayer",
     "static": false,
-    "longname": "Jbrain/util/layers/Conv.js~ConvLayer#activation",
+    "longname": "Jbrain/util/layers/ConvLayer.js~ConvLayer#activation",
     "access": "public",
     "description": null,
     "lineNumber": 19,
@@ -1172,14 +1310,14 @@
     }
   },
   {
-    "__docId__": 50,
+    "__docId__": 58,
     "kind": "method",
     "name": "fire",
-    "memberof": "Jbrain/util/layers/Conv.js~ConvLayer",
+    "memberof": "Jbrain/util/layers/ConvLayer.js~ConvLayer",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "Jbrain/util/layers/Conv.js~ConvLayer#fire",
+    "longname": "Jbrain/util/layers/ConvLayer.js~ConvLayer#fire",
     "access": "public",
     "description": null,
     "lineNumber": 23,
@@ -1188,29 +1326,40 @@
     "return": null
   },
   {
-    "__docId__": 51,
+    "__docId__": 59,
     "kind": "file",
-    "name": "Jbrain/util/layers/Layer.js",
-    "content": "/* Defining The Layers Of The Network\n * \n * Provides An Interface For Creating Every Type Of Neural Network\n * Like (Fully Connected, Convolutional, Convolutional With Pooling,\n *       Reccurent, LSTM etc.)\n * And Also Provides An Easy And Fast Way To Perform ML Tasks\n * \n */\n\nconst { Ndarray, math, core } = require('vecto'),\n    activ = require('../activ'), { weighted_input } = require('../net_util');\n\nclass Layer {\n    constructor(config, activationFunction, input) {\n        if (config.constructor.name === 'Object') constructLayer(this, config);\n        else connectedProps(this, { shape: config, activationFunction: activationFunction, input: input });\n    }\n\n    // Calculates activation for this layer\n    fire() {\n        let z = weighted_input(this.weights.array, this.input.array, this.biases.array),\n            a = this.activationFunction ? this.activationFunction(z) : z;\n        this.activation.resize(core.calc_shape(a));\n        this.activation.arrange(a);\n        this.z = z;\n        this.activ_ = this.activationFunction.dash(z);\n    }\n}\n\nfunction set_activation(afunc) {\n    switch (afunc) {\n        case 'sigmoid':\n            return activ.sigmoid;\n\n        case 'softmax':\n            return activ.softmax;\n\n        case 'relu':\n            return activ.relu;\n\n        case 'tanh':\n            return activ.tanh;\n\n        default:\n            return null;\n    }\n}\n\nfunction initialize(layer) {\n    if (layer.initializer === 'xavier') {\n        if (layer.actvation === 'relu') factor = 2;\n        else factor = 1;\n        layer.weights.fill('custom', () => (Math.random() * Math.pow((factor / layer.weights.shape[1]), 0.5)));\n    } else layer.weights.fill('linear');\n}\n\nfunction convProps(layer, config) {\n    // layer.message = 'Under Construction';\n    layer.type = 'convLayer';\n    layer.name = config.name || 'convLayer';\n    layer.activationFunction = set_activation(config.activationFunction) || set_activation('tanh');\n    layer.input = config.input.activation;\n    layer.kernel = config.kernel;\n    layer.filters = config.filters || 1;\n    layer.inputLayer = config.input;\n    layer.padding = config.padding || 0;\n    layer.stride = config.stride || 1;\n}\n\nfunction poolProps(layer, config) {\n    layer.message = 'Under Construction';\n}\n\nfunction convPoolProps(layer, config) {\n    layer.message = 'Under Construction';\n}\n\nfunction connectedProps(layer, config) {\n    layer.type = 'connected';\n    layer.name = config.name || 'connectedLayer';\n    layer.activationFunction = set_activation(config.activationFunction) || set_activation('linear');\n    config.shape = calc_layer_shape(config);\n    layer.weights = new Ndarray(config.shape, 'float32');\n    layer.biases = Ndarray.zeroes([config.shape[0], 1], 'float32');\n    layer.input = config.input.activation;\n    layer.inputLayer = config.input;\n    layer.batch_norm = config.batch_norm;\n    layer.dropout = config.dropout;\n    layer.activation = new Ndarray([config.shape[0], null], 'float32', 'zeros');\n    initialize(layer);\n}\n\nfunction calc_layer_shape(config) {\n    if (config.shape[config.shape.length - 1] === config.input.activation.shape[0]) return config.shape;\n    config.shape[config.shape.length - 1] = config.input.activation.shape[0];\n    return config.shape;\n}\n\nfunction inputLayer(layer, config) {\n    layer.type = 'input';\n    layer.shape = config.shape;\n    layer.feature_scaling = config.feature_scaling;\n    layer.mean_norm = config.mean_norm;\n    layer.activation = new Ndarray(config.shape, 'float32', 'zeros');\n}\n\n\nfunction constructLayer(layer, config) {\n    if (config.type === 'input') inputLayer(layer, config);\n    else if (config.type === 'conv') convProps(layer, config);\n    else if (config.type === 'pool') poolProps(layer, config);\n    else if (config.type === 'conv2pool') convPoolProps(layer, config);\n    else if (config.type === 'connected') connectedProps(layer, config);\n}\n\nmodule.exports = Layer;",
+    "name": "Jbrain/util/layers/DropoutLayer.js",
+    "content": "",
     "static": true,
-    "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/util/layers/Layer.js",
+    "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/util/layers/DropoutLayer.js",
     "access": "public",
     "description": null,
     "lineNumber": 1
   },
   {
-    "__docId__": 52,
-    "kind": "variable",
-    "name": "Ndarray",
-    "memberof": "Jbrain/util/layers/Layer.js",
+    "__docId__": 60,
+    "kind": "file",
+    "name": "Jbrain/util/layers/InputLayer.js",
+    "content": "const Layer = require('./Layer');\nconst { Ndarray } = require('vecto');\n\nclass InputLayer extends Layer {\n    constructor(config) {\n        config.type = 'input';\n        super(config);\n        this.activation = new Ndarray({ shape: [this.shape[0], null], dtype: 'float32', initializer: 'zeros' });\n    }\n\n}\n\nmodule.exports = InputLayer;",
     "static": true,
-    "longname": "Jbrain/util/layers/Layer.js~Ndarray",
+    "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/util/layers/InputLayer.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 61,
+    "kind": "variable",
+    "name": "Layer",
+    "memberof": "Jbrain/util/layers/InputLayer.js",
+    "static": true,
+    "longname": "Jbrain/util/layers/InputLayer.js~Layer",
     "access": "public",
     "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Layer.js",
+    "importPath": "jbrain/Jbrain/util/layers/InputLayer.js",
     "importStyle": null,
     "description": null,
-    "lineNumber": 10,
+    "lineNumber": 1,
     "undocument": true,
     "type": {
       "types": [
@@ -1220,7 +1369,110 @@
     "ignore": true
   },
   {
-    "__docId__": 53,
+    "__docId__": 62,
+    "kind": "variable",
+    "name": "Ndarray",
+    "memberof": "Jbrain/util/layers/InputLayer.js",
+    "static": true,
+    "longname": "Jbrain/util/layers/InputLayer.js~Ndarray",
+    "access": "public",
+    "export": false,
+    "importPath": "jbrain/Jbrain/util/layers/InputLayer.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 2,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 63,
+    "kind": "class",
+    "name": "InputLayer",
+    "memberof": "Jbrain/util/layers/InputLayer.js",
+    "static": true,
+    "longname": "Jbrain/util/layers/InputLayer.js~InputLayer",
+    "access": "public",
+    "export": false,
+    "importPath": "jbrain/Jbrain/util/layers/InputLayer.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 4,
+    "undocument": true,
+    "interface": false,
+    "extends": [
+      "Layer"
+    ],
+    "ignore": true
+  },
+  {
+    "__docId__": 64,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "Jbrain/util/layers/InputLayer.js~InputLayer",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "Jbrain/util/layers/InputLayer.js~InputLayer#constructor",
+    "access": "public",
+    "description": null,
+    "lineNumber": 5,
+    "undocument": true
+  },
+  {
+    "__docId__": 65,
+    "kind": "member",
+    "name": "activation",
+    "memberof": "Jbrain/util/layers/InputLayer.js~InputLayer",
+    "static": false,
+    "longname": "Jbrain/util/layers/InputLayer.js~InputLayer#activation",
+    "access": "public",
+    "description": null,
+    "lineNumber": 8,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 66,
+    "kind": "file",
+    "name": "Jbrain/util/layers/Layer.js",
+    "content": "/** \n * Defining The Layers Of The Network\n * \n * Provides An Interface For Creating Different Layers\n * Like (Connected, Convolutional, Pooling, Reccurent)\n * \n */\n\nconst { Ndarray, math, core } = require('vecto'),\n    activ = require('../activ'), { weighted_input } = require('../net_util');\n\n\nclass Layer {\n    constructor(config) {\n        if (config.type !== 'input') {\n            this.trainable = config.trainable || true;\n            this.shape = this.calcLayerShape(config.shape, config.input.activation.shape);\n            this.input = config.input.activation;\n            this.weightsInit = config.weightsInit || 'xavier';\n            this.activationFunction = this.setActivation(config.activationFunction);\n            this.regularizer = config.regularizer ? config.regularizer : null; // Placeholder, 've to implement regularization\n        } else this.shape = config.shape;\n        this.type = config.type;\n        this.name = config.name || config.type;\n    }\n\n    fire() {\n        console.log(`firing ${this.name}`);\n        let z = weighted_input(this.weights.array, this.input.array, this.biases.array),\n            a = this.activationFunction ? this.activationFunction(z) : z;\n        console.log(a);\n        this.activation.resize(core.calcShape(a));\n        this.activation.arrange(a);\n        this.z = z;\n        this.activ_ = this.activationFunction.dash(z);\n    }\n\n    initialize(activ) {\n        let factor;\n        if (this.weightsInit === 'xavier') {\n            if (activ === 'relu') factor = 2;\n            else factor = 1;\n            this.weights.fill('custom', () => (Math.random() * Math.pow((factor / this.weights.shape[1]), 0.5)));\n        } else this.weights.fill('linear');\n    }\n\n    calcLayerShape(configShape, activationShape) {\n        if (configShape[configShape.length - 1] === activationShape[0]) return configShape;\n        configShape[configShape.length - 1] = activationShape[0];\n        return configShape;\n    }\n\n    setActivation(afunc) {\n        switch (afunc) {\n            case 'sigmoid':\n                return activ.sigmoid;\n\n            case 'softmax':\n                return activ.softmax;\n\n            case 'relu':\n                return activ.relu;\n\n            case 'tanh':\n                return activ.tanh;\n\n            default:\n                return null;\n        }\n    }\n}\n\nmodule.exports = Layer;",
+    "static": true,
+    "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/util/layers/Layer.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 67,
+    "kind": "variable",
+    "name": "Ndarray",
+    "memberof": "Jbrain/util/layers/Layer.js",
+    "static": true,
+    "longname": "Jbrain/util/layers/Layer.js~Ndarray",
+    "access": "public",
+    "export": false,
+    "importPath": "jbrain/Jbrain/util/layers/Layer.js",
+    "importStyle": null,
+    "description": "Defining The Layers Of The Network\n\nProvides An Interface For Creating Different Layers\nLike (Connected, Convolutional, Pooling, Reccurent)",
+    "lineNumber": 9,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 68,
     "kind": "class",
     "name": "Layer",
     "memberof": "Jbrain/util/layers/Layer.js",
@@ -1237,7 +1489,7 @@
     "ignore": true
   },
   {
-    "__docId__": 54,
+    "__docId__": 69,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "Jbrain/util/layers/Layer.js~Layer",
@@ -1251,7 +1503,143 @@
     "undocument": true
   },
   {
-    "__docId__": 55,
+    "__docId__": 70,
+    "kind": "member",
+    "name": "trainable",
+    "memberof": "Jbrain/util/layers/Layer.js~Layer",
+    "static": false,
+    "longname": "Jbrain/util/layers/Layer.js~Layer#trainable",
+    "access": "public",
+    "description": null,
+    "lineNumber": 16,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 71,
+    "kind": "member",
+    "name": "shape",
+    "memberof": "Jbrain/util/layers/Layer.js~Layer",
+    "static": false,
+    "longname": "Jbrain/util/layers/Layer.js~Layer#shape",
+    "access": "public",
+    "description": null,
+    "lineNumber": 17,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 72,
+    "kind": "member",
+    "name": "input",
+    "memberof": "Jbrain/util/layers/Layer.js~Layer",
+    "static": false,
+    "longname": "Jbrain/util/layers/Layer.js~Layer#input",
+    "access": "public",
+    "description": null,
+    "lineNumber": 18,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 73,
+    "kind": "member",
+    "name": "weightsInit",
+    "memberof": "Jbrain/util/layers/Layer.js~Layer",
+    "static": false,
+    "longname": "Jbrain/util/layers/Layer.js~Layer#weightsInit",
+    "access": "public",
+    "description": null,
+    "lineNumber": 19,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 74,
+    "kind": "member",
+    "name": "activationFunction",
+    "memberof": "Jbrain/util/layers/Layer.js~Layer",
+    "static": false,
+    "longname": "Jbrain/util/layers/Layer.js~Layer#activationFunction",
+    "access": "public",
+    "description": null,
+    "lineNumber": 20,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 75,
+    "kind": "member",
+    "name": "regularizer",
+    "memberof": "Jbrain/util/layers/Layer.js~Layer",
+    "static": false,
+    "longname": "Jbrain/util/layers/Layer.js~Layer#regularizer",
+    "access": "public",
+    "description": null,
+    "lineNumber": 21,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 77,
+    "kind": "member",
+    "name": "type",
+    "memberof": "Jbrain/util/layers/Layer.js~Layer",
+    "static": false,
+    "longname": "Jbrain/util/layers/Layer.js~Layer#type",
+    "access": "public",
+    "description": null,
+    "lineNumber": 23,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 78,
+    "kind": "member",
+    "name": "name",
+    "memberof": "Jbrain/util/layers/Layer.js~Layer",
+    "static": false,
+    "longname": "Jbrain/util/layers/Layer.js~Layer#name",
+    "access": "public",
+    "description": null,
+    "lineNumber": 24,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 79,
     "kind": "method",
     "name": "fire",
     "memberof": "Jbrain/util/layers/Layer.js~Layer",
@@ -1261,13 +1649,13 @@
     "longname": "Jbrain/util/layers/Layer.js~Layer#fire",
     "access": "public",
     "description": null,
-    "lineNumber": 20,
+    "lineNumber": 27,
     "undocument": true,
     "params": [],
     "return": null
   },
   {
-    "__docId__": 56,
+    "__docId__": 80,
     "kind": "member",
     "name": "z",
     "memberof": "Jbrain/util/layers/Layer.js~Layer",
@@ -1275,7 +1663,7 @@
     "longname": "Jbrain/util/layers/Layer.js~Layer#z",
     "access": "public",
     "description": null,
-    "lineNumber": 25,
+    "lineNumber": 34,
     "undocument": true,
     "type": {
       "types": [
@@ -1284,7 +1672,7 @@
     }
   },
   {
-    "__docId__": 57,
+    "__docId__": 81,
     "kind": "member",
     "name": "activ_",
     "memberof": "Jbrain/util/layers/Layer.js~Layer",
@@ -1292,7 +1680,7 @@
     "longname": "Jbrain/util/layers/Layer.js~Layer#activ_",
     "access": "public",
     "description": null,
-    "lineNumber": 26,
+    "lineNumber": 35,
     "undocument": true,
     "type": {
       "types": [
@@ -1301,20 +1689,73 @@
     }
   },
   {
-    "__docId__": 58,
-    "kind": "function",
-    "name": "set_activation",
-    "memberof": "Jbrain/util/layers/Layer.js",
+    "__docId__": 82,
+    "kind": "method",
+    "name": "initialize",
+    "memberof": "Jbrain/util/layers/Layer.js~Layer",
     "generator": false,
     "async": false,
-    "static": true,
-    "longname": "Jbrain/util/layers/Layer.js~set_activation",
+    "static": false,
+    "longname": "Jbrain/util/layers/Layer.js~Layer#initialize",
     "access": "public",
-    "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Layer.js",
-    "importStyle": null,
     "description": null,
-    "lineNumber": 30,
+    "lineNumber": 38,
+    "undocument": true,
+    "params": [
+      {
+        "name": "activ",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 83,
+    "kind": "method",
+    "name": "calcLayerShape",
+    "memberof": "Jbrain/util/layers/Layer.js~Layer",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "Jbrain/util/layers/Layer.js~Layer#calcLayerShape",
+    "access": "public",
+    "description": null,
+    "lineNumber": 47,
+    "undocument": true,
+    "params": [
+      {
+        "name": "configShape",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "activationShape",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 84,
+    "kind": "method",
+    "name": "setActivation",
+    "memberof": "Jbrain/util/layers/Layer.js~Layer",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "Jbrain/util/layers/Layer.js~Layer#setActivation",
+    "access": "public",
+    "description": null,
+    "lineNumber": 53,
     "undocument": true,
     "params": [
       {
@@ -1328,286 +1769,29 @@
       "types": [
         "*"
       ]
-    },
-    "ignore": true
+    }
   },
   {
-    "__docId__": 59,
-    "kind": "function",
-    "name": "initialize",
-    "memberof": "Jbrain/util/layers/Layer.js",
-    "generator": false,
-    "async": false,
-    "static": true,
-    "longname": "Jbrain/util/layers/Layer.js~initialize",
-    "access": "public",
-    "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Layer.js",
-    "importStyle": null,
-    "description": null,
-    "lineNumber": 49,
-    "undocument": true,
-    "params": [
-      {
-        "name": "layer",
-        "types": [
-          "*"
-        ]
-      }
-    ],
-    "return": null,
-    "ignore": true
-  },
-  {
-    "__docId__": 60,
-    "kind": "function",
-    "name": "convProps",
-    "memberof": "Jbrain/util/layers/Layer.js",
-    "generator": false,
-    "async": false,
-    "static": true,
-    "longname": "Jbrain/util/layers/Layer.js~convProps",
-    "access": "public",
-    "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Layer.js",
-    "importStyle": null,
-    "description": null,
-    "lineNumber": 57,
-    "undocument": true,
-    "params": [
-      {
-        "name": "layer",
-        "types": [
-          "*"
-        ]
-      },
-      {
-        "name": "config",
-        "types": [
-          "*"
-        ]
-      }
-    ],
-    "return": null,
-    "ignore": true
-  },
-  {
-    "__docId__": 61,
-    "kind": "function",
-    "name": "poolProps",
-    "memberof": "Jbrain/util/layers/Layer.js",
-    "generator": false,
-    "async": false,
-    "static": true,
-    "longname": "Jbrain/util/layers/Layer.js~poolProps",
-    "access": "public",
-    "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Layer.js",
-    "importStyle": null,
-    "description": null,
-    "lineNumber": 70,
-    "undocument": true,
-    "params": [
-      {
-        "name": "layer",
-        "types": [
-          "*"
-        ]
-      },
-      {
-        "name": "config",
-        "types": [
-          "*"
-        ]
-      }
-    ],
-    "return": null,
-    "ignore": true
-  },
-  {
-    "__docId__": 62,
-    "kind": "function",
-    "name": "convPoolProps",
-    "memberof": "Jbrain/util/layers/Layer.js",
-    "generator": false,
-    "async": false,
-    "static": true,
-    "longname": "Jbrain/util/layers/Layer.js~convPoolProps",
-    "access": "public",
-    "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Layer.js",
-    "importStyle": null,
-    "description": null,
-    "lineNumber": 74,
-    "undocument": true,
-    "params": [
-      {
-        "name": "layer",
-        "types": [
-          "*"
-        ]
-      },
-      {
-        "name": "config",
-        "types": [
-          "*"
-        ]
-      }
-    ],
-    "return": null,
-    "ignore": true
-  },
-  {
-    "__docId__": 63,
-    "kind": "function",
-    "name": "connectedProps",
-    "memberof": "Jbrain/util/layers/Layer.js",
-    "generator": false,
-    "async": false,
-    "static": true,
-    "longname": "Jbrain/util/layers/Layer.js~connectedProps",
-    "access": "public",
-    "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Layer.js",
-    "importStyle": null,
-    "description": null,
-    "lineNumber": 78,
-    "undocument": true,
-    "params": [
-      {
-        "name": "layer",
-        "types": [
-          "*"
-        ]
-      },
-      {
-        "name": "config",
-        "types": [
-          "*"
-        ]
-      }
-    ],
-    "return": null,
-    "ignore": true
-  },
-  {
-    "__docId__": 64,
-    "kind": "function",
-    "name": "calc_layer_shape",
-    "memberof": "Jbrain/util/layers/Layer.js",
-    "generator": false,
-    "async": false,
-    "static": true,
-    "longname": "Jbrain/util/layers/Layer.js~calc_layer_shape",
-    "access": "public",
-    "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Layer.js",
-    "importStyle": null,
-    "description": null,
-    "lineNumber": 93,
-    "undocument": true,
-    "params": [
-      {
-        "name": "config",
-        "types": [
-          "*"
-        ]
-      }
-    ],
-    "return": {
-      "types": [
-        "*"
-      ]
-    },
-    "ignore": true
-  },
-  {
-    "__docId__": 65,
-    "kind": "function",
-    "name": "inputLayer",
-    "memberof": "Jbrain/util/layers/Layer.js",
-    "generator": false,
-    "async": false,
-    "static": true,
-    "longname": "Jbrain/util/layers/Layer.js~inputLayer",
-    "access": "public",
-    "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Layer.js",
-    "importStyle": null,
-    "description": null,
-    "lineNumber": 99,
-    "undocument": true,
-    "params": [
-      {
-        "name": "layer",
-        "types": [
-          "*"
-        ]
-      },
-      {
-        "name": "config",
-        "types": [
-          "*"
-        ]
-      }
-    ],
-    "return": null,
-    "ignore": true
-  },
-  {
-    "__docId__": 66,
-    "kind": "function",
-    "name": "constructLayer",
-    "memberof": "Jbrain/util/layers/Layer.js",
-    "generator": false,
-    "async": false,
-    "static": true,
-    "longname": "Jbrain/util/layers/Layer.js~constructLayer",
-    "access": "public",
-    "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Layer.js",
-    "importStyle": null,
-    "description": null,
-    "lineNumber": 108,
-    "undocument": true,
-    "params": [
-      {
-        "name": "layer",
-        "types": [
-          "*"
-        ]
-      },
-      {
-        "name": "config",
-        "types": [
-          "*"
-        ]
-      }
-    ],
-    "return": null,
-    "ignore": true
-  },
-  {
-    "__docId__": 67,
+    "__docId__": 85,
     "kind": "file",
-    "name": "Jbrain/util/layers/Pool.js",
+    "name": "Jbrain/util/layers/PoolLayer.js",
     "content": "const Layer = require('./Layer');\n\nclass Pool extends Layer {\n    constructor(config) {\n        config = config || {};\n        config.type = 'pool';\n        super(config);\n        this.init();\n    }\n\n    init() {\n        const opshape = [this.filters, ...this.kernel, this.input.shape[this.input.shape.length - 1]];\n        console.log(opshape);\n        this.weights = new Ndarray(opshape, 'float32');\n        this.biases = new Ndarray([this.filters, 1], 'float32');\n        let opw = Math.floor((this.input.shape[1] + (2 * this.padding) - this.kernel[0]) / this.stride) + 1,\n            oph = Math.floor((this.input.shape[2] + (2 * this.padding) - this.kernel[1]) / this.stride) + 1;\n        this.activation = new Ndarray([this.input.shape[0], opw, oph, this.filters], 'float32');\n    }\n\n    // @Override Methods\n    fire() {\n\n    }\n}",
     "static": true,
-    "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/util/layers/Pool.js",
+    "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/util/layers/PoolLayer.js",
     "access": "public",
     "description": null,
     "lineNumber": 1
   },
   {
-    "__docId__": 68,
+    "__docId__": 86,
     "kind": "variable",
     "name": "Layer",
-    "memberof": "Jbrain/util/layers/Pool.js",
+    "memberof": "Jbrain/util/layers/PoolLayer.js",
     "static": true,
-    "longname": "Jbrain/util/layers/Pool.js~Layer",
+    "longname": "Jbrain/util/layers/PoolLayer.js~Layer",
     "access": "public",
     "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Pool.js",
+    "importPath": "jbrain/Jbrain/util/layers/PoolLayer.js",
     "importStyle": null,
     "description": null,
     "lineNumber": 1,
@@ -1620,15 +1804,15 @@
     "ignore": true
   },
   {
-    "__docId__": 69,
+    "__docId__": 87,
     "kind": "class",
     "name": "Pool",
-    "memberof": "Jbrain/util/layers/Pool.js",
+    "memberof": "Jbrain/util/layers/PoolLayer.js",
     "static": true,
-    "longname": "Jbrain/util/layers/Pool.js~Pool",
+    "longname": "Jbrain/util/layers/PoolLayer.js~Pool",
     "access": "public",
     "export": false,
-    "importPath": "jbrain/Jbrain/util/layers/Pool.js",
+    "importPath": "jbrain/Jbrain/util/layers/PoolLayer.js",
     "importStyle": null,
     "description": null,
     "lineNumber": 3,
@@ -1640,28 +1824,28 @@
     "ignore": true
   },
   {
-    "__docId__": 70,
+    "__docId__": 88,
     "kind": "constructor",
     "name": "constructor",
-    "memberof": "Jbrain/util/layers/Pool.js~Pool",
+    "memberof": "Jbrain/util/layers/PoolLayer.js~Pool",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "Jbrain/util/layers/Pool.js~Pool#constructor",
+    "longname": "Jbrain/util/layers/PoolLayer.js~Pool#constructor",
     "access": "public",
     "description": null,
     "lineNumber": 4,
     "undocument": true
   },
   {
-    "__docId__": 71,
+    "__docId__": 89,
     "kind": "method",
     "name": "init",
-    "memberof": "Jbrain/util/layers/Pool.js~Pool",
+    "memberof": "Jbrain/util/layers/PoolLayer.js~Pool",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "Jbrain/util/layers/Pool.js~Pool#init",
+    "longname": "Jbrain/util/layers/PoolLayer.js~Pool#init",
     "access": "public",
     "description": null,
     "lineNumber": 11,
@@ -1670,12 +1854,12 @@
     "return": null
   },
   {
-    "__docId__": 72,
+    "__docId__": 90,
     "kind": "member",
     "name": "weights",
-    "memberof": "Jbrain/util/layers/Pool.js~Pool",
+    "memberof": "Jbrain/util/layers/PoolLayer.js~Pool",
     "static": false,
-    "longname": "Jbrain/util/layers/Pool.js~Pool#weights",
+    "longname": "Jbrain/util/layers/PoolLayer.js~Pool#weights",
     "access": "public",
     "description": null,
     "lineNumber": 14,
@@ -1687,12 +1871,12 @@
     }
   },
   {
-    "__docId__": 73,
+    "__docId__": 91,
     "kind": "member",
     "name": "biases",
-    "memberof": "Jbrain/util/layers/Pool.js~Pool",
+    "memberof": "Jbrain/util/layers/PoolLayer.js~Pool",
     "static": false,
-    "longname": "Jbrain/util/layers/Pool.js~Pool#biases",
+    "longname": "Jbrain/util/layers/PoolLayer.js~Pool#biases",
     "access": "public",
     "description": null,
     "lineNumber": 15,
@@ -1704,12 +1888,12 @@
     }
   },
   {
-    "__docId__": 74,
+    "__docId__": 92,
     "kind": "member",
     "name": "activation",
-    "memberof": "Jbrain/util/layers/Pool.js~Pool",
+    "memberof": "Jbrain/util/layers/PoolLayer.js~Pool",
     "static": false,
-    "longname": "Jbrain/util/layers/Pool.js~Pool#activation",
+    "longname": "Jbrain/util/layers/PoolLayer.js~Pool#activation",
     "access": "public",
     "description": null,
     "lineNumber": 18,
@@ -1721,14 +1905,14 @@
     }
   },
   {
-    "__docId__": 75,
+    "__docId__": 93,
     "kind": "method",
     "name": "fire",
-    "memberof": "Jbrain/util/layers/Pool.js~Pool",
+    "memberof": "Jbrain/util/layers/PoolLayer.js~Pool",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "Jbrain/util/layers/Pool.js~Pool#fire",
+    "longname": "Jbrain/util/layers/PoolLayer.js~Pool#fire",
     "access": "public",
     "description": null,
     "lineNumber": 22,
@@ -1737,21 +1921,53 @@
     "return": null
   },
   {
-    "__docId__": 76,
+    "__docId__": 94,
     "kind": "file",
-    "name": "Jbrain/util/layers/Reccurrent.js",
+    "name": "Jbrain/util/layers/RecurrentLayer.js",
     "content": "",
     "static": true,
-    "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/util/layers/Reccurrent.js",
+    "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/util/layers/RecurrentLayer.js",
     "access": "public",
     "description": null,
     "lineNumber": 1
   },
   {
-    "__docId__": 77,
+    "__docId__": 95,
+    "kind": "file",
+    "name": "Jbrain/util/layers.js",
+    "content": "const InputLayer = require('./layers/InputLayer'),\n    ConnectedLayer = require('./layers/ConnectedLayer'),\n    ConvLayer = require('./layers/ConvLayer'),\n    PoolLayer = require('./layers/PoolLayer'),\n    DropoutLayer = require('./layers/DropoutLayer'),\n    RecurrentLayer = require('./layers/RecurrentLayer');\n\nmodule.exports = {\n    ConnectedLayer,\n    InputLayer,\n    ConvLayer,\n    PoolLayer,\n    DropoutLayer,\n    RecurrentLayer\n}",
+    "static": true,
+    "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/util/layers.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 96,
+    "kind": "variable",
+    "name": "InputLayer",
+    "memberof": "Jbrain/util/layers.js",
+    "static": true,
+    "longname": "Jbrain/util/layers.js~InputLayer",
+    "access": "public",
+    "export": false,
+    "importPath": "jbrain/Jbrain/util/layers.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 97,
     "kind": "file",
     "name": "Jbrain/util/net_util.js",
-    "content": "const { math, core } = require('vecto');\n\n/** weighted_input : calculates sigma(w*x) + b\n * \n * @w : [Number] , The weights array of a layer\n * \n * @x : [Number] , The input to the layer\n * \n * @b : [Number] , The biases array of a layer\n * \n * Returns : Number/[Number] , The Linear activation\n * \n */\n\nfunction weighted_input(w, x, b) {\n    console.log(w, x, b);\n    console.log(core.calc_shape(w), core.calc_shape(x), core.calc_shape(b));\n    return math.sum(math.product(w, x, 'matrix'), b);\n}\n\n/** shuffle : Shuffles the features and labels keeping them aligned and forms mini batches\n * \n * @input : [Number] , The features array\n * \n * @labels : [Number] , The labels array\n * \n * @mini_batch_size : int , The size of a minibatch\n * \n * Returns : [Number] , The array of minibatches formed with the shuffled data\n * \n */\n\nfunction shuffle(input, labels, mini_batch_size) {\n    let batches = [],\n        batch = [],\n        y = [],\n        y_ = [],\n        no_of_batches = Math.floor(input.length / mini_batch_size),\n        i, j;\n    console.log(no_of_batches);\n    for (i = 0; i < no_of_batches; i++) {\n        while (batch.length < mini_batch_size) {\n            j = Math.floor(Math.random() * input.length);\n            batch.push(input[j]);\n            y.push(labels[j]);\n        }\n        batches.push(batch);\n        y_.push(y);\n        batch = [];\n        y = [];\n    }\n    return [batches, y_];\n}\n\nfunction pooling(arr, type = 'max') {\n\n}\n\n\n\nmodule.exports = {\n    weighted_input: weighted_input,\n    shuffle: shuffle\n}",
+    "content": "const { math, core } = require('vecto');\n\n/** weighted_input : calculates sigma(w*x) + b\n * \n * @w : [Number] , The weights array of a layer\n * \n * @x : [Number] , The input to the layer\n * \n * @b : [Number] , The biases array of a layer\n * \n * Returns : Number/[Number] , The Linear activation\n * \n */\n\nfunction weighted_input(w, x, b) {\n    console.log(w, x, b);\n    console.log(core.calcShape(w), core.calcShape(x), core.calcShape(b));\n    return math.sum(math.product(w, x, 'matrix'), b);\n}\n\n/** shuffle : Shuffles the features and labels keeping them aligned and forms mini batches\n * \n * @input : [Number] , The features array\n * \n * @labels : [Number] , The labels array\n * \n * @mini_batch_size : int , The size of a minibatch\n * \n * Returns : [Number] , The array of minibatches formed with the shuffled data\n * \n */\n\nfunction shuffle(input, labels, mini_batch_size) {\n    let batches = [],\n        batch = [],\n        y = [],\n        y_ = [],\n        no_of_batches = Math.floor(input.length / mini_batch_size),\n        i, j;\n    console.log(no_of_batches);\n    for (i = 0; i < no_of_batches; i++) {\n        while (batch.length < mini_batch_size) {\n            j = Math.floor(Math.random() * input.length);\n            batch.push(input[j]);\n            y.push(labels[j]);\n        }\n        batches.push(batch);\n        y_.push(y);\n        batch = [];\n        y = [];\n    }\n    return [batches, y_];\n}\n\nfunction pooling(arr, type = 'max') {\n\n}\n\n\n\nmodule.exports = {\n    weighted_input: weighted_input,\n    shuffle: shuffle\n}",
     "static": true,
     "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/util/net_util.js",
     "access": "public",
@@ -1759,7 +1975,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 78,
+    "__docId__": 98,
     "kind": "variable",
     "name": "math",
     "memberof": "Jbrain/util/net_util.js",
@@ -1780,7 +1996,7 @@
     "ignore": true
   },
   {
-    "__docId__": 79,
+    "__docId__": 99,
     "kind": "function",
     "name": "weighted_input",
     "memberof": "Jbrain/util/net_util.js",
@@ -1836,7 +2052,7 @@
     "ignore": true
   },
   {
-    "__docId__": 80,
+    "__docId__": 100,
     "kind": "function",
     "name": "shuffle",
     "memberof": "Jbrain/util/net_util.js",
@@ -1892,7 +2108,7 @@
     "ignore": true
   },
   {
-    "__docId__": 81,
+    "__docId__": 101,
     "kind": "function",
     "name": "pooling",
     "memberof": "Jbrain/util/net_util.js",
@@ -1928,7 +2144,7 @@
     "ignore": true
   },
   {
-    "__docId__": 82,
+    "__docId__": 102,
     "kind": "file",
     "name": "Jbrain/util/optimizer.js",
     "content": "const GradientDescentOptimizer = require('./optimizers/gradientDescent'),\n    AdamOptimizer = require('./optimizers/adam'),\n    RMSPropOptimizer = require('./optimizers/rmsprop');\n\nmodule.exports = {\n    GradientDescentOptimizer,\n    AdamOptimizer,\n    RMSPropOptimizer\n}",
@@ -1939,7 +2155,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 83,
+    "__docId__": 103,
     "kind": "variable",
     "name": "GradientDescentOptimizer",
     "memberof": "Jbrain/util/optimizer.js",
@@ -1960,7 +2176,7 @@
     "ignore": true
   },
   {
-    "__docId__": 84,
+    "__docId__": 104,
     "kind": "file",
     "name": "Jbrain/util/optimizers/adam.js",
     "content": "'use strict';\n\n/* Currently only for batch operations , Caution : Not Optimized */\n\n// Needs Testing\n\nconst Optimizer = require('./optimizerClass');\n\nclass AdamOptimizer extends Optimizer {\n\n    constructor(network) {\n        super(network, 4);\n    }\n\n    optimize(neta, itrns, opt) {\n        const { math } = require('vecto');\n        opt = opt || {};\n        let beta1 = opt.beta1 || 0.9,\n            beta2 = opt.beta2 || 0.999,\n            epsilon = opt.epsilon || 1e-6;\n        this.initParams();\n        for (let i = 0; i < itrns; i++) {\n            this.Props(this.features, this.labels);\n            this.updateProcess(beta1, beta2);\n            let [vdw, vdb, sdw, sdb] = this.variablesList;\n            for (let l = 0; l < this.layers.length; l++) {\n                let vdwcorr = Ndarray.zeroes(this.layers[l].weights.shape),\n                    vdbcorr = Ndarray.zeroes(this.layers[l].biases.shape),\n                    sdwcorr = Ndarray.zeroes(this.layers[l].weights.shape),\n                    sdbcorr = Ndarray.zeroes(this.layers[l].biases.shape);\n                vdwcorr.arrange(math.divide(vdw[l].array, (1 - (beta1 ^ (i + 1)))));\n                vdbcorr.arrange(math.divide(vdb[l].array, (1 - (beta1 ^ (i + 1)))));\n                sdwcorr.arrange(math.divide(sdw[l].array, (1 - (beta2 ^ (i + 1)))));\n                sdbcorr.arrange(math.divide(sdb[l].array, (1 - (beta2 ^ (i + 1)))));\n\n                //These two should be broken into individual steps\n                this.layers[l].weights.arrange(math.sum(this.layers[l].weights.array, math.product(math.divide(vdwcorr.array, math.sum(math.sqrt(sdwcorr.array), epsilon)), (-neta))));\n                this.layers[l].biases.arrange(math.sum(this.layers[l].biases.array, math.product(math.divide(vdbcorr.array, math.sum(math.sqrt(sdbcorr.array), epsilon)), (-neta))));\n            }\n        }\n    }\n}\n\nmodule.exports = AdamOptimizer;",
@@ -1971,7 +2187,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 85,
+    "__docId__": 105,
     "kind": "variable",
     "name": "Optimizer",
     "memberof": "Jbrain/util/optimizers/adam.js",
@@ -1992,7 +2208,7 @@
     "ignore": true
   },
   {
-    "__docId__": 86,
+    "__docId__": 106,
     "kind": "class",
     "name": "AdamOptimizer",
     "memberof": "Jbrain/util/optimizers/adam.js",
@@ -2012,7 +2228,7 @@
     "ignore": true
   },
   {
-    "__docId__": 87,
+    "__docId__": 107,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "Jbrain/util/optimizers/adam.js~AdamOptimizer",
@@ -2026,7 +2242,7 @@
     "undocument": true
   },
   {
-    "__docId__": 88,
+    "__docId__": 108,
     "kind": "method",
     "name": "optimize",
     "memberof": "Jbrain/util/optimizers/adam.js~AdamOptimizer",
@@ -2061,7 +2277,7 @@
     "return": null
   },
   {
-    "__docId__": 89,
+    "__docId__": 109,
     "kind": "file",
     "name": "Jbrain/util/optimizers/gradientDescent.js",
     "content": "'use strict';\n\nconst Optimizer = require('./optimizerClass');\n\n/* Caution : Heavily UNOPTIMISED!!! & UNTESTED!!! */\n\n// Needs Testing\n\nclass GradientDescentOptimizer extends Optimizer {\n    constructor(network) {\n        super(network, 2);\n    }\n\n    optimize(neta, epoch, m, opt) {\n        if (opt.name === 'gd') {\n            this.GD(neta, epoch, opt);\n        } else if (opt.name === 'sgd') {\n            this.SGD(neta, epoch, m, opt);\n        } else {\n            this.MBGD(neta, epoch, m, opt);\n        }\n    }\n\n    GD(neta, itrns, opt) {\n        let beta = opt.beta || 0.9;\n        if (opt.momentum) this.initParams();\n        for (let t = 0; t < itrns; t++) {\n            let dw, db;\n            [dw, db] = this.Props(this.features, this.labels);\n            if (opt.momentum) {\n                this.updateProcess(beta);\n                let [vdw, vdb] = this.variablesList;\n                dw = vdw;\n                db = vdb;\n            }\n            this.updateWeights(dw, db, neta);\n        }\n    }\n\n\n    MBGD(neta, epoch, m, opt) {\n        if (opt.momentum) this.initParams();\n        for (let i = 0; i < epoch; i++) {\n            let batches_x, batches_y;\n            [batches_x, batches_y] = this.formBatches(m);\n            for (let b = 0; b < batches_x.length; b++) {\n                let dw, db;\n                [dw, db] = this.Props(batches_x[b], batches_y[b]);\n                if (opt.momentum) {\n                    this.updateProcess(beta);\n                    let [vdw, vdb] = this.variablesList;\n                    dw = vdw;\n                    db = vdb;\n                }\n                this.updateWeights(dw, db, neta);\n            }\n        }\n    }\n\n    SGD(neta, epoch, m, opt) {\n        if (opt.momentum) this.initParams();\n        for (let t = 0; t < epoch; t++) {\n            for (let i = 0; i < this.features.length; i++) {\n                let dw, db;\n                [dw, db] = this.Props(this.features[i], this.labels[i]);\n                if (opt.momentum) {\n                    this.updateProcess(beta);\n                    let [vdw, vdb] = this.variablesList;\n                    dw = vdw;\n                    db = vdb;\n                }\n                this.updateWeights(dw, db, neta);\n            }\n        }\n    }\n\n    updateWeights(dw, db, neta) {\n        const { math } = require('vecto');\n        for (let l = 0; l < this.layers.length; l++) {\n            this.layers[l].weights.arrange(math.sum(this.layers[l].weights.array, math.product(dw[l].array, (-neta))));\n            this.layers[l].biases.arrange(math.sum(this.layers[l].biases.array, math.product(db[l].array, (-neta))));\n        }\n    }\n}\n\nmodule.exports = GradientDescentOptimizer;",
@@ -2072,7 +2288,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 90,
+    "__docId__": 110,
     "kind": "variable",
     "name": "Optimizer",
     "memberof": "Jbrain/util/optimizers/gradientDescent.js",
@@ -2093,7 +2309,7 @@
     "ignore": true
   },
   {
-    "__docId__": 91,
+    "__docId__": 111,
     "kind": "class",
     "name": "GradientDescentOptimizer",
     "memberof": "Jbrain/util/optimizers/gradientDescent.js",
@@ -2113,7 +2329,7 @@
     "ignore": true
   },
   {
-    "__docId__": 92,
+    "__docId__": 112,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "Jbrain/util/optimizers/gradientDescent.js~GradientDescentOptimizer",
@@ -2127,7 +2343,7 @@
     "undocument": true
   },
   {
-    "__docId__": 93,
+    "__docId__": 113,
     "kind": "method",
     "name": "optimize",
     "memberof": "Jbrain/util/optimizers/gradientDescent.js~GradientDescentOptimizer",
@@ -2168,7 +2384,7 @@
     "return": null
   },
   {
-    "__docId__": 94,
+    "__docId__": 114,
     "kind": "method",
     "name": "GD",
     "memberof": "Jbrain/util/optimizers/gradientDescent.js~GradientDescentOptimizer",
@@ -2203,7 +2419,7 @@
     "return": null
   },
   {
-    "__docId__": 95,
+    "__docId__": 115,
     "kind": "method",
     "name": "MBGD",
     "memberof": "Jbrain/util/optimizers/gradientDescent.js~GradientDescentOptimizer",
@@ -2244,7 +2460,7 @@
     "return": null
   },
   {
-    "__docId__": 96,
+    "__docId__": 116,
     "kind": "method",
     "name": "SGD",
     "memberof": "Jbrain/util/optimizers/gradientDescent.js~GradientDescentOptimizer",
@@ -2285,7 +2501,7 @@
     "return": null
   },
   {
-    "__docId__": 97,
+    "__docId__": 117,
     "kind": "method",
     "name": "updateWeights",
     "memberof": "Jbrain/util/optimizers/gradientDescent.js~GradientDescentOptimizer",
@@ -2320,7 +2536,7 @@
     "return": null
   },
   {
-    "__docId__": 98,
+    "__docId__": 118,
     "kind": "file",
     "name": "Jbrain/util/optimizers/optimizerClass.js",
     "content": "'use strict';\n\n/* :construction: Under Construction :construction: */\n\nconst { Ndarray, math, core } = require('vecto');\n\n\nmodule.exports = class Optimizer {\n    constructor(network, len) {\n        this.paramLen = len;\n        this.feedForward = network.feedForward;\n        this.layers = network.layers;\n        this.costFn = network.costFn;\n        this.features = network.features;\n        this.batch_size = this.features.length;\n        this.labels = network.labels;\n        this.variablesList = [];\n    }\n\n    /** backpropagation : Calculates the error in activation of every layer \n     * \n     * @activations : [Number] , The activation of the output layer\n     * \n     * @labels      : [Number] , The labels(desired output) for given input\n     * \n     * @activ_      : [Number] , The g'(z) for current batch\n     * \n     * Returns      : [[Number],[Number]], delw is an array of Ndarrays having error in weights\n     *                of every layer and delb is array of Ndarrays having errors in biases\n     */\n\n    backprop(labels) {\n        let dw = [],\n            db = [],\n            delta = [];\n        for (let i = 1; i < this.layers.length; i++) {\n            dw.push(Ndarray.zeroes(this.layers[i].weights.shape));\n            db.push(Ndarray.zeroes(this.layers[i].biases.shape));\n        }\n\n        let cost = this.costFn(this.layers[this.layers.length - 1].activation.array, labels, this.batch_size);\n        let gradc = this.costFn.grad(this.layers[this.layers.length - 1].activation.array, labels, this.batch_size),\n            activ_dash = this.layers[this.layers.length - 1].activ_;\n\n        delta[(this.layers.length - 1)] = math.product(gradc, activ_dash, 'dot');\n\n        for (let i = this.layers.length - 2; i > 0; i--) {\n            delta[i] = math.product(math.product(this.layers[i + 1].weights.transpose(), delta[i + 1]), this.layers[i].activ_, 'dot');\n        }\n\n        for (let i = 1; i < this.layers.length; i++) {\n            dw[i - 1].arrange(math.sum(dw[i - 1].array, math.product(delta[i], this.layers[i - 1].activation.transpose())));\n            /* Confusion with the delta shape */\n            db[i - 1].arrange(math.sum(db[i - 1].array, delta[i]));\n        }\n        this.dw = dw;\n        this.db = db;\n        return [dw, db];\n    }\n\n    /* Produces The Parameter Arrays For Updation */\n    initParams() {\n        for (let i = 0; i < this.paramLen / 2; i++) {\n            let paramw = [];\n            let paramb = [];\n            for (let l = 1; l < this.layers.length; l++) {\n                paramw.push(Ndarray.zeroes(this.layers[l].weights.shape));\n                paramb.push(Ndarray.zeroes(this.layers[l].biases.shape));\n            }\n            this.variablesList.push(paramw)\n            this.variablesList.push(paramb);\n        }\n    }\n\n    /* Performs Forward And Backward Propagation And Returns The Gradients */\n\n    Props(batch_x, batch_y) {\n        this.feedForward(batch_x);\n        return this.backprop(batch_y);\n    }\n\n    /* Form Mini Batches Of Size m */\n\n    formBatches(m) {\n        this.batch_size = m;\n        const { shuffle } = require('../net_util');\n        return shuffle(this.features, this.labels, m);\n    }\n\n    /* Updates The Weights And Biases Of The Network */\n\n    updateProcess(beta1, beta2) {\n        let [vdw, vdb, sdw, sdb] = this.variablesList;\n\n        for (let i = 1; i < this.layers.length; i++) {\n            vdw[i].arrange(math.sum(math.product(beta1, vdw[i].array), math.product((1 - beta1), this.dw[i].array)));\n            vdb[i].arrange(math.sum(math.product(beta1, vdb[i].array), math.product((1 - beta1), this.db[i].array)));\n            if (sdw && sdb) {\n                sdw[i].arrange(math.sum(math.product(beta2, sdw[i].array), math.sum((1 - beta2), math.pow(this.dw[i].array, 2))));\n                sdb[i].arrange(math.sum(math.product(beta2, sdb[i].array), math.sum((1 - beta2), math.pow(this.db[i].array, 2))));\n            }\n        }\n    }\n}",
@@ -2331,7 +2547,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 99,
+    "__docId__": 119,
     "kind": "variable",
     "name": "Ndarray",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js",
@@ -2352,7 +2568,7 @@
     "ignore": true
   },
   {
-    "__docId__": 100,
+    "__docId__": 120,
     "kind": "class",
     "name": "exports",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js",
@@ -2369,7 +2585,7 @@
     "ignore": true
   },
   {
-    "__docId__": 101,
+    "__docId__": 121,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2383,7 +2599,7 @@
     "undocument": true
   },
   {
-    "__docId__": 102,
+    "__docId__": 122,
     "kind": "member",
     "name": "paramLen",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2400,7 +2616,7 @@
     }
   },
   {
-    "__docId__": 103,
+    "__docId__": 123,
     "kind": "member",
     "name": "feedForward",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2417,7 +2633,7 @@
     }
   },
   {
-    "__docId__": 104,
+    "__docId__": 124,
     "kind": "member",
     "name": "layers",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2434,7 +2650,7 @@
     }
   },
   {
-    "__docId__": 105,
+    "__docId__": 125,
     "kind": "member",
     "name": "costFn",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2451,7 +2667,7 @@
     }
   },
   {
-    "__docId__": 106,
+    "__docId__": 126,
     "kind": "member",
     "name": "features",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2468,7 +2684,7 @@
     }
   },
   {
-    "__docId__": 107,
+    "__docId__": 127,
     "kind": "member",
     "name": "batch_size",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2485,7 +2701,7 @@
     }
   },
   {
-    "__docId__": 108,
+    "__docId__": 128,
     "kind": "member",
     "name": "labels",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2502,7 +2718,7 @@
     }
   },
   {
-    "__docId__": 109,
+    "__docId__": 129,
     "kind": "member",
     "name": "variablesList",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2519,7 +2735,7 @@
     }
   },
   {
-    "__docId__": 110,
+    "__docId__": 130,
     "kind": "method",
     "name": "backprop",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2559,7 +2775,7 @@
     }
   },
   {
-    "__docId__": 111,
+    "__docId__": 131,
     "kind": "member",
     "name": "dw",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2576,7 +2792,7 @@
     }
   },
   {
-    "__docId__": 112,
+    "__docId__": 132,
     "kind": "member",
     "name": "db",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2593,7 +2809,7 @@
     }
   },
   {
-    "__docId__": 113,
+    "__docId__": 133,
     "kind": "method",
     "name": "initParams",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2609,7 +2825,7 @@
     "return": null
   },
   {
-    "__docId__": 114,
+    "__docId__": 134,
     "kind": "method",
     "name": "Props",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2642,7 +2858,7 @@
     }
   },
   {
-    "__docId__": 115,
+    "__docId__": 135,
     "kind": "method",
     "name": "formBatches",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2669,7 +2885,7 @@
     }
   },
   {
-    "__docId__": 117,
+    "__docId__": 137,
     "kind": "method",
     "name": "updateProcess",
     "memberof": "Jbrain/util/optimizers/optimizerClass.js~exports",
@@ -2698,7 +2914,7 @@
     "return": null
   },
   {
-    "__docId__": 118,
+    "__docId__": 138,
     "kind": "file",
     "name": "Jbrain/util/optimizers/rmsprop.js",
     "content": "'use strict';\n\n/* Currently Only For Batch Operations, Caution : Not Optimized */\n\n// Needs Testing\n\n// Didn't meant to work for batch, works with sgd\n\nconst Optimizer = require('./optimizerClass');\n\nclass RMSPropOptimizer extends Optimizer {\n    constructor(network) {\n        super(network, 2);\n    }\n\n    optimize(network, neta, itrns, opt) {\n        const { math } = require('vecto');\n        let beta = opt.beta || 0.9,\n            epsilon = opt.epsilon || 1e-8;\n        this.initParams();\n        for (let i = 0; i < itrns; i++) {\n            let [dw, db] = this.Props(this.features, this.labels);\n            this.updateProcess(beta);\n            let [sdw, sdb] = this.variablesList;\n            for (let l = 0; l < this.layers.length; l++) {\n                this.layers[l].weights.arrange(math.sum(this.layers[l].weights.array, math.product(math.divide(dw[l], math.sum(math.sqrt(sdw[l]), epsilon)), (-neta))));\n                this.layers[l].biases.arrange(math.sum(this.layers[l].biases.array, math.product(math.divide(db[l], math.sum(math.sqrt(sdb[l]), epsilon)), (-neta))));\n            }\n        }\n\n    }\n}\n\nmodule.exports = RMSPropOptimizer;",
@@ -2709,7 +2925,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 119,
+    "__docId__": 139,
     "kind": "variable",
     "name": "Optimizer",
     "memberof": "Jbrain/util/optimizers/rmsprop.js",
@@ -2730,7 +2946,7 @@
     "ignore": true
   },
   {
-    "__docId__": 120,
+    "__docId__": 140,
     "kind": "class",
     "name": "RMSPropOptimizer",
     "memberof": "Jbrain/util/optimizers/rmsprop.js",
@@ -2750,7 +2966,7 @@
     "ignore": true
   },
   {
-    "__docId__": 121,
+    "__docId__": 141,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "Jbrain/util/optimizers/rmsprop.js~RMSPropOptimizer",
@@ -2764,7 +2980,7 @@
     "undocument": true
   },
   {
-    "__docId__": 122,
+    "__docId__": 142,
     "kind": "method",
     "name": "optimize",
     "memberof": "Jbrain/util/optimizers/rmsprop.js~RMSPropOptimizer",
@@ -2805,7 +3021,7 @@
     "return": null
   },
   {
-    "__docId__": 123,
+    "__docId__": 143,
     "kind": "file",
     "name": "Jbrain/util/util.js",
     "content": "const Layer = require('./layers/Layer'),\n    optimizer = require('./optimizer'),\n    net_util = require('./net_util'),\n    activ = require('./activ'),\n    cost = require('./cost');\n\nmodule.exports = {\n    Layer,\n    optimizer,\n    activ,\n    cost,\n    net_util\n}",
@@ -2816,7 +3032,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 124,
+    "__docId__": 144,
     "kind": "variable",
     "name": "Layer",
     "memberof": "Jbrain/util/util.js",
@@ -2838,7 +3054,7 @@
   },
   {
     "kind": "index",
-    "content": "# Jbrain                    \nNeural network in javascript\n\n[![Code Climate](https://codeclimate.com/github/abtExp/Jbrain/badges/gpa.svg)](https://codeclimate.com/github/abtExp/Jbrain) [![Build Status](https://travis-ci.org/abtExp/Jbrain.svg?branch=master)](https://travis-ci.org/abtExp/Jbrain)  [![npm version](https://badge.fury.io/js/jbrain.svg)](https://badge.fury.io/js/jbrain)\n[![Coverage Status](https://coveralls.io/repos/github/abtExp/Jbrain/badge.svg?branch=master)](https://coveralls.io/github/abtExp/Jbrain?branch=master)\n\n* Rewrite for better performance and more networks coming soon ..... :sparkles: :construction: :hammer:\n\n----------------------------------------------------------------------------------------------------------------------------------------  \n--Any help or suggestion is appreciated.\n",
+    "content": "# Jbrain                    \n## Machine Learning In JavaScript\n\n// For latest version (unstable) clone the <a href='https://github.com/abtExp/Jbrain/tree/dev'>dev</a> branch.\n\n[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c834852c3524400fb26545bc72a61ef8)](https://www.codacy.com/app/atworkstudios/Jbrain?utm_source=github.com&utm_medium=referral&utm_content=abtExp/Jbrain&utm_campaign=badger)\n[![Code Climate](https://codeclimate.com/github/abtExp/Jbrain/badges/gpa.svg)](https://codeclimate.com/github/abtExp/Jbrain) [![Build Status](https://travis-ci.org/abtExp/Jbrain.svg?branch=master)](https://travis-ci.org/abtExp/Jbrain)  [![npm version](https://badge.fury.io/js/jbrain.svg)](https://badge.fury.io/js/jbrain)\n[![Coverage Status](https://coveralls.io/repos/github/abtExp/Jbrain/badge.svg?branch=master)](https://coveralls.io/github/abtExp/Jbrain?branch=master)\n\n\n### Current Progress : \n* Implementing A Generic API For Creating Different Types Of Neural Networks\n* Implementing Different Cost And Activation Functions\n* Implementing Different Optimzation Methods\n* Implementing SVM\n* Implementing K-means\n* Activation Functions : relu, softmax, sigmoid, tanh\n* Cost Functions : cross entropy, quadratic cost\n* Optimizers : Gradient Descent (batch, mini batch and stochastic), RMSProp, Adam\n* Network Types : Feed Forward\n\n### Future Work : \n* Fixing All Bugs\n* Convolutional and reccurent networks\n* Weight Initializations\n* Regularization Techniques\n* Faster API Performance\n* GPU Support\n\n@abtExp\n\n\n--Any help or suggestion is appreciated.\n",
     "longname": "/home/abtexp/Desktop/devWorks/mlDevSuite/Jbrain/README.md",
     "name": "./README.md",
     "static": true,

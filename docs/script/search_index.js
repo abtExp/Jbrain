@@ -72,9 +72,33 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
-    "jbrain/util/layers/conv.js",
-    "file/Jbrain/util/layers/Conv.js.html",
-    "Jbrain/util/layers/Conv.js",
+    "jbrain/util/layers.js",
+    "file/Jbrain/util/layers.js.html",
+    "Jbrain/util/layers.js",
+    "file"
+  ],
+  [
+    "jbrain/util/layers/connectedlayer.js",
+    "file/Jbrain/util/layers/ConnectedLayer.js.html",
+    "Jbrain/util/layers/ConnectedLayer.js",
+    "file"
+  ],
+  [
+    "jbrain/util/layers/convlayer.js",
+    "file/Jbrain/util/layers/ConvLayer.js.html",
+    "Jbrain/util/layers/ConvLayer.js",
+    "file"
+  ],
+  [
+    "jbrain/util/layers/dropoutlayer.js",
+    "file/Jbrain/util/layers/DropoutLayer.js.html",
+    "Jbrain/util/layers/DropoutLayer.js",
+    "file"
+  ],
+  [
+    "jbrain/util/layers/inputlayer.js",
+    "file/Jbrain/util/layers/InputLayer.js.html",
+    "Jbrain/util/layers/InputLayer.js",
     "file"
   ],
   [
@@ -84,15 +108,15 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
-    "jbrain/util/layers/pool.js",
-    "file/Jbrain/util/layers/Pool.js.html",
-    "Jbrain/util/layers/Pool.js",
+    "jbrain/util/layers/poollayer.js",
+    "file/Jbrain/util/layers/PoolLayer.js.html",
+    "Jbrain/util/layers/PoolLayer.js",
     "file"
   ],
   [
-    "jbrain/util/layers/reccurrent.js",
-    "file/Jbrain/util/layers/Reccurrent.js.html",
-    "Jbrain/util/layers/Reccurrent.js",
+    "jbrain/util/layers/recurrentlayer.js",
+    "file/Jbrain/util/layers/RecurrentLayer.js.html",
+    "Jbrain/util/layers/RecurrentLayer.js",
     "file"
   ],
   [
