@@ -1,5 +1,6 @@
+const { math } = require('vecto');
+
 function softmax(z) {
-    const { math } = require('vecto');
     let den = math.sum(math.exp(z));
     return math.divide(math.exp(z), den);
 }

@@ -1,6 +1,7 @@
 'use strict';
 
 const Optimizer = require('./optimizerClass');
+const { math } = require('vecto');
 
 /* Caution : Heavily UNOPTIMISED!!! & UNTESTED!!! */
 
@@ -25,8 +26,7 @@ class GradientDescentOptimizer extends Optimizer {
         let beta = opt.beta || 0.9;
         if (opt.momentum) this.initParams();
         for (let t = 0; t < itrns; t++) {
-            let dw, db;
-            [dw, db] = this.Props(this.features, this.labels);
+            let [dw, db] = this.Props(this.features, this.labels);
             if (opt.momentum) {
                 this.updateProcess(beta);
                 let [vdw, vdb] = this.variablesList;
@@ -41,11 +41,9 @@ class GradientDescentOptimizer extends Optimizer {
     MBGD(neta, epoch, m, opt) {
         if (opt.momentum) this.initParams();
         for (let i = 0; i < epoch; i++) {
-            let batches_x, batches_y;
-            [batches_x, batches_y] = this.formBatches(m);
+            let [batches_x, batches_y] = this.formBatches(m);
             for (let b = 0; b < batches_x.length; b++) {
-                let dw, db;
-                [dw, db] = this.Props(batches_x[b], batches_y[b]);
+                let [dw, db] = this.Props(batches_x[b], batches_y[b]);
                 if (opt.momentum) {
                     this.updateProcess(beta);
                     let [vdw, vdb] = this.variablesList;
@@ -58,25 +56,18 @@ class GradientDescentOptimizer extends Optimizer {
     }
 
     SGD(neta, epoch, m, opt) {
-        if (opt.momentum) this.initParams();
         for (let t = 0; t < epoch; t++) {
-            for (let i = 0; i < this.features.length; i++) {
+            let [features, labels] = this.formBatches(1);
+            for (let i = 0; i < features.length; i++) {
                 let dw, db;
-                [dw, db] = this.Props(this.features[i], this.labels[i]);
-                if (opt.momentum) {
-                    this.updateProcess(beta);
-                    let [vdw, vdb] = this.variablesList;
-                    dw = vdw;
-                    db = vdb;
-                }
+                [dw, db] = this.Props(features[i], labels[i]);
                 this.updateWeights(dw, db, neta);
             }
         }
     }
 
     updateWeights(dw, db, neta) {
-        const { math } = require('vecto');
-        for (let l = 0; l < this.layers.length; l++) {
+        for (let l = 1; l < this.layers.length; l++) {
             this.layers[l].weights.arrange(math.sum(this.layers[l].weights.array, math.product(dw[l].array, (-neta))));
             this.layers[l].biases.arrange(math.sum(this.layers[l].biases.array, math.product(db[l].array, (-neta))));
         }

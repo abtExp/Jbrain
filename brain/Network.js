@@ -8,9 +8,10 @@
 
 // Currently it's very slow, have to make it faster.
 
-const { core } = require('vecto'), { cost_grad, shuffle } = require('../util/net_util'),
-    cost = require('../util/cost'), { InputLayer, ConnectedLayer } = require('../util/layers'),
-    optimizer = require('../util/optimizer');
+const { core } = require('vecto'),
+    cost = require('../util/cost'),
+    optimizer = require('../util/optimizer'), { InputLayer, ConnectedLayer } = require('../util/layers'),
+    Model = require('./Model'), { cost_grad, shuffle } = require('../util/net_util');
 
 
 /**
@@ -25,7 +26,7 @@ const { core } = require('vecto'), { cost_grad, shuffle } = require('../util/net
  *
  */
 
-class Network {
+class Network extends Model {
     /** 
      * constructor : Creating The Network
      * 
@@ -39,7 +40,8 @@ class Network {
      * 
      */
 
-    constructor(net_config, lyr_type = 'linear', op_type = 'linear') {
+    constructor(net_config, lyr_type = 'sigmoid', op_type = 'sigmoid') {
+        super('Network', net_config);
         this.net_config = net_config;
         this.layers = [];
         if (typeof net_config[0] === 'object') {
@@ -59,14 +61,15 @@ class Network {
                 }));
             }
             this.layers.push(new ConnectedLayer({
-                shape: [this.net_config[this.layers.length - 1],
-                    this.net_config[this.layers.length - 2]
+                shape: [this.net_config[this.net_config.length - 1],
+                    this.net_config[this.net_config.length - 2]
                 ],
                 activationFunction: op_type,
                 input: this.layers[this.layers.length - 1],
                 name: `output${this.layers.length}`
             }))
         }
+        super.config = this.layers;
     }
 
     /** 

@@ -14,7 +14,7 @@ class Layer {
     constructor(config) {
         if (config.type !== 'input') {
             this.trainable = config.trainable || true;
-            this.shape = this.calcLayerShape(config.shape, config.input.activation.shape);
+            this.shape = config.shape;
             this.input = config.input.activation;
             this.weightsInit = config.weightsInit || 'xavier';
             this.activationFunction = this.setActivation(config.activationFunction);
@@ -28,7 +28,6 @@ class Layer {
         console.log(`firing ${this.name}`);
         let z = weighted_input(this.weights.array, this.input.array, this.biases.array),
             a = this.activationFunction ? this.activationFunction(z) : z;
-        console.log(a);
         this.activation.resize(core.calcShape(a));
         this.activation.arrange(a);
         this.z = z;
@@ -45,8 +44,12 @@ class Layer {
     }
 
     calcLayerShape(configShape, activationShape) {
-        if (configShape[configShape.length - 1] === activationShape[0]) return configShape;
-        configShape[configShape.length - 1] = activationShape[0];
+        console.log(configShape);
+        console.log(activationShape);
+        if (configShape[configShape.length - 1] !== activationShape[0]) {
+            configShape[configShape.length - 1] = activationShape[0];
+        }
+        console.log(configShape);
         return configShape;
     }
 

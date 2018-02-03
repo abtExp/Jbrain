@@ -1,5 +1,6 @@
+const { math, core } = require('vecto');
+
 function tanh(z) {
-    const { math, core } = require('vecto');
     let z_ = z.map(i => -i),
         num = math.diff(math.exp(z), math.exp(z_)),
         den = math.sum(math.exp(z), math.exp(z_));

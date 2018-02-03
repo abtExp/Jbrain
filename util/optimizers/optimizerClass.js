@@ -87,7 +87,7 @@ module.exports = class Optimizer {
         return shuffle(this.features, this.labels, m);
     }
 
-    /* Updates The Weights And Biases Of The Network */
+    /* Updates The Params Of The Network */
 
     updateProcess(beta1, beta2) {
         let [vdw, vdb, sdw, sdb] = this.variablesList;

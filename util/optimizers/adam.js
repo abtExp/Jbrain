@@ -28,10 +28,10 @@ class AdamOptimizer extends Optimizer {
                     vdbcorr = Ndarray.zeroes(this.layers[l].biases.shape),
                     sdwcorr = Ndarray.zeroes(this.layers[l].weights.shape),
                     sdbcorr = Ndarray.zeroes(this.layers[l].biases.shape);
-                vdwcorr.arrange(math.divide(vdw[l].array, (1 - (beta1 ^ (i + 1)))));
-                vdbcorr.arrange(math.divide(vdb[l].array, (1 - (beta1 ^ (i + 1)))));
-                sdwcorr.arrange(math.divide(sdw[l].array, (1 - (beta2 ^ (i + 1)))));
-                sdbcorr.arrange(math.divide(sdb[l].array, (1 - (beta2 ^ (i + 1)))));
+                vdwcorr.arrange(math.divide(vdw[l].array, (1 - (beta1 ** (i + 1)))));
+                vdbcorr.arrange(math.divide(vdb[l].array, (1 - (beta1 ** (i + 1)))));
+                sdwcorr.arrange(math.divide(sdw[l].array, (1 - (beta2 ** (i + 1)))));
+                sdbcorr.arrange(math.divide(sdb[l].array, (1 - (beta2 ** (i + 1)))));
 
                 //These two should be broken into individual steps
                 this.layers[l].weights.arrange(math.sum(this.layers[l].weights.array, math.product(math.divide(vdwcorr.array, math.sum(math.sqrt(sdwcorr.array), epsilon)), (-neta))));

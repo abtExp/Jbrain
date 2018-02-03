@@ -1,5 +1,6 @@
+const { math, core } = require('vecto');
+
 function relu(z) {
-    const { math, core } = require('vecto');
     return math.max({ ar1: 0, ar2: z });
 }
 

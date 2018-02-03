@@ -1,20 +1,16 @@
 const { math, core } = require('vecto');
 
-/** weighted_input : calculates sigma(w*x) + b
+/**
  * 
- * @w : [Number] , The weights array of a layer
- * 
- * @x : [Number] , The input to the layer
- * 
- * @b : [Number] , The biases array of a layer
- * 
- * Returns : Number/[Number] , The Linear activation
- * 
+ * @param {*} w 
+ * @param {*} x 
+ * @param {*} b 
  */
-
 function weighted_input(w, x, b) {
-    console.log(w, x, b);
-    console.log(core.calcShape(w), core.calcShape(x), core.calcShape(b));
+    console.log('weighted_input');
+    console.log(w);
+    console.log(x);
+    console.log(b);
     return math.sum(math.product(w, x, 'matrix'), b);
 }
 
@@ -37,7 +33,6 @@ function shuffle(input, labels, mini_batch_size) {
         y_ = [],
         no_of_batches = Math.floor(input.length / mini_batch_size),
         i, j;
-    console.log(no_of_batches);
     for (i = 0; i < no_of_batches; i++) {
         while (batch.length < mini_batch_size) {
             j = Math.floor(Math.random() * input.length);
