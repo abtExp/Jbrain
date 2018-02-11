@@ -8,12 +8,12 @@ const { Ndarray, math, core } = require('vecto');
 module.exports = class Optimizer {
     constructor(network, len) {
         this.paramLen = len;
-        this.feedForward = network.feedForward;
-        this.layers = network.layers;
-        this.costFn = network.costFn;
-        this.features = network.features;
+        // this.feedForward = network.feedForward;
+        // this.layers = network.layers;
+        // this.costFn = network.costFn;
+        // this.features = network.features;
         this.batch_size = this.features.length;
-        this.labels = network.labels;
+        // this.labels = network.labels;
         this.variablesList = [];
     }
 
