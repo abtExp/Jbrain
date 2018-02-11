@@ -15,18 +15,17 @@ class Layer {
         if (config.type !== 'input') {
             this.trainable = config.trainable || true;
             this.shape = config.shape;
-            this.input = config.input.activation;
+            this.input = config.input ? config.input.activation : null;
             this.weightsInit = config.weightsInit || 'xavier';
             this.activationFunction = this.setActivation(config.activationFunction);
-            this.regularizer = config.regularizer ? config.regularizer : null; // Placeholder, 've to implement regularization
+            this.regularizer = config.regularizer || null;
         } else this.shape = config.shape;
         this.type = config.type;
         this.name = config.name || config.type;
     }
 
     fire() {
-        console.log(`firing ${this.name}`);
-        let z = weighted_input(this.weights.array, this.input.array, this.biases.array),
+        let z = weighted_input(this.weights, this.input, this.biases),
             a = this.activationFunction ? this.activationFunction(z) : z;
         this.activation.resize(core.calcShape(a));
         this.activation.arrange(a);

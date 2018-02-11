@@ -2,24 +2,27 @@
  * JBrain : A neural network implementation in Javascript.
  * Project Name : JBrain
  * Project Code Name : Jason
- * Author : Anubhav Tiwari <atworkstudios@gmail.com>
+ * Author : abtExp <abt.exp@gmail.com>
  * 
  */
 
-// Currently it's very slow, have to make it faster.
+/***********************************************************
+ *                  Under Construction                     *
+ *                 \[----------------]/                    *         
+ ***********************************************************/
 
-const { core } = require('vecto'),
-    cost = require('../util/cost'),
-    optimizer = require('../util/optimizer'), { InputLayer, ConnectedLayer } = require('../util/layers'),
-    Model = require('./Model'), { cost_grad, shuffle } = require('../util/net_util');
+const { core } = require('vecto');
+const {
+    getCostFn,
+    getOptimizer,
+    formNet,
+    calcLayerShape
+} = require('../util/net_util');
+const cost = require('../util/cost');
+const optimizer = require('../util/optimizer');
+const Model = require('./Model');
 
 
-/**
- * define a network with net_config representing each layer with the configuration object
- * of the layer : net_config is an array of objects, the length of the array determines the 
- * number of layers and each ith element of net_config defines the configuration of the ith 
- * layer.
- */
 
 /**
  * @class Network -  The Network class for generating a neural network
@@ -41,35 +44,22 @@ class Network extends Model {
      */
 
     constructor(net_config, lyr_type = 'sigmoid', op_type = 'sigmoid') {
-        super('Network', net_config);
-        this.net_config = net_config;
+        super('Network');
         this.layers = [];
-        if (typeof net_config[0] === 'object') {
-            this.layers.push(net_config[0]);
-            for (let i = 1; i < this.net_config.length; i++) {
-                net_config[i].input = net_config[i].input || this.layers[this.layers.length - 1];
-                this.layers.push(net_config[i]);
-            }
-        } else {
-            this.layers.push(new InputLayer({ shape: [net_config[0], null], name: `input${this.layers.length}` }));
-            for (let i = 1; i < this.net_config.length - 1; i++) {
-                this.layers.push(new ConnectedLayer({
-                    shape: [this.net_config[i], this.net_config[i - 1]],
-                    activationFunction: lyr_type,
-                    input: this.layers[this.layers.length - 1],
-                    name: `fc${this.layers.length}`
-                }));
-            }
-            this.layers.push(new ConnectedLayer({
-                shape: [this.net_config[this.net_config.length - 1],
-                    this.net_config[this.net_config.length - 2]
-                ],
-                activationFunction: op_type,
-                input: this.layers[this.layers.length - 1],
-                name: `output${this.layers.length}`
-            }))
-        }
-        super.config = this.layers;
+        if (net_config)
+            formNet(this, net_config, lyr_type, op_type);
+    }
+
+    /**
+     * @method add -  Adds a layer to the end of the current network config
+     * 
+     * @param {Layer} layer - The Layer to be added. 
+     * 
+     */
+    add(layer) {
+        layer.input = layer.input || this.layers[this.layers.length - 1];
+        layer.shape = calcLayerShape(layer.shape, layer.input.activation.shape);
+        this.layers.push(layer);
     }
 
     /** 
@@ -83,30 +73,35 @@ class Network extends Model {
      * @param {Array} train_labels - labels for the training set. The shape for @train_labels could
      *                               be either [#examples,#outputNeurons] or [#outputNeurons, #examples] 
      * 
-     * @param {float} neta - the learning rate
+     * @param {Object} opt - The options object
      * 
-     * @param {int} epoch - Number of epochs
+     * @param {float} opt.neta - the learning rate
      * 
-     * @param {string} costFn - The cost function to be used for optimisation
+     * @param {int} opt.epoch - Number of epochs
+     * 
+     * @param {string} opt.costFn - The cost function to be used for optimisation
      *                          available values : 'crossEntropy','quadCost','categoricalCrossEntropy'
      * 
-     * @param {boolean} evaluate - whether to evaluate the learning of the network
+     * @param {boolean} opt.evaluate - whether to evaluate the learning of the network
      * 
-     * @param {int} eval_epoch - epochs after which to evaluate the learning
+     * @param {int} opt.eval_epoch - epochs after which to evaluate the learning
      * 
-     * @param {boolean} validate - whether validation data will be provided
+     * @param {boolean} opt.validate - whether validation data will be provided
      * 
-     * @param {Array} validate_dat - validation features to learn better, @validate must be true
+     * @param {Array} opt.validate_dat - validation features to learn better, @validate must be true
      * 
-     * @param {object/string} optimizer - the optimizer for training.
+     * @param {boolean} opt.norm - Whether to perform batch norm or not.
+     * 
+     * @param {object/string} opt.optimizer - the optimizer for training.
      * 
      * properties of the optimizer if @optimizer is object  
-     *                                    name {string} : The name of the optimizer to use
+     *                                    @param {String} opt.optimizer.name - The name of the optimizer to use
      *                                    available values : 'adam','rmsprop','gd','sgd','mbgd'
      * 
-     *                                    beta/1/2 {float} : The optimization parameter beta(for sgd,mbgd,gd and rmsprop)
+     *                                    @param {float} opt.optimizer.beta/1/2 - The optimization parameter beta(for sgd,mbgd,gd and rmsprop)
      *                                                       beta1 and beta2 for adam 
-     *                                    epsilon {float} :  The optimization parameter
+     *                                    @param {float} opt.optimizer.epsilon -  The optimization parameter
+     * 
      * 
      * 
      */
@@ -123,6 +118,7 @@ class Network extends Model {
         // eval_epoch = 10,
         // validate = false,
         // validate_dat = null,
+        norm = true,
         optimizer = {
             name: 'adam',
             beta1: 0.9,
@@ -146,13 +142,10 @@ class Network extends Model {
     }
 
     /** 
-     * feed_forward : Calculates the activation of each layer.
+     * @method feedForward - Calculates the activation of each layer.
      *
      * @param {Array} input - the input to the input layer
-     * 
-     * @return {Array} - An array containing Activations of each layer
-     *                   and also the weighted inputs for each layer.  
-     * 
+     *   
      */
 
     feedForward(input) {
@@ -169,49 +162,19 @@ class Network extends Model {
         let cost = this.costFn(this.labels, this.activations);
     }
 
-    /** predict : Predicts the output for the given test feature
+    /** 
+     * @method predict - Predicts the output for the given input features
      * 
-     * @param {Array} test_features - The features for which the prediction is 
-     *                                to be made.
+     * @param {Array} input - The features for which the prediction is 
+     *                        to be made.
      * 
      * @returns {Array} - The activation of the output layer.                       
      * 
      */
-    predict(test_features) {
-        return this.feedForward(test_features)[0][this.layers.length - 1];
+    predict(input) {
+        return this.feedForward(input)[0][this.layers.length - 1];
     }
 
-}
-
-/** getOptimizer : Returns the Optimizer Class to optimize the params
- * 
- * @param {string} optName - The name of the optimizer   
- *
- * @returns { OptimizerClassObject }
- * 
- */
-
-function getOptimizer(optName) {
-    const optimizer = require('../util/optimizer');
-    console.log(optimizer);
-    if (optName === 'adam') return optimizer.AdamOptimizer
-    else if (optName === 'rmsprop') return optimizer.RMSPropOptimizer;
-    else if (optName === 'gd' || optName === 'sgd' || optName === 'mbgd') return optimizer.GradientDescentOptimizer;
-}
-
-/** getCostFn : Returns the cost function for the given name
- *  
- * @param {string} name -  The cost function to be used for optimisation of weights and biases ( learning )
- *                         available values : 'crossEntropy','quadCost','categoricalCrossEntropy'
- * @returns {CostFunction}
- * 
- */
-
-function getCostFn(name) {
-    if (name === 'crossEntropy') return cost.cross_entropy;
-    else if (name === 'logLike') return cost.log_like;
-    else if (name === 'quadCost') return cost.quadCost;
-    else throw new Error('Undefined Cost Function');
 }
 
 module.exports = Network;

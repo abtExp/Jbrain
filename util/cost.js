@@ -1,9 +1,11 @@
 const quadCost = require('./costs/quadCost'),
-    crossEntropy = require('./costs/crossEntropy');
+    crossEntropy = require('./costs/crossEntropy'),
+    categoricalCrossEntropy = require('./costs/categoricalCrossEntropy');
 
 const cost = {
-    quadCost: quadCost,
-    crossEntropy: crossEntropy
+    quadCost,
+    crossEntropy,
+    categoricalCrossEntropy
 }
 
 module.exports = cost;
