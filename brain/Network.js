@@ -2,7 +2,7 @@
  * JBrain : A neural network implementation in Javascript.
  * Project Name : JBrain
  * Project Code Name : Jason
- * Author : abtExp <abt.exp@gmail.com>
+ * Author : abtExp<abt.exp@gmail.com>
  * 
  */
 
@@ -157,7 +157,7 @@ class Network extends Model {
     }
 
 
-    /* eval : evaluates the learning of network by comparing the accuracy */
+    // eval : evaluates the learning of network by comparing the accuracy
     eval() {
         let cost = this.costFn(this.labels, this.activations);
     }

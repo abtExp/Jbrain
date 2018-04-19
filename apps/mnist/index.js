@@ -4,11 +4,11 @@ import { trainFeatures, trainLabels, validFeatures, validLabels, testFeatures } 
 
 const { InputLayer, ConvLayer, DropoutLayer, ConnectedLayer, PoolLayer } = Layers;
 
-// Model definition
+// Model definition (Method 1)
 
 const model = new Network();
 
-model.add(new InputLayer({ shape: [28, 28, 1, null], preprocess: true, name: 'input' }));
+model.add(new InputLayer({ shape: [null, 28, 28, 1], preprocess: true, name: 'input' }));
 
 model.add(new ConvLayer({ kernel: [3, 3], filters: 14, activationFunction: 'relu', strides: 1, padding: 'valid' }));
 
@@ -24,25 +24,23 @@ model.add(new PoolLayer({ kernel: [2, 2], strides: 1, type: 'max' }));
 
 model.add(new ConvLayer({ kernel: [1, 1], filters: 64, activationFunction: 'relu', strides: 1, padding: 'valid' }));
 
-model.add(new ConnectedLayer({ activationFunction: 'relu', shape: [256, null] }))
+model.add(new ConnectedLayer({ activationFunction: 'relu', shape: [null, 256] }))
 
 model.add(new DropoutLayer({ keepProbs: 0.4 }))
 
-model.add(new ConnectedLayer({ activationFunction: 'relu', shape: [128, null] }))
+model.add(new ConnectedLayer({ activationFunction: 'relu', shape: [null, 128] }))
 
 model.add(new DropoutLayer({ keepProbs: 0.4 }))
 
-model.add(new ConnectedLayer({ activationFunction: 'softmax', shape: [10, null] }))
+model.add(new ConnectedLayer({ activationFunction: 'softmax', shape: [null, 10] }))
 
-// Compiling model
-
-model.compile();
 
 // training model
 
 model.fit({
     trainFeatures: trainFeatures,
     trainLabels: trainLabels,
+    oneHot: true,
     costFunction: 'categoricalCrossEntropy',
     validData: [validFeatures, validLabels],
     eval: true,

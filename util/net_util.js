@@ -81,10 +81,31 @@ function getOptimizer(optName) {
  */
 
 function getCostFn(name) {
+    const cost = require('../util/cost');
     if (name === 'crossEntropy') return cost.crossEntropy;
     else if (name === 'logLike') return cost.categoricalCrossEntropy;
     else if (name === 'quadCost') return cost.quadCost;
     else throw new Error('Cost Function not available');
+}
+
+function getActivation(name) {
+    const activ = require('../util/activ');
+    switch (name) {
+        case 'sigmoid':
+            return activ.sigmoid;
+
+        case 'softmax':
+            return activ.softmax;
+
+        case 'relu':
+            return activ.relu;
+
+        case 'tanh':
+            return activ.tanh;
+
+        default:
+            return null;
+    }
 }
 
 
@@ -149,11 +170,21 @@ function calcLayerShape(layerShape, inputShape) {
      ***************************************************************/
 }
 
+function oneHot(labels, num_classes = 0) {
+    let one_hot = core.fill({ shape: [labels.length, num_classes], initializer: 'zeros' });
+    for (let i = 0; i < one_hot.length; i++) {
+        one_hot[i][labels[i]] = 1;
+    }
+    return one_hot;
+}
+
 module.exports = {
     calcLayerShape,
     formNet,
     getCostFn,
     getOptimizer,
+    getActivation,
+    oneHot,
     shuffle,
     weighted_input
 }
