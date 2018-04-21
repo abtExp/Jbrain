@@ -6,7 +6,7 @@
  * 
  */
 
-const { Ndarray, math, core } = require('vecto');
+const { core } = require('vecto');
 const { weighted_input } = require('../net_util');
 const { getActivation } = require('../util');
 
@@ -28,7 +28,6 @@ class Layer {
     fire() {
         let z = weighted_input(this.weights, this.input, this.biases),
             a = this.activationFunction ? this.activationFunction(z) : z;
-        this.activation.reshape(core.calcShape(a));
         this.activation.arrange(a);
         this.z = z;
         this.activ_ = this.activationFunction.dash(z);

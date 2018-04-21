@@ -1,0 +1,43 @@
+{
+    "name": "root",
+    "type": "dir",
+    "path": ".",
+    "files": {
+        "0": {
+            "id": 0,
+            "name": "Model.js",
+            "extension": "js",
+            "type": "file",
+            "path": "./Model.js",
+            "imports": [],
+            "exports": []
+        },
+        "1": {
+            "id": 1,
+            "name": "Network.js",
+            "extension": "js",
+            "type": "file",
+            "path": "./Network.js",
+            "imports": [],
+            "exports": []
+        },
+        "2": {
+            "id": 2,
+            "name": "Recurrent.js",
+            "extension": "js",
+            "type": "file",
+            "path": "./Recurrent.js",
+            "imports": [],
+            "exports": []
+        },
+        "3": {
+            "id": 3,
+            "name": "Seq2Seq.js",
+            "extension": "js",
+            "type": "file",
+            "path": "./Seq2Seq.js",
+            "imports": [],
+            "exports": []
+        }
+    }
+}

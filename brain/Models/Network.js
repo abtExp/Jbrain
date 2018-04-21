@@ -20,18 +20,15 @@ const {
 } = require('../util/net_util');
 const Model = require('./Model');
 
-
-
 /**
- * @class Network -  The Network class for generating a neural network
+ * @class Network -  The Network class for generating a network
  *
  */
-
 class Network extends Model {
     /** 
-     * constructor : Creating The Network
+     * @constructor : Creating The Network
      * 
-     * @param {object/Array} net_config - the layerwise configuration of the neural network
+     * @param {object|Array} net_config - the layerwise configuration of the neural network
      * 
      * @param {string} lyr_type - defines the activation function for hidden layers if @net_config is array
      * 
@@ -40,7 +37,6 @@ class Network extends Model {
      * @returns {NetworkObject}
      * 
      */
-
     constructor(net_config, lyr_type = 'sigmoid', op_type = 'sigmoid') {
         super('Network');
         this.layers = [];
@@ -70,7 +66,6 @@ class Network extends Model {
      * @param {String|Array} metric - A String for a single value eval metric or an array of metrics to eval on
      * 
      */
-
     compile({
         cost = 'crossEntropy',
         optimizer: { name = 'adam', beta1 = 0.9, beta2 = 0.99, eps = 1e-8 },
@@ -83,7 +78,7 @@ class Network extends Model {
 
     /** 
      * 
-     * fit : Fit the Network (i.e., train) 
+     * @method fit : Fit the Network (i.e., train) 
      * 
      * @param {Object} opt - The options object
      * 
@@ -109,7 +104,6 @@ class Network extends Model {
      * @param {boolean} opt.norm - Whether to perform batch norm or not.
      * 
      */
-
     fit({
         train_features,
         train_labels,
@@ -137,15 +131,17 @@ class Network extends Model {
      * @param {Array} input - the input to the input layer
      *   
      */
-
     feedForward(input) {
         this.layers[0].activation.resize(core.calcShape(input));
+        this.layers[0].activation.arrange(input);
         for (let i = 1; i < this.layers.length; i++) {
             this.layers[i].fire();
         }
     }
 
-    // eval : evaluates the learning of network by comparing the accuracy
+    /**
+     * @method eval : evaluates the learning of network by comparing the metric
+     */
     eval() {
         let cost = this.cost(this.labels, this.activations);
     }
