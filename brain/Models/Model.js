@@ -19,8 +19,21 @@ class Model {
             })
     }
 
-    load(path) {
+    load(model_path) {
+        readFile(path.resolve(model_path))
+            .then(model => {
+                model = JSON.parse(model);
+                // construct a new model by looking at the type of the loaded model
+                // model = new Models[model](config);
 
+                // assign the params to the model
+                // model.assign_weights(model.weights)
+
+                // compile the model
+                // model.compile(model)
+
+                return model;
+            })
     }
 }
 
